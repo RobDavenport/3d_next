@@ -1,7 +1,7 @@
-use gamercade_rs::{api::text::console_log, prelude as gc};
-use ultraviolet::{Mat4, Vec2, Vec3, Vec4};
+use ultraviolet::{Mat4, Vec3, Vec4};
+use wide::{f32x4, u32x4, CmpNe};
 
-use crate::{actor::Actor, types::Color, CAMERA, GRAPHICS_DB};
+use crate::{actor::Actor, CAMERA, GRAPHICS_DB};
 
 pub struct Gpu {
     pub(super) screen_width: usize,
@@ -82,16 +82,37 @@ impl ZBuffer {
             .for_each(|d| *d = f32::NEG_INFINITY);
     }
 
-    // Returns true if the value was closer the target value
+    // Returns a u32x4 mask if the value was closer the target value
     // and therefore should be drawn. Also updates the buffer with the new value
-    pub fn test_and_set(&mut self, index: usize, value: f32) -> bool {
-        let entry = &mut self.z_buffer[index];
+    // TODO: Double check this logic
+    pub fn test_and_set(&mut self, pixel_indices: u32x4, depths: f32x4, mask: f32x4) -> i32 {
+        let pixel_indices = pixel_indices.min(u32x4::splat(self.z_buffer.len() as u32 - 1));
+        let pixel_indices = pixel_indices.as_array_ref();
+        let current_depths = f32x4::new([
+            self.z_buffer[pixel_indices[0] as usize],
+            self.z_buffer[pixel_indices[1] as usize],
+            self.z_buffer[pixel_indices[2] as usize],
+            self.z_buffer[pixel_indices[3] as usize],
+        ]);
 
-        if value > *entry {
-            *entry = value;
-            true
+        // The incoming data
+        let invalid_depths = f32x4::splat(f32::NEG_INFINITY) & !mask;
+        let valid_depths = depths & mask;
+        let to_test = valid_depths | invalid_depths;
+
+        // See if any results are > the current depths
+        let result = to_test.max(current_depths);
+        let changed = result.cmp_ne(current_depths);
+
+        // We have to update depths
+        if changed.any() {
+            self.z_buffer[pixel_indices[0] as usize] = changed.as_array_ref()[0];
+            self.z_buffer[pixel_indices[1] as usize] = changed.as_array_ref()[1];
+            self.z_buffer[pixel_indices[2] as usize] = changed.as_array_ref()[2];
+            self.z_buffer[pixel_indices[3] as usize] = changed.as_array_ref()[3];
+            changed.move_mask()
         } else {
-            false
+            0
         }
     }
 }
