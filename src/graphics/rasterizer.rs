@@ -7,7 +7,7 @@ use super::Gpu;
 
 impl Gpu {
     // TODO: Optimize: https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
-    // TODO: Add Subpixel Precision
+    // TODO: Consider using Fixed Point math
     // TODO: Do SIMD Magic for faster performance
     pub(super) fn rasterize_triangle(&mut self, a: Vec4, b: Vec4, c: Vec4) {
         // Determine the bounding box of the triangle in screen space
@@ -39,7 +39,8 @@ impl Gpu {
 
             for x in min_x..=max_x {
                 // If the pixel is inside the triangle (barycentric coordinates are non-negative)
-                if wa >= 0.0 && wb >= 0.0 && wc >= 0.0 {
+                //if wa >= 0.0 && wb >= 0.0 && wc >= 0.0 {
+                if fast_check_weights_inside(wa, wb, wc) {
                     self.render_pixel(
                         x,
                         y,
@@ -88,6 +89,18 @@ impl Gpu {
                 (self.screen_height - y) as i32,
             );
         }
+    }
+}
+
+// Checks if the weights are inside of the triangle
+// Via: https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
+fn fast_check_weights_inside(wa: f32, wb: f32, wc: f32) -> bool {
+    use std::mem::transmute;
+    unsafe {
+        let wa: i32 = transmute(wa);
+        let wb: i32 = transmute(wb);
+        let wc: i32 = transmute(wc);
+        (wa | wb | wc) >= 0
     }
 }
 
