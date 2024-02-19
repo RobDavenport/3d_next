@@ -1,5 +1,5 @@
 use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
-use wide::{f32x4, u32x4, CmpNe};
+use wide::{f32x4, CmpNe};
 
 use crate::{actor::Actor, CAMERA, GRAPHICS_DB};
 
@@ -68,7 +68,8 @@ pub struct ZBuffer {
 impl ZBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
-            z_buffer: (0..screen_height * screen_width)
+            // Add padding in case SIMD access extra values
+            z_buffer: (0..(screen_height * screen_width) + super::rasterizer::X_STEP_SIZE)
                 .map(|_| f32::NEG_INFINITY)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
@@ -84,32 +85,28 @@ impl ZBuffer {
 
     // Returns a u32x4 mask if the value was closer the target value
     // and therefore should be drawn. Also updates the buffer with the new value
-    // TODO: Double check this logic
-    pub fn test_and_set(&mut self, pixel_indices: u32x4, depths: f32x4, mask: f32x4) -> i32 {
-        let pixel_indices = pixel_indices.min(u32x4::splat(self.z_buffer.len() as u32 - 1));
-        let pixel_indices = pixel_indices.as_array_ref();
+    pub fn test_and_set(&mut self, pixel_index: usize, depths: f32x4, mask: f32x4) -> i32 {
         let current_depths = f32x4::new([
-            self.z_buffer[pixel_indices[0] as usize],
-            self.z_buffer[pixel_indices[1] as usize],
-            self.z_buffer[pixel_indices[2] as usize],
-            self.z_buffer[pixel_indices[3] as usize],
+            self.z_buffer[pixel_index],
+            self.z_buffer[pixel_index + 1],
+            self.z_buffer[pixel_index + 2],
+            self.z_buffer[pixel_index + 3],
         ]);
 
-        // The incoming data
-        let invalid_depths = f32x4::splat(f32::NEG_INFINITY) & !mask;
-        let valid_depths = depths & mask;
-        let to_test = valid_depths | invalid_depths;
+        //Take the max values between depths and current depths
+        let merged_max = depths.max(current_depths);
 
-        // See if any results are > the current depths
-        let result = to_test.max(current_depths);
-        let changed = result.cmp_ne(current_depths);
+        // If it's on the triangle, take the max value from the previous stetp
+        // If its not on the triangle, take the previous value
+        let new_depths = mask.blend(merged_max, current_depths);
 
-        // We have to update depths
+        // Check if we got any new values
+        let changed = new_depths.cmp_ne(current_depths);
+
+        // If we did, we need to update the buffer and return the output
         if changed.any() {
-            self.z_buffer[pixel_indices[0] as usize] = changed.as_array_ref()[0];
-            self.z_buffer[pixel_indices[1] as usize] = changed.as_array_ref()[1];
-            self.z_buffer[pixel_indices[2] as usize] = changed.as_array_ref()[2];
-            self.z_buffer[pixel_indices[3] as usize] = changed.as_array_ref()[3];
+            let data = self.z_buffer[pixel_index..pixel_index].as_mut_ptr();
+            unsafe { (data as *mut [f32; 4]).write(new_depths.into()) }
             changed.move_mask()
         } else {
             0

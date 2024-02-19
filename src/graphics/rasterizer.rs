@@ -1,13 +1,17 @@
 use gamercade_rs::prelude as gc;
 use glam::{Vec2, Vec4, Vec4Swizzles};
-use wide::{f32x4, u32x4, CmpGt};
+use wide::{f32x4, i32x4, CmpGt};
 
 use crate::types::Color;
 
 use super::Gpu;
 
-const X_STEP_SIZE: usize = 2;
-const Y_STEP_SIZE: usize = 2;
+// TODO: Consider using a 2x2 tiled approach
+pub(super) const X_STEP_SIZE: usize = 4;
+pub(super) const Y_STEP_SIZE: usize = 1;
+
+const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
+const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
     // TODO: Optimize: https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
@@ -20,7 +24,7 @@ impl Gpu {
         let max_x = (a.x.max(b.x).max(c.x).min((self.screen_width - 1) as f32)) as usize;
         let max_y = (a.y.max(b.y).max(c.y).min((self.screen_height - 1) as f32)) as usize;
 
-        // // Triangle Setup
+        // Triangle Setup
         let top_left = Vec2::new(min_x as f32, min_y as f32);
         let (a_edge, mut wa_row) = Edge::initialize(b.xy(), c.xy(), top_left);
         let (b_edge, mut wb_row) = Edge::initialize(c.xy(), a.xy(), top_left);
@@ -74,34 +78,22 @@ impl Gpu {
         c: RenderVertex,
         mask: f32x4,
     ) {
-        const X_OFFSETS: [i32; 4] = [0, 1, 0, 1];
-        const Y_OFFSETS: [i32; 4] = [0, 0, 1, 1];
         // Interpolate attributes (e.g., depth value, texture coordinates) at the current pixel
         let interpolated_depths = 1.0 / (a.depth_weight() + b.depth_weight() + c.depth_weight());
 
-        let pixel_index = y * self.screen_width + x;
-        let pixel_indices = u32x4::splat(pixel_index as u32)
-            + u32x4::new([0, 1, self.screen_width as u32, self.screen_width as u32 + 1]);
         // Calculate the pixel's index
+        let pixel_index = y * self.screen_width + x;
 
         // Perform depth testing
-        // TODO: Double check this
         let mask = self
             .z_buffer
-            .test_and_set(pixel_indices, interpolated_depths, mask);
+            .test_and_set(pixel_index, interpolated_depths, mask);
 
-        // TODO: Double check this / clean it up
         if mask > 0 {
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
                     let x = x as i32 + X_OFFSETS[bit];
                     let y = y as i32 + Y_OFFSETS[bit];
-
-                    // Skip Rasterizing if its off the screen
-                    if x >= self.screen_width as i32 || y >= self.screen_height as i32 {
-                        continue;
-                    }
-
                     // Perform fragment shading (e.g., apply lighting calculations, texture mapping)
                     let fragment_color = Color::new(255, 255, 255);
 
@@ -151,8 +143,8 @@ impl Edge {
         let out = Self { step_x, step_y };
 
         // x/y values for initial pixel block
-        let x: f32x4 = f32x4::splat(origin.x) + f32x4::new([0.0, 1.0, 0.0, 1.0]);
-        let y: f32x4 = f32x4::splat(origin.y) + f32x4::new([0.0, 0.0, 1.0, 1.0]);
+        let x: f32x4 = f32x4::splat(origin.x) + i32x4::from(X_OFFSETS).round_float();
+        let y: f32x4 = f32x4::splat(origin.y) + i32x4::from(Y_OFFSETS).round_float();
 
         // Edge function weights at origin
         let weight = f32x4::splat(a) * x + f32x4::splat(b) * y + f32x4::splat(c);
