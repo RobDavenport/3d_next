@@ -1,4 +1,4 @@
-use ultraviolet::{Mat4, Vec3, Vec4};
+use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
 use wide::{f32x4, u32x4, CmpNe};
 
 use crate::{actor::Actor, CAMERA, GRAPHICS_DB};
@@ -119,7 +119,7 @@ impl ZBuffer {
 
 fn transform_to_clip_space(vertex: &Vec3, mvp: &Mat4) -> Vec4 {
     // Convert vertex position to homogeneous coordinates (4D)
-    let mut position_homogeneous = vertex.into_homogeneous_point();
+    let mut position_homogeneous = vertex.extend(1.0);
 
     // Apply projection transformation
     position_homogeneous = *mvp * position_homogeneous;

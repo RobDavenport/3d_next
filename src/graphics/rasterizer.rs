@@ -1,5 +1,5 @@
 use gamercade_rs::prelude as gc;
-use ultraviolet::{Vec2, Vec4};
+use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, u32x4, CmpGt};
 
 use crate::types::Color;

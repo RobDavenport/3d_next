@@ -1,4 +1,4 @@
-use ultraviolet::{Mat4, Vec3};
+use glam::{Mat4, Vec3};
 
 pub trait Math {
     fn up_vector(&self) -> Vec3;
@@ -10,16 +10,16 @@ pub trait Math {
 impl Math for Mat4 {
     // Returns the Right vector (+X) of this Matrix
     fn right_vector(&self) -> Vec3 {
-        Vec3::new(self.cols[0].x, self.cols[1].x, self.cols[2].x)
+        Vec3::new(self.x_axis.x, self.y_axis.x, self.z_axis.x)
     }
 
     // Returns the Up vector (+Y) of this Matrix
     fn up_vector(&self) -> Vec3 {
-        Vec3::new(self.cols[0].y, self.cols[1].y, self.cols[2].y)
+        Vec3::new(self.x_axis.y, self.y_axis.y, self.z_axis.y)
     }
 
     // Returns the Forward vector (+Z) of this Matrix
     fn forward_vector(&self) -> Vec3 {
-        Vec3::new(self.cols[0].z, self.cols[1].z, self.cols[2].z)
+        Vec3::new(self.x_axis.z, self.y_axis.z, self.z_axis.z)
     }
 }

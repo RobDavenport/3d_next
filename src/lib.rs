@@ -6,10 +6,10 @@ use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use gamercade_rs::api::text::console_log;
 
 use gamercade_rs::prelude as gc;
+use glam::{Mat4, Vec3};
 use graphics::Gpu;
 use graphics::{GraphicsDb, IndexList, Mesh, ParameterData, VertexList};
 use math::Math;
-use ultraviolet::{Mat4, Vec3};
 
 mod actor;
 mod camera;

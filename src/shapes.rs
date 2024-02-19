@@ -1,4 +1,4 @@
-use ultraviolet::{Vec2, Vec3};
+use glam::{Vec2, Vec3};
 
 use crate::graphics::TriangleIndices;
 

@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use ultraviolet::{Vec2, Vec3};
+use glam::{Vec2, Vec3};
 
 #[derive(Default)]
 pub struct GraphicsDb {

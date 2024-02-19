@@ -13,7 +13,7 @@ name = "example_3d_next"
 version = "0.1.0"
 dependencies = [
  "gamercade_rs",
- "ultraviolet",
+ "glam",
  "wide",
 ]
 
@@ -25,6 +25,12 @@ checksum = "5dbfea47319a09283ff8138f9783052c480bc878ab14322d15fd061ecd095bbd"
 dependencies = [
  "paste",
 ]
+
+[[package]]
+name = "glam"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "151665d9be52f9bb40fc7966565d39666f2d1e69233571b71b87791c7e0528b3"
 
 [[package]]
 name = "paste"
@@ -39,15 +45,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f398075ce1e6a179b46f51bd88d0598b92b00d3551f1a2d4ac49e771b56ac354"
 dependencies = [
  "bytemuck",
-]
-
-[[package]]
-name = "ultraviolet"
-version = "0.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a28554d13eb5daba527cc1b91b6c341372a0ae45ed277ffb2c6fbc04f319d7e"
-dependencies = [
- "wide",
 ]
 
 [[package]]
