@@ -93,7 +93,7 @@ pub unsafe extern "C" fn update() {
     camera.update();
 
     console_log(&format!(
-        "pos: {:?}, forward: {:?}, right: {:?}",
+        "pos: {}, for: {}, rig {}",
         camera.position,
         camera.view.forward_vector(),
         camera.view.right_vector(),
