@@ -82,4 +82,5 @@ pub const PLANE_UVS: &[Vec2; 4] = &[
     Vec2::new(1.0, 1.0), // Top Right
 ];
 
-pub const PLANE_INDICES: [TriangleIndices; 1] = [TriangleIndices(0, 1, 2)]; //, TriangleIndices(2, 1, 3)];
+pub const PLANE_INDICES: [TriangleIndices; 2] =
+    [TriangleIndices(0, 1, 2), TriangleIndices(2, 1, 3)];

@@ -2,9 +2,12 @@ use gamercade_rs::prelude as gc;
 use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt};
 
-use crate::types::Color;
+use crate::{
+    shaders::{ColorBlend, PixelShader, PixelShaderInput},
+    types::Color,
+};
 
-use super::Gpu;
+use super::{Gpu, Triangle};
 
 // TODO: Consider using a 2x2 tiled approach
 pub(super) const X_STEP_SIZE: usize = 4;
@@ -14,10 +17,17 @@ const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
 const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
-    // TODO: Optimize: https://fgiesen.wordpress.com/2013/02/10/optimizing-the-basic-rasterizer/
     // TODO: Consider using Fixed Point math
     // TODO: Incorporate a better boundingbox traversal algorithm
-    pub(super) fn rasterize_triangle(&mut self, a: Vec4, b: Vec4, c: Vec4) {
+    pub(super) fn rasterize_triangle<PS, PSIN>(&mut self, triangle: Triangle<PSIN>)
+    where
+        PS: PixelShader<PSIN>,
+        PSIN: PixelShaderInput,
+    {
+        let a = triangle.positions[0];
+        let b = triangle.positions[1];
+        let c = triangle.positions[2];
+
         // Determine the bounding box of the triangle in screen space
         let min_x = a.x.min(b.x).min(c.x).max(0.0) as usize;
         let min_y = a.y.min(b.y).min(c.y).max(0.0) as usize;
@@ -46,12 +56,12 @@ impl Gpu {
                 let mask = wa_mask & wb_mask & wc_mask;
 
                 if mask.any() {
-                    self.render_pixels(
+                    self.render_pixels::<PS, PSIN>(
                         x,
                         y,
-                        RenderVertex::new(a, wa),
-                        RenderVertex::new(b, wb),
-                        RenderVertex::new(c, wc),
+                        RenderVertex::new(a, wa, triangle.parameters[0]),
+                        RenderVertex::new(b, wb, triangle.parameters[1]),
+                        RenderVertex::new(c, wc, triangle.parameters[2]),
                         mask,
                     );
                 }
@@ -69,16 +79,19 @@ impl Gpu {
         }
     }
 
-    fn render_pixels(
+    fn render_pixels<PS, PSIN>(
         &mut self,
         x: usize,
         y: usize,
-        a: RenderVertex,
-        b: RenderVertex,
-        c: RenderVertex,
+        a: RenderVertex<PSIN>,
+        b: RenderVertex<PSIN>,
+        c: RenderVertex<PSIN>,
         mask: f32x4,
-    ) {
-        // Interpolate attributes (e.g., depth value, texture coordinates) at the current pixel
+    ) where
+        PS: PixelShader<PSIN>,
+        PSIN: PixelShaderInput,
+    {
+        // Interpolate depth values for the pixels
         let interpolated_depths = 1.0 / (a.depth_weight() + b.depth_weight() + c.depth_weight());
 
         // Calculate the pixel's index
@@ -90,12 +103,29 @@ impl Gpu {
             .test_and_set(pixel_index, interpolated_depths, mask);
 
         if mask > 0 {
+            let total_weights = a.weight + b.weight + c.weight;
+            // Normalize weights
+            let inv_total_weights = total_weights.recip();
+            let weights_a = a.weight * inv_total_weights;
+            let weights_b = b.weight * inv_total_weights;
+            let weights_c = c.weight * inv_total_weights;
+
+            let weights_a = weights_a.as_array_ref();
+            let weights_b = weights_b.as_array_ref();
+            let weights_c = weights_c.as_array_ref();
+
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
                     let x = x as i32 + X_OFFSETS[bit];
                     let y = y as i32 + Y_OFFSETS[bit];
+                    // Interpolate attributes for rendering
+                    let a = a.parameters * weights_a[bit];
+                    let b = b.parameters * weights_b[bit];
+                    let c = c.parameters * weights_c[bit];
+                    let ps_params = a + b + c;
+
                     // Perform fragment shading (e.g., apply lighting calculations, texture mapping)
-                    let fragment_color = Color::new(255, 255, 255);
+                    let fragment_color = PS::run(ps_params);
 
                     // Write the fragment color to the frame buffer
                     gc::set_pixel(
@@ -109,14 +139,19 @@ impl Gpu {
     }
 }
 
-struct RenderVertex {
+struct RenderVertex<P> {
     position: Vec4,
     weight: f32x4,
+    parameters: P,
 }
 
-impl RenderVertex {
-    fn new(position: Vec4, weight: f32x4) -> Self {
-        Self { position, weight }
+impl<P> RenderVertex<P> {
+    fn new(position: Vec4, weight: f32x4, parameters: P) -> Self {
+        Self {
+            position,
+            weight,
+            parameters,
+        }
     }
 
     fn depth_weight(&self) -> f32x4 {

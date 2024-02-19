@@ -10,11 +10,13 @@ use glam::{Mat4, Vec3};
 use graphics::Gpu;
 use graphics::{GraphicsDb, IndexList, Mesh, ParameterData, VertexList};
 use math::Math;
+use shaders::ColorBlend;
 
 mod actor;
 mod camera;
 mod graphics;
 mod math;
+mod shaders;
 mod shapes;
 mod types;
 
@@ -24,7 +26,7 @@ static mut GPU: MaybeUninit<Gpu> = MaybeUninit::uninit();
 static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
-    actors: Vec<Actor>,
+    actors: Vec<Actor<Vec3>>,
 }
 
 /// # Safety
@@ -111,7 +113,7 @@ pub unsafe extern "C" fn draw() {
     gpu.clear_z_buffer();
     gc::clear_screen(GraphicsParameters::default());
 
-    gpu.render_actor(&game_state.actors[0]);
-    gpu.render_actor(&game_state.actors[1]);
-    gpu.render_actor(&game_state.actors[2]);
+    gpu.render_actor::<ColorBlend, _>(&game_state.actors[0]);
+    gpu.render_actor::<ColorBlend, _>(&game_state.actors[1]);
+    gpu.render_actor::<ColorBlend, _>(&game_state.actors[2]);
 }

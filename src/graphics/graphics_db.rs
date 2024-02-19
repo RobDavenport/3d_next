@@ -2,15 +2,18 @@ use std::marker::PhantomData;
 
 use glam::{Vec2, Vec3};
 
+use crate::shaders::PixelShaderInput;
+
 #[derive(Default)]
 pub struct GraphicsDb {
     vertices: Vec<VertexList>, // Collection of collections of Vertices
     indices: Vec<IndexList>,   // Collection of collections of Index Lists
     parameters: ParameterDb,   // Collection of collections of Parameter data
+                               //shaders: ShaderDb, // Collecion of Shaders
 }
 
 // A mesh which is ready to be stored into the DB
-pub struct Mesh<P> {
+pub struct Mesh<P: PixelShaderInput> {
     pub vertices: VertexList,
     pub indices: IndexList,
     pub parameters: ParameterData<P>,
@@ -39,6 +42,7 @@ impl GraphicsDb {
     pub fn push_mesh<P>(&mut self, mesh: Mesh<P>) -> MeshIndex<P>
     where
         ParameterDb: ParameterDataBuffer<P>,
+        P: PixelShaderInput,
     {
         let geometry_index = self.vertices.len();
         self.vertices.push(mesh.vertices);
@@ -55,6 +59,7 @@ impl GraphicsDb {
     pub fn get<P>(&self, index: MeshIndex<P>) -> MeshReference<'_, P>
     where
         ParameterDb: ParameterDataBuffer<P>,
+        P: PixelShaderInput,
     {
         let vertices = &self.vertices[index.geometry_index].0;
         let indices = &self.indices[index.geometry_index].0;
@@ -118,3 +123,25 @@ impl ParameterDataBuffer<Vec3> for ParameterDb {
         &mut self.vec3s
     }
 }
+
+// #[derive(Clone, Copy)]
+// pub struct ShaderIndex<P> {
+//     p: PhantomData<P>,
+//     index: usize,
+// }
+
+// pub trait ShaderDbTrait<T> {
+//     fn get(&self) -> &T;
+// }
+
+// #[derive(Default)]
+// pub struct ShaderDb {
+//     color_blend: ColorBlend,
+//     textu
+// }
+
+// impl ShaderDbTrait<ColorBlend> for ShaderDb {
+//     fn get(&self) -> &ColorBlend {
+//         &self.color_blend
+//     }
+// }

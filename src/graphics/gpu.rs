@@ -1,7 +1,13 @@
 use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
 use wide::{f32x4, CmpNe};
 
-use crate::{actor::Actor, CAMERA, GRAPHICS_DB};
+use crate::{
+    actor::Actor,
+    shaders::{PixelShader, PixelShaderInput},
+    CAMERA, GRAPHICS_DB,
+};
+
+use super::{ParameterDataBuffer, ParameterDb, Triangle};
 
 pub struct Gpu {
     pub(super) screen_width: usize,
@@ -22,8 +28,13 @@ impl Gpu {
         self.z_buffer.clear_z_buffer();
     }
 
-    // TODO: Make this take a triangle buffer
-    pub fn render_actor(&mut self, actor: &Actor) {
+    // Adds the triangles fr
+    pub fn render_actor<PS, PSIN>(&mut self, actor: &Actor<PSIN>)
+    where
+        PSIN: PixelShaderInput,
+        PS: PixelShader<PSIN>,
+        ParameterDb: ParameterDataBuffer<PSIN>,
+    {
         let graphics_db = unsafe { GRAPHICS_DB.assume_init_ref() };
         let mesh = graphics_db.get(actor.mesh_id);
         let vertex_list = mesh.vertices;
@@ -51,12 +62,27 @@ impl Gpu {
                 continue; // Skip this triangle if it's a backface
             }
 
-            let a_screen = clip_to_screen_space(&a_clip, self.screen_width, self.screen_height);
-            let b_screen = clip_to_screen_space(&b_clip, self.screen_width, self.screen_height);
-            let c_screen = clip_to_screen_space(&c_clip, self.screen_width, self.screen_height);
+            // TODO: Triangle Geometry Clipping
+
+            let a_screen =
+                translate_clip_to_screen_space(&a_clip, self.screen_width, self.screen_height);
+            let b_screen =
+                translate_clip_to_screen_space(&b_clip, self.screen_width, self.screen_height);
+            let c_screen =
+                translate_clip_to_screen_space(&c_clip, self.screen_width, self.screen_height);
+
+            let params = mesh.parameters;
+            let triangle = Triangle {
+                positions: [a_screen, b_screen, c_screen],
+                parameters: [
+                    params[triangle_indices.0],
+                    params[triangle_indices.1],
+                    params[triangle_indices.2],
+                ],
+            };
 
             // Rasterize the triangle
-            self.rasterize_triangle(a_screen, b_screen, c_screen);
+            self.rasterize_triangle::<PS, PSIN>(triangle);
         }
     }
 }
@@ -128,7 +154,7 @@ fn transform_to_clip_space(vertex: &Vec3, mvp: &Mat4) -> Vec4 {
     position_homogeneous
 }
 
-fn clip_to_screen_space(
+fn translate_clip_to_screen_space(
     clip_space_vertex: &Vec4,
     screen_width: usize,
     screen_height: usize,
