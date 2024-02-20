@@ -7,15 +7,15 @@ use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use gamercade_rs::api::text::console_log;
 
 use gamercade_rs::prelude as gc;
-use glam::{Mat4, Vec3};
+use glam::{Mat4, Vec2, Vec3};
 use graphics::Gpu;
 use graphics::{GraphicsDb, IndexList, Mesh, ParameterData, VertexList};
 use math::Math;
-use shaders::ColorBlend;
 
 mod actor;
 mod camera;
 mod graphics;
+mod image;
 mod math;
 mod shaders;
 mod shapes;
@@ -27,7 +27,7 @@ static mut GPU: MaybeUninit<Gpu> = MaybeUninit::uninit();
 static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
-    actors: Vec<Actor<Vec3>>,
+    actors: Vec<Actor<Vec2>>,
 }
 
 /// # Safety
@@ -41,14 +41,15 @@ pub unsafe extern "C" fn init() {
     let mut vertices = Vec::new();
     let mut parameters = Vec::new();
 
-    // One color for each vertex
+    // One parameter for each vertex
     shapes::cube(1.0)
         .into_iter()
         .enumerate()
         .for_each(|(i, x)| {
-            let color = shapes::CUBE_COLORS[i % shapes::CUBE_COLORS.len()];
+            //let color = shapes::CUBE_COLORS[i % shapes::CUBE_COLORS.len()];
+            let uv = shapes::CUBE_UVS[i];
             vertices.push(x);
-            parameters.push(color);
+            parameters.push(uv);
         });
 
     let indices = IndexList(
@@ -114,13 +115,14 @@ pub unsafe extern "C" fn update() {
 #[no_mangle]
 pub unsafe extern "C" fn draw() {
     let gpu = GPU.assume_init_mut();
+    let graphics = GRAPHICS_DB.assume_init_ref();
     let game_state = GAME_STATE.assume_init_ref();
 
     // Clear all of the buffers
     gpu.clear_z_buffer();
     gc::clear_screen(GraphicsParameters::default());
 
-    gpu.render_actor::<ColorBlend, _>(&game_state.actors[0]);
-    gpu.render_actor::<ColorBlend, _>(&game_state.actors[1]);
-    gpu.render_actor::<ColorBlend, _>(&game_state.actors[2]);
+    gpu.render_actor(&game_state.actors[0], &graphics.textured);
+    gpu.render_actor(&game_state.actors[1], &graphics.textured);
+    gpu.render_actor(&game_state.actors[2], &graphics.textured);
 }

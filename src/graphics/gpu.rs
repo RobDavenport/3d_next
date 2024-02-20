@@ -29,7 +29,7 @@ impl Gpu {
     }
 
     // Adds the triangles fr
-    pub fn render_actor<PS, PSIN>(&mut self, actor: &Actor<PSIN>)
+    pub fn render_actor<PS, PSIN>(&mut self, actor: &Actor<PSIN>, pixel_shader: &PS)
     where
         PSIN: PixelShaderInput,
         PS: PixelShader<PSIN>,
@@ -82,7 +82,7 @@ impl Gpu {
             };
 
             // Rasterize the triangle
-            self.rasterize_triangle::<PS, PSIN>(triangle);
+            self.rasterize_triangle(pixel_shader, triangle);
         }
     }
 }
@@ -148,7 +148,10 @@ fn transform_to_clip_space(vertex: &Vec3, mvp: &Mat4) -> Vec4 {
     position_homogeneous = *mvp * position_homogeneous;
 
     // Homogenize the result
+    // Store W in W for later
+    let w = position_homogeneous.w;
     position_homogeneous /= position_homogeneous.w;
+    position_homogeneous.w = w;
 
     // Return the transformed vertex in clip space
     position_homogeneous
@@ -159,14 +162,13 @@ fn translate_clip_to_screen_space(
     screen_width: usize,
     screen_height: usize,
 ) -> Vec4 {
-    // to NDC
-    let ndc_vertex = *clip_space_vertex / clip_space_vertex.w;
+    // clip_space_vertex has already been divided by W in the previous function
 
     // Convert NDC coordinates to screen space
-    let screen_x = (ndc_vertex.x + 1.0) * (screen_width as f32 / 2.0);
-    let screen_y = (1.0 - ndc_vertex.y) * (screen_height as f32 / 2.0);
+    let screen_x = (clip_space_vertex.x + 1.0) * (screen_width as f32 / 2.0);
+    let screen_y = (1.0 - clip_space_vertex.y) * (screen_height as f32 / 2.0);
 
-    Vec4::new(screen_x, screen_y, ndc_vertex.z, ndc_vertex.w)
+    Vec4::new(screen_x, screen_y, clip_space_vertex.z, clip_space_vertex.w)
 }
 
 fn is_backfacing(a: Vec4, b: Vec4, c: Vec4) -> bool {

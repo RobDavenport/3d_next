@@ -2,14 +2,16 @@ use std::marker::PhantomData;
 
 use glam::{Vec2, Vec3};
 
-use crate::shaders::PixelShaderInput;
+use crate::shaders::{ColorBlend, PixelShaderInput, Textured};
 
 #[derive(Default)]
 pub struct GraphicsDb {
     vertices: Vec<VertexList>, // Collection of collections of Vertices
     indices: Vec<IndexList>,   // Collection of collections of Index Lists
     parameters: ParameterDb,   // Collection of collections of Parameter data
-                               //shaders: ShaderDb, // Collecion of Shaders
+
+    pub color_blend: ColorBlend,
+    pub textured: Textured,
 }
 
 // A mesh which is ready to be stored into the DB

@@ -43,14 +43,14 @@ pub const CUBE_COLORS: &[Vec3; 8] = &[
 ];
 
 pub const CUBE_UVS: &[Vec2; 8] = &[
-    Vec2::new(0.0, 0.0),
-    Vec2::new(1.0, 0.0),
     Vec2::new(0.0, 1.0),
     Vec2::new(1.0, 1.0),
-    Vec2::new(1.0, 0.0),
     Vec2::new(0.0, 0.0),
+    Vec2::new(1.0, 0.0),
     Vec2::new(1.0, 1.0),
     Vec2::new(0.0, 1.0),
+    Vec2::new(1.0, 0.0),
+    Vec2::new(0.0, 0.0),
 ];
 
 pub fn cube(side: f32) -> [Vec3; 8] {

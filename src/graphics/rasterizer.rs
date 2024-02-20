@@ -16,8 +16,11 @@ const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 impl Gpu {
     // TODO: Consider using Fixed Point math
     // TODO: Incorporate a better boundingbox traversal algorithm
-    pub(super) fn rasterize_triangle<PS, PSIN>(&mut self, triangle: Triangle<PSIN>)
-    where
+    pub(super) fn rasterize_triangle<PS, PSIN>(
+        &mut self,
+        pixel_shader: &PS,
+        triangle: Triangle<PSIN>,
+    ) where
         PS: PixelShader<PSIN>,
         PSIN: PixelShaderInput,
     {
@@ -32,7 +35,7 @@ impl Gpu {
         let max_y = (a.y.max(b.y).max(c.y).min((self.screen_height - 1) as f32)) as usize;
 
         // Triangle Setup
-        let triangle_area = triangle_area(a.xy(), b.xy(), c.xy());
+        let double_triangle_area = double_triangle_area(a.xy(), b.xy(), c.xy());
         let top_left = Vec2::new(min_x as f32, min_y as f32);
         let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
         let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
@@ -55,16 +58,21 @@ impl Gpu {
 
                 if mask.any() {
                     // Normalize the weights
-                    let wa = wa / triangle_area;
-                    let wb = wb / triangle_area;
-                    let wc = wc / triangle_area;
+                    let wa = wa / double_triangle_area;
+                    let wb = wb / double_triangle_area;
+                    let wc = wc / double_triangle_area;
 
-                    self.render_pixels::<PS, PSIN>(
+                    self.render_pixels(
+                        pixel_shader,
                         x,
                         y,
-                        RenderVertex::new(a, wa, triangle.parameters[0]),
-                        RenderVertex::new(b, wb, triangle.parameters[1]),
-                        RenderVertex::new(c, wc, triangle.parameters[2]),
+                        RenderTriangle {
+                            vertices: [
+                                RenderVertex::new(a, wa, triangle.parameters[0]),
+                                RenderVertex::new(b, wb, triangle.parameters[1]),
+                                RenderVertex::new(c, wc, triangle.parameters[2]),
+                            ],
+                        },
                         mask,
                     );
                 }
@@ -84,18 +92,21 @@ impl Gpu {
 
     fn render_pixels<PS, PSIN>(
         &mut self,
+        pixel_shader: &PS,
         x: usize,
         y: usize,
-        a: RenderVertex<PSIN>,
-        b: RenderVertex<PSIN>,
-        c: RenderVertex<PSIN>,
+        triangle: RenderTriangle<PSIN>,
         mask: f32x4,
     ) where
         PS: PixelShader<PSIN>,
         PSIN: PixelShaderInput,
     {
+        let [a, b, c] = triangle.vertices;
+
         // Interpolate depth values for the pixels
-        let interpolated_depths = 1.0 / (a.depth_weight() + b.depth_weight() + c.depth_weight());
+        let interpolated_depths =
+            ((a.position.z * a.weight) + (b.position.z * b.weight) + (c.position.z * c.weight))
+                .recip();
 
         // Calculate the pixel's index
         let pixel_index = y * self.screen_width + x;
@@ -105,6 +116,7 @@ impl Gpu {
             .z_buffer
             .test_and_set(pixel_index, interpolated_depths, mask);
 
+        // Continue if any pass the depth test
         if mask > 0 {
             let weights_a = a.weight.as_array_ref();
             let weights_b = b.weight.as_array_ref();
@@ -114,14 +126,23 @@ impl Gpu {
                 if (mask & 1 << bit) != 0 {
                     let x = x as i32 + X_OFFSETS[bit];
                     let y = y as i32 + Y_OFFSETS[bit];
-                    // Interpolate attributes for rendering
-                    let a = a.parameters * weights_a[bit];
-                    let b = b.parameters * weights_b[bit];
-                    let c = c.parameters * weights_c[bit];
-                    let ps_params = a + b + c;
+
+                    // Interpolate attributes for rendering, perspective correct
+                    let a_weight = a.position.z * weights_a[bit];
+                    let b_weight = b.position.z * weights_b[bit];
+                    let c_weight = c.position.z * weights_c[bit];
+
+                    // Calculate the reciprocal of the sum of weights
+                    let weight_recip = (a_weight + b_weight + c_weight).recip();
+
+                    // Sum the Parameres to complete interpolation
+                    let ps_params = (a.parameters * a_weight
+                        + b.parameters * b_weight
+                        + c.parameters * c_weight)
+                        * weight_recip;
 
                     // Perform fragment shading (e.g., apply lighting calculations, texture mapping)
-                    let fragment_color = PS::run(ps_params);
+                    let fragment_color = pixel_shader.run(ps_params);
 
                     // Write the fragment color to the frame buffer
                     gc::set_pixel(
@@ -133,6 +154,10 @@ impl Gpu {
             }
         }
     }
+}
+
+struct RenderTriangle<P> {
+    vertices: [RenderVertex<P>; 3],
 }
 
 struct RenderVertex<P> {
@@ -148,10 +173,6 @@ impl<P> RenderVertex<P> {
             weight,
             parameters,
         }
-    }
-
-    fn depth_weight(&self) -> f32x4 {
-        self.position.z * self.weight
     }
 }
 
@@ -183,7 +204,6 @@ impl EdgeStepper {
     }
 }
 
-fn triangle_area(v0: Vec2, v1: Vec2, v2: Vec2) -> f32 {
-    let area = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
-    area / 2.0
+fn double_triangle_area(v0: Vec2, v1: Vec2, v2: Vec2) -> f32 {
+    (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x)
 }
