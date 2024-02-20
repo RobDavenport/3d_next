@@ -1,4 +1,4 @@
-use std::f32::consts::{PI, TAU};
+use std::f32::consts::{FRAC_PI_2, TAU};
 
 use glam::{Mat4, Vec3};
 
@@ -6,7 +6,7 @@ use gamercade_rs::prelude as gc;
 
 use crate::math::Math;
 
-const PITCH_CLAMP: f32 = PI * 0.99;
+const PITCH_CLAMP: f32 = FRAC_PI_2 * 0.99;
 
 pub struct Camera {
     pub position: Vec3,
