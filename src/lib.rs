@@ -41,7 +41,7 @@ pub unsafe extern "C" fn init() {
     let mut parameters = Vec::new();
 
     // One color for each vertex
-    shapes::plane(1.0)
+    shapes::cube(1.0)
         .into_iter()
         .enumerate()
         .for_each(|(i, x)| {
@@ -51,7 +51,7 @@ pub unsafe extern "C" fn init() {
         });
 
     let indices = IndexList(
-        shapes::PLANE_INDICES
+        shapes::CUBE_INDICES
             .into_iter()
             .collect::<Vec<_>>()
             .into_boxed_slice(),

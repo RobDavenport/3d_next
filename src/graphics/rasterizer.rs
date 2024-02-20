@@ -2,10 +2,7 @@ use gamercade_rs::prelude as gc;
 use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt};
 
-use crate::{
-    shaders::{ColorBlend, PixelShader, PixelShaderInput},
-    types::Color,
-};
+use crate::shaders::{PixelShader, PixelShaderInput};
 
 use super::{Gpu, Triangle};
 
@@ -35,10 +32,11 @@ impl Gpu {
         let max_y = (a.y.max(b.y).max(c.y).min((self.screen_height - 1) as f32)) as usize;
 
         // Triangle Setup
+        let triangle_area = triangle_area(a.xy(), b.xy(), c.xy());
         let top_left = Vec2::new(min_x as f32, min_y as f32);
-        let (a_edge, mut wa_row) = Edge::initialize(b.xy(), c.xy(), top_left);
-        let (b_edge, mut wb_row) = Edge::initialize(c.xy(), a.xy(), top_left);
-        let (c_edge, mut wc_row) = Edge::initialize(a.xy(), b.xy(), top_left);
+        let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
+        let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
+        let (c_edge, mut wc_row) = EdgeStepper::initialize(a.xy(), b.xy(), top_left);
 
         // Iterate over each pixel in the bounding box
         for y in (min_y..=max_y).step_by(Y_STEP_SIZE) {
@@ -56,6 +54,11 @@ impl Gpu {
                 let mask = wa_mask & wb_mask & wc_mask;
 
                 if mask.any() {
+                    // Normalize the weights
+                    let wa = wa / triangle_area;
+                    let wb = wb / triangle_area;
+                    let wc = wc / triangle_area;
+
                     self.render_pixels::<PS, PSIN>(
                         x,
                         y,
@@ -103,16 +106,9 @@ impl Gpu {
             .test_and_set(pixel_index, interpolated_depths, mask);
 
         if mask > 0 {
-            let total_weights = a.weight + b.weight + c.weight;
-            // Normalize weights
-            let inv_total_weights = total_weights.recip();
-            let weights_a = a.weight * inv_total_weights;
-            let weights_b = b.weight * inv_total_weights;
-            let weights_c = c.weight * inv_total_weights;
-
-            let weights_a = weights_a.as_array_ref();
-            let weights_b = weights_b.as_array_ref();
-            let weights_c = weights_c.as_array_ref();
+            let weights_a = a.weight.as_array_ref();
+            let weights_b = b.weight.as_array_ref();
+            let weights_c = c.weight.as_array_ref();
 
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
@@ -155,16 +151,16 @@ impl<P> RenderVertex<P> {
     }
 
     fn depth_weight(&self) -> f32x4 {
-        self.position.z / self.weight
+        self.position.z * self.weight
     }
 }
 
-struct Edge {
+struct EdgeStepper {
     step_x: f32x4,
     step_y: f32x4,
 }
 
-impl Edge {
+impl EdgeStepper {
     fn initialize(v0: Vec2, v1: Vec2, origin: Vec2) -> (Self, f32x4) {
         // Edge setup
         let a = v0.y - v1.y;
@@ -185,4 +181,9 @@ impl Edge {
         let weight = f32x4::splat(a) * x + f32x4::splat(b) * y + f32x4::splat(c);
         (out, weight)
     }
+}
+
+fn triangle_area(v0: Vec2, v1: Vec2, v2: Vec2) -> f32 {
+    let area = (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x);
+    area / 2.0
 }

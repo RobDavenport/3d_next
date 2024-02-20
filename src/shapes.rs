@@ -16,7 +16,7 @@ use crate::graphics::TriangleIndices;
 // |/       |/
 // 0--------1
 
-pub const CUBE_INDICES: &[TriangleIndices; 12] = &[
+pub const CUBE_INDICES: [TriangleIndices; 12] = [
     TriangleIndices(0, 1, 2), // Front
     TriangleIndices(2, 1, 3), // Front
     TriangleIndices(1, 5, 3), // Right
@@ -55,14 +55,14 @@ pub const CUBE_UVS: &[Vec2; 8] = &[
 
 pub fn cube(side: f32) -> [Vec3; 8] {
     [
-        Vec3::new(-side, -side, -side),
-        Vec3::new(side, -side, -side),
-        Vec3::new(-side, side, -side),
-        Vec3::new(side, side, -side),
         Vec3::new(-side, -side, side),
         Vec3::new(side, -side, side),
         Vec3::new(-side, side, side),
         Vec3::new(side, side, side),
+        Vec3::new(-side, -side, -side),
+        Vec3::new(side, -side, -side),
+        Vec3::new(-side, side, -side),
+        Vec3::new(side, side, -side),
     ]
 }
 
