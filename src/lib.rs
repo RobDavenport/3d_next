@@ -1,3 +1,4 @@
+use std::f32::consts::FRAC_2_PI;
 use std::mem::MaybeUninit;
 
 use actor::Actor;
@@ -70,11 +71,15 @@ pub unsafe extern "C" fn init() {
 
     let mut actors = Vec::new();
 
+    let mut delta = 0.0;
     positions.into_iter().for_each(|position| {
         actors.push(Actor {
             mesh_id: actor_id,
             transform: Mat4::from_translation(position),
-        })
+            delta,
+        });
+
+        delta += FRAC_2_PI;
     });
 
     GAME_STATE.write(GameState { actors });
@@ -91,8 +96,10 @@ pub unsafe extern "C" fn init() {
 #[no_mangle]
 pub unsafe extern "C" fn update() {
     let camera = CAMERA.assume_init_mut();
+    let game_state = GAME_STATE.assume_init_mut();
 
     camera.update();
+    game_state.actors.iter_mut().for_each(|a| a.update());
 
     console_log(&format!(
         "pos: {}, for: {}, rig {}",
