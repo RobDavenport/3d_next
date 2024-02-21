@@ -14,7 +14,6 @@ const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
 const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
-    // TODO: Consider using Fixed Point math
     // TODO: Incorporate a better boundingbox traversal algorithm
     pub(super) fn rasterize_triangle<PS, PSIN>(
         &mut self,
@@ -104,9 +103,7 @@ impl Gpu {
         let [a, b, c] = triangle.vertices;
 
         // Interpolate depth values for the pixels
-        let interpolated_depths =
-            ((a.position.z * a.weight) + (b.position.z * b.weight) + (c.position.z * c.weight))
-                .recip();
+        let interpolated_depths = ((a.z * a.weight) + (b.z * b.weight) + (c.z * c.weight)).recip();
 
         // Calculate the pixel's index
         let pixel_index = y * self.screen_width + x;
@@ -128,9 +125,9 @@ impl Gpu {
                     let y = y as i32 + Y_OFFSETS[bit];
 
                     // Interpolate attributes for rendering, perspective correct
-                    let a_weight = a.position.z * weights_a[bit];
-                    let b_weight = b.position.z * weights_b[bit];
-                    let c_weight = c.position.z * weights_c[bit];
+                    let a_weight = a.z * weights_a[bit];
+                    let b_weight = b.z * weights_b[bit];
+                    let c_weight = c.z * weights_c[bit];
 
                     // Calculate the reciprocal of the sum of weights
                     let weight_recip = (a_weight + b_weight + c_weight).recip();
@@ -161,7 +158,7 @@ struct RenderTriangle<P> {
 }
 
 struct RenderVertex<P> {
-    position: Vec4,
+    z: f32,
     weight: f32x4,
     parameters: P,
 }
@@ -169,7 +166,7 @@ struct RenderVertex<P> {
 impl<P> RenderVertex<P> {
     fn new(position: Vec4, weight: f32x4, parameters: P) -> Self {
         Self {
-            position,
+            z: position.z,
             weight,
             parameters,
         }
@@ -207,3 +204,23 @@ impl EdgeStepper {
 fn double_triangle_area(v0: Vec2, v1: Vec2, v2: Vec2) -> f32 {
     (v1.x - v0.x) * (v2.y - v0.y) - (v1.y - v0.y) * (v2.x - v0.x)
 }
+
+// TODO: Fill Rules
+// fn is_top_or_left_edge(v0: Vec2, v1: Vec2) -> bool {
+//     is_top_edge(v0, v1) | is_left_edge(v0, v1)
+// }
+
+// fn is_top_edge(v0: Vec2, v1: Vec2) -> bool {
+//     // Check if the edge is horizontal
+//     let horizontal = v0.y == v1.y;
+
+//     // Check if the edge is going left (negative X axis)
+//     let going_left = v1.x < v0.x;
+
+//     horizontal & going_left
+// }
+
+// fn is_left_edge(v0: Vec2, v1: Vec2) -> bool {
+//     // Check if the edge is going down
+//     v1.y < v0.y
+// }
