@@ -7,6 +7,7 @@ use gamercade_rs::prelude as gc;
 use crate::math::Math;
 
 const PITCH_CLAMP: f32 = FRAC_PI_2 * 0.99;
+pub const NEAR_PLANE: f32 = -1.0;
 
 pub struct Camera {
     pub position: Vec3,
@@ -33,7 +34,7 @@ impl Camera {
             pitch: 0.0,
             sensitivity,
             movement_speed,
-            projection: Mat4::perspective_infinite_reverse_rh(vfov, aspect_ratio, 1.0),
+            projection: Mat4::perspective_infinite_reverse_rh(vfov, aspect_ratio, NEAR_PLANE),
             view: Mat4::look_to_rh(position, Vec3::NEG_Z, Vec3::Y),
         }
     }

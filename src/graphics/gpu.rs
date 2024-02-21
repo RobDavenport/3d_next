@@ -7,7 +7,10 @@ use crate::{
     CAMERA, GRAPHICS_DB,
 };
 
-use super::{ParameterDataBuffer, ParameterDb, Triangle};
+use super::{
+    clipping::{clip_triangle, ClipResult},
+    ParameterDataBuffer, ParameterDb, Triangle,
+};
 
 pub struct Gpu {
     pub(super) screen_width: usize,
@@ -58,22 +61,14 @@ impl Gpu {
             let b_clip = transform_to_clip_space(b, &mvp);
             let c_clip = transform_to_clip_space(c, &mvp);
 
+            // Culling Stage
             if is_backfacing(a_clip, b_clip, c_clip) {
                 continue; // Skip this triangle if it's a backface
             }
 
-            // TODO: Triangle Geometry Clipping
-
-            let a_screen =
-                translate_clip_to_screen_space(&a_clip, self.screen_width, self.screen_height);
-            let b_screen =
-                translate_clip_to_screen_space(&b_clip, self.screen_width, self.screen_height);
-            let c_screen =
-                translate_clip_to_screen_space(&c_clip, self.screen_width, self.screen_height);
-
             let params = mesh.parameters;
             let triangle = Triangle {
-                positions: [a_screen, b_screen, c_screen],
+                positions: [a_clip, b_clip, c_clip],
                 parameters: [
                     params[triangle_indices.0],
                     params[triangle_indices.1],
@@ -81,9 +76,42 @@ impl Gpu {
                 ],
             };
 
-            // Rasterize the triangle
-            self.rasterize_triangle(pixel_shader, triangle);
+            // Clip triangles, and whatever remains, rasterize them
+            let clip_result = clip_triangle(triangle);
+            match clip_result {
+                ClipResult::Culled => continue,
+                ClipResult::One(triangle) => {
+                    let triangle = self.tri_clip_to_screen_space(triangle);
+                    self.rasterize_triangle(pixel_shader, triangle);
+                }
+                ClipResult::Two((first, second)) => {
+                    let first = self.tri_clip_to_screen_space(first);
+                    let second = self.tri_clip_to_screen_space(second);
+                    self.rasterize_triangle(pixel_shader, first);
+                    self.rasterize_triangle(pixel_shader, second);
+                }
+            }
         }
+    }
+
+    // Converts a triangle from clip space into screen space
+    fn tri_clip_to_screen_space<P>(&self, mut clip_space_triangle: Triangle<P>) -> Triangle<P> {
+        let clip_to_screen = |clip_space_vertex: Vec4| {
+            // Move to cartesian coordinates
+            let clip_space_vertex = clip_space_vertex / clip_space_vertex.w;
+
+            // Convert NDC coordinates to screen space
+            let screen_x = (clip_space_vertex.x + 1.0) * (self.screen_width as f32 / 2.0);
+            let screen_y = (1.0 - clip_space_vertex.y) * (self.screen_height as f32 / 2.0);
+
+            Vec4::new(screen_x, screen_y, clip_space_vertex.z, clip_space_vertex.w)
+        };
+
+        clip_space_triangle.positions[0] = clip_to_screen(clip_space_triangle.positions[0]);
+        clip_space_triangle.positions[1] = clip_to_screen(clip_space_triangle.positions[1]);
+        clip_space_triangle.positions[2] = clip_to_screen(clip_space_triangle.positions[2]);
+
+        clip_space_triangle
     }
 }
 
@@ -147,28 +175,8 @@ fn transform_to_clip_space(vertex: &Vec3, mvp: &Mat4) -> Vec4 {
     // Apply projection transformation
     position_homogeneous = *mvp * position_homogeneous;
 
-    // Homogenize the result
-    // Store W in W for later
-    let w = position_homogeneous.w;
-    position_homogeneous /= position_homogeneous.w;
-    position_homogeneous.w = w;
-
     // Return the transformed vertex in clip space
     position_homogeneous
-}
-
-fn translate_clip_to_screen_space(
-    clip_space_vertex: &Vec4,
-    screen_width: usize,
-    screen_height: usize,
-) -> Vec4 {
-    // clip_space_vertex has already been divided by W in the previous function
-
-    // Convert NDC coordinates to screen space
-    let screen_x = (clip_space_vertex.x + 1.0) * (screen_width as f32 / 2.0);
-    let screen_y = (1.0 - clip_space_vertex.y) * (screen_height as f32 / 2.0);
-
-    Vec4::new(screen_x, screen_y, clip_space_vertex.z, clip_space_vertex.w)
 }
 
 fn is_backfacing(a: Vec4, b: Vec4, c: Vec4) -> bool {

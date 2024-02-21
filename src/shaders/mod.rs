@@ -1,16 +1,23 @@
-use std::ops::{Add, Mul, MulAssign};
+use std::ops::{Add, Mul, MulAssign, Sub};
 
 use glam::{Vec2, Vec3};
 
 use crate::{image, types::Color};
 
 pub trait PixelShaderInput:
-    Copy + Add<Self, Output = Self> + Mul<f32, Output = Self> + MulAssign<f32>
+    Copy
+    + Add<Self, Output = Self>
+    + Sub<Self, Output = Self>
+    + Mul<f32, Output = Self>
+    + MulAssign<f32>
 {
+    fn lerp(self, rhs: Self, s: f32) -> Self {
+        self + ((rhs - self) * s)
+    }
 }
 
 impl<T> PixelShaderInput for T where
-    T: Copy + Add<T, Output = T> + Mul<f32, Output = T> + MulAssign<f32>
+    T: Copy + Add<T, Output = T> + Sub<Self, Output = Self> + Mul<f32, Output = T> + MulAssign<f32>
 {
 }
 

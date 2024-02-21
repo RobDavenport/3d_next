@@ -42,7 +42,7 @@ pub unsafe extern "C" fn init() {
     let mut parameters = Vec::new();
 
     // One parameter for each vertex
-    shapes::cube(1.0)
+    shapes::plane(5.0)
         .into_iter()
         .enumerate()
         .for_each(|(i, x)| {
@@ -53,7 +53,9 @@ pub unsafe extern "C" fn init() {
         });
 
     let indices = IndexList(
-        shapes::CUBE_INDICES
+        shapes::TRI_INDICES
+            //shapes::PLANE_INDICES
+            //shapes::CUBE_INDICES
             .into_iter()
             .collect::<Vec<_>>()
             .into_boxed_slice(),
@@ -100,14 +102,14 @@ pub unsafe extern "C" fn update() {
     let game_state = GAME_STATE.assume_init_mut();
 
     camera.update();
-    game_state.actors.iter_mut().for_each(|a| a.update());
+    //game_state.actors.iter_mut().for_each(|a| a.update());
 
-    console_log(&format!(
-        "pos: {}, for: {}, rig {}",
-        camera.position,
-        camera.view.forward_vector(),
-        camera.view.right_vector(),
-    ));
+    // console_log(&format!(
+    //     "pos: {}, for: {}, rig {}",
+    //     camera.position,
+    //     camera.view.forward_vector(),
+    //     camera.view.right_vector(),
+    // ));
 }
 
 /// # Safety
@@ -123,6 +125,6 @@ pub unsafe extern "C" fn draw() {
     gc::clear_screen(GraphicsParameters::default());
 
     gpu.render_actor(&game_state.actors[0], &graphics.textured);
-    gpu.render_actor(&game_state.actors[1], &graphics.textured);
-    gpu.render_actor(&game_state.actors[2], &graphics.textured);
+    //gpu.render_actor(&game_state.actors[1], &graphics.textured);
+    //gpu.render_actor(&game_state.actors[2], &graphics.textured);
 }

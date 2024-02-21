@@ -84,3 +84,5 @@ pub const PLANE_UVS: &[Vec2; 4] = &[
 
 pub const PLANE_INDICES: [TriangleIndices; 2] =
     [TriangleIndices(0, 1, 2), TriangleIndices(2, 1, 3)];
+
+pub const TRI_INDICES: [TriangleIndices; 1] = [TriangleIndices(0, 1, 2)];
