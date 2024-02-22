@@ -1,7 +1,11 @@
-use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
+use glam::{Mat3, Vec4, Vec4Swizzles};
 use wide::{f32x4, CmpNe};
 
-use crate::{actor::Actor, shaders::PixelShader, CAMERA, GRAPHICS_DB};
+use crate::{
+    actor::Actor,
+    shaders::{PixelShader, VertexShader},
+    GRAPHICS_DB,
+};
 
 use super::{
     clipping::{clip_triangle, ClipResult},
@@ -28,47 +32,42 @@ impl Gpu {
     }
 
     // Adds the triangles fr
-    pub fn render_actor<PS, const PSIN: usize>(&mut self, actor: &Actor<PSIN>, pixel_shader: &PS)
-    where
+    pub fn render_actor<VS, const VSIN: usize, PS, const PSIN: usize>(
+        &mut self,
+        actor: &Actor<VSIN>,
+        vertex_shader: &VS,
+        pixel_shader: &PS,
+    ) where
+        VS: VertexShader<VSIN, PSIN>,
         PS: PixelShader<PSIN>,
-        ParameterDb: ParameterDataBuffer<PSIN>,
+        ParameterDb: ParameterDataBuffer<VSIN>,
     {
         let graphics_db = unsafe { GRAPHICS_DB.assume_init_ref() };
         let mesh = graphics_db.get(actor.mesh_id);
         let vertex_list = mesh.vertices;
         let indices = mesh.indices;
 
-        // Pre-calculate the MVP
-        let camera = unsafe { &CAMERA.assume_init_ref() };
-        let projection_matrix = &camera.projection;
-        let view_matrix = camera.view;
-        let model_matrix = actor.transform;
-        let mvp = *projection_matrix * (view_matrix * model_matrix);
-
         // Iterate each triangle of the mesh
         for triangle_indices in indices.iter() {
-            let a = &vertex_list[triangle_indices.0];
-            let b = &vertex_list[triangle_indices.1];
-            let c = &vertex_list[triangle_indices.2];
+            let a = vertex_list[triangle_indices.0];
+            let b = vertex_list[triangle_indices.1];
+            let c = vertex_list[triangle_indices.2];
+            let params = mesh.parameters;
 
-            // Transform all vertices to clip space
-            let a_clip = transform_to_clip_space(a, &mvp);
-            let b_clip = transform_to_clip_space(b, &mvp);
-            let c_clip = transform_to_clip_space(c, &mvp);
+            // Run Vertex shader on every vertexs
+            // This should output them into clip space
+            let a_clip = vertex_shader.run(a, params[triangle_indices.0].0);
+            let b_clip = vertex_shader.run(b, params[triangle_indices.1].0);
+            let c_clip = vertex_shader.run(c, params[triangle_indices.2].0);
 
             // Culling Stage
-            if is_backfacing(a_clip, b_clip, c_clip) {
+            if is_backfacing(a_clip.position, b_clip.position, c_clip.position) {
                 continue; // Skip this triangle if it's a backface
             }
 
-            let params = mesh.parameters;
             let triangle = Triangle {
-                positions: [a_clip, b_clip, c_clip],
-                parameters: [
-                    params[triangle_indices.0],
-                    params[triangle_indices.1],
-                    params[triangle_indices.2],
-                ],
+                positions: [a_clip.position, b_clip.position, c_clip.position],
+                parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
             };
 
             // Clip triangles, and whatever remains, rasterize them
@@ -122,17 +121,15 @@ impl ZBuffer {
         Self {
             // Add padding in case SIMD access extra values
             z_buffer: (0..(screen_height * screen_width) + super::rasterizer::X_STEP_SIZE)
-                .map(|_| f32::NEG_INFINITY)
+                .map(|_| f32::INFINITY)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
         }
     }
 
-    // Clears the Z buffer by setting all values to f32::NEG_INFINITY
+    // Clears the Z buffer by setting all values to f32::INFINITY
     fn clear_z_buffer(&mut self) {
-        self.z_buffer
-            .iter_mut()
-            .for_each(|d| *d = f32::NEG_INFINITY);
+        self.z_buffer.iter_mut().for_each(|d| *d = f32::INFINITY);
     }
 
     // Returns a u32x4 mask if the value was closer the target value
@@ -146,7 +143,7 @@ impl ZBuffer {
         ]);
 
         //Take the max values between depths and current depths
-        let merged_max = depths.max(current_depths);
+        let merged_max = depths.min(current_depths);
 
         // If it's on the triangle, take the max value from the previous stetp
         // If its not on the triangle, take the previous value
@@ -166,22 +163,6 @@ impl ZBuffer {
     }
 }
 
-fn transform_to_clip_space(vertex: &Vec3, mvp: &Mat4) -> Vec4 {
-    // Convert vertex position to homogeneous coordinates (4D)
-    let mut position_homogeneous = vertex.extend(1.0);
-
-    // Apply projection transformation
-    position_homogeneous = *mvp * position_homogeneous;
-
-    // Return the transformed vertex in clip space
-    position_homogeneous
-}
-
 fn is_backfacing(a: Vec4, b: Vec4, c: Vec4) -> bool {
-    let ab = b - a;
-    let ac = c - a;
-    let normal = ab.xyz().cross(ac.xyz()); // Calculate the normal of the triangle
-    let view_dir = Vec3::new(0.0, 0.0, 1.0); // Assuming camera looks along the positive z-axis
-
-    normal.dot(view_dir) > 0.0 // Check if the triangle is facing away from the camera, zero is perpendicular
+    Mat3::from_cols(a.xyw(), b.xyw(), c.xyw()).determinant() < 0.0
 }

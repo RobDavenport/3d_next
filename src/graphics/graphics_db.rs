@@ -1,6 +1,8 @@
 use glam::Vec3;
 
-use crate::shaders::{ColorBlend, PixelShaderInput, Textured};
+use crate::shaders::{
+    BaseVertexShader, ColorBlend, ColorBlendLit, Textured, TexturedLit, VertexParameters,
+};
 
 #[derive(Default)]
 pub struct GraphicsDb {
@@ -8,8 +10,14 @@ pub struct GraphicsDb {
     indices: Vec<IndexList>,   // Collection of collections of Index Lists
     parameters: ParameterDb,   // Collection of collections of Parameter data
 
+    // VertexShaders
+    pub base_vertex_shader: BaseVertexShader,
+
+    // Pixel Shaders
     pub color_blend: ColorBlend,
     pub textured: Textured,
+    pub color_blend_lit: ColorBlendLit,
+    pub textured_lit: TexturedLit,
 }
 
 // A mesh which is ready to be stored into the DB
@@ -34,7 +42,7 @@ pub struct MeshParameterIndex<const P: usize> {
 pub struct MeshReference<'a, const P: usize> {
     pub vertices: &'a [Vec3],
     pub indices: &'a [TriangleIndices],
-    pub parameters: &'a [PixelShaderInput<P>],
+    pub parameters: &'a [VertexParameters<P>],
 }
 
 impl GraphicsDb {
@@ -76,13 +84,16 @@ pub struct IndexList(pub Box<[TriangleIndices]>);
 
 pub struct VertexList(pub Box<[Vec3]>);
 
+// TODO: Could make a macro for this...
 #[derive(Default)]
 pub struct ParameterDb {
     vec2s: Vec<ParameterData<2>>,
     vec3s: Vec<ParameterData<3>>,
+    vec5s: Vec<ParameterData<5>>,
+    vec6s: Vec<ParameterData<6>>,
 }
 
-pub struct ParameterData<const P: usize>(pub Box<[PixelShaderInput<P>]>);
+pub struct ParameterData<const P: usize>(pub Box<[VertexParameters<P>]>);
 
 pub trait ParameterDataBuffer<const P: usize> {
     fn buffer(&self) -> &Vec<ParameterData<P>>;
@@ -115,5 +126,25 @@ impl ParameterDataBuffer<3> for ParameterDb {
 
     fn buffer_mut(&mut self) -> &mut Vec<ParameterData<3>> {
         &mut self.vec3s
+    }
+}
+
+impl ParameterDataBuffer<5> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<5>> {
+        &self.vec5s
+    }
+
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<5>> {
+        &mut self.vec5s
+    }
+}
+
+impl ParameterDataBuffer<6> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<6>> {
+        &self.vec6s
+    }
+
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<6>> {
+        &mut self.vec6s
     }
 }

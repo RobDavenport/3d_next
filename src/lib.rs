@@ -9,7 +9,8 @@ use gamercade_rs::prelude as gc;
 use glam::{Mat4, Vec3};
 use graphics::Gpu;
 use graphics::{GraphicsDb, IndexList, Mesh, ParameterData, VertexList};
-use shaders::PixelShaderInput;
+use shaders::VertexParameters;
+use shapes::{cube_normals, CUBE_UVS};
 
 mod actor;
 mod camera;
@@ -26,7 +27,7 @@ static mut GPU: MaybeUninit<Gpu> = MaybeUninit::uninit();
 static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
-    actors: Vec<Actor<2>>,
+    actors: Vec<Actor<5>>,
 }
 
 /// # Safety
@@ -39,22 +40,25 @@ pub unsafe extern "C" fn init() {
 
     let mut vertices = Vec::new();
     let mut parameters = Vec::new();
+    let normals = cube_normals();
 
     // One parameter for each vertex
-    shapes::plane(5.0)
+    shapes::cube(1.0)
         .into_iter()
         .enumerate()
         .for_each(|(i, x)| {
-            //let color = shapes::CUBE_COLORS[i % shapes::CUBE_COLORS.len()];
-            let uv = shapes::CUBE_UVS[i];
             vertices.push(x);
-            parameters.push(PixelShaderInput(uv));
+            let normal = normals[i];
+            let uv = CUBE_UVS[i];
+            parameters.push(VertexParameters([
+                uv[0], uv[1], normal[0], normal[1], normal[2],
+            ]));
         });
 
     let indices = IndexList(
-        shapes::TRI_INDICES
-            //shapes::PLANE_INDICES
-            //shapes::CUBE_INDICES
+        //shapes::TRI_INDICES
+        //shapes::PLANE_INDICES
+        shapes::CUBE_INDICES
             .into_iter()
             .collect::<Vec<_>>()
             .into_boxed_slice(),
@@ -101,7 +105,7 @@ pub unsafe extern "C" fn update() {
     let game_state = GAME_STATE.assume_init_mut();
 
     camera.update();
-    //game_state.actors.iter_mut().for_each(|a| a.update());
+    game_state.actors.iter_mut().for_each(|a| a.update());
 
     // console_log(&format!(
     //     "pos: {}, for: {}, rig {}",
@@ -116,14 +120,44 @@ pub unsafe extern "C" fn update() {
 #[no_mangle]
 pub unsafe extern "C" fn draw() {
     let gpu = GPU.assume_init_mut();
-    let graphics = GRAPHICS_DB.assume_init_ref();
+    let graphics = GRAPHICS_DB.assume_init_mut();
     let game_state = GAME_STATE.assume_init_ref();
 
     // Clear all of the buffers
     gpu.clear_z_buffer();
     gc::clear_screen(GraphicsParameters::default());
 
-    gpu.render_actor(&game_state.actors[0], &graphics.textured);
-    //gpu.render_actor(&game_state.actors[1], &graphics.textured);
-    //gpu.render_actor(&game_state.actors[2], &graphics.textured);
+    // For Calculating MVP Later
+    let camera = CAMERA.assume_init_ref();
+    graphics.base_vertex_shader.projection = camera.projection;
+    graphics.base_vertex_shader.view = camera.view;
+
+    graphics.color_blend_lit.light_position = camera.position;
+    graphics.color_blend_lit.light_intensity = 0.95;
+    graphics.color_blend_lit.ambient_light = 0.05;
+
+    graphics.textured_lit.light_position = camera.position;
+    graphics.textured_lit.light_intensity = 0.95;
+    graphics.textured_lit.ambient_light = 0.05;
+
+    graphics.base_vertex_shader.model = game_state.actors[0].transform;
+    gpu.render_actor(
+        &game_state.actors[0],
+        &graphics.base_vertex_shader,
+        &graphics.textured_lit,
+    );
+
+    graphics.base_vertex_shader.model = game_state.actors[1].transform;
+    gpu.render_actor(
+        &game_state.actors[1],
+        &graphics.base_vertex_shader,
+        &graphics.textured_lit,
+    );
+
+    graphics.base_vertex_shader.model = game_state.actors[2].transform;
+    gpu.render_actor(
+        &game_state.actors[2],
+        &graphics.base_vertex_shader,
+        &graphics.textured_lit,
+    );
 }

@@ -2,7 +2,7 @@ use gamercade_rs::prelude as gc;
 use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt};
 
-use crate::shaders::{PixelShader, PixelShaderInput};
+use crate::shaders::{PixelShader, VertexParameters};
 
 use super::{Gpu, Triangle};
 
@@ -158,11 +158,11 @@ struct RenderTriangle<const P: usize> {
 struct RenderVertex<const P: usize> {
     z: f32,
     weight: f32x4,
-    parameters: PixelShaderInput<P>,
+    parameters: VertexParameters<P>,
 }
 
 impl<const P: usize> RenderVertex<P> {
-    fn new(position: Vec4, weight: f32x4, parameters: PixelShaderInput<P>) -> Self {
+    fn new(position: Vec4, weight: f32x4, parameters: VertexParameters<P>) -> Self {
         Self {
             z: position.z,
             weight,
