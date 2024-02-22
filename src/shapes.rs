@@ -1,4 +1,4 @@
-use glam::{Vec2, Vec3};
+use glam::Vec3;
 
 use crate::graphics::TriangleIndices;
 
@@ -31,27 +31,40 @@ pub const CUBE_INDICES: [TriangleIndices; 12] = [
     TriangleIndices(1, 4, 5), // Bottom
 ];
 
-pub const CUBE_COLORS: &[Vec3; 8] = &[
-    Vec3::new(0.0, 0.0, 1.0),
-    Vec3::new(0.0, 1.0, 0.0),
-    Vec3::new(0.0, 1.0, 1.0),
-    Vec3::new(1.0, 0.0, 0.0),
-    Vec3::new(1.0, 0.0, 1.0),
-    Vec3::new(1.0, 1.0, 0.0),
-    Vec3::new(1.0, 1.0, 1.0),
-    Vec3::new(1.0, 0.0, 1.0),
+pub const CUBE_COLORS: &[[f32; 3]; 8] = &[
+    [0.0, 0.0, 1.0],
+    [0.0, 1.0, 0.0],
+    [0.0, 1.0, 1.0],
+    [1.0, 0.0, 0.0],
+    [1.0, 0.0, 1.0],
+    [1.0, 1.0, 0.0],
+    [1.0, 1.0, 1.0],
+    [1.0, 0.0, 1.0],
 ];
 
-pub const CUBE_UVS: &[Vec2; 8] = &[
-    Vec2::new(0.0, 1.0),
-    Vec2::new(1.0, 1.0),
-    Vec2::new(0.0, 0.0),
-    Vec2::new(1.0, 0.0),
-    Vec2::new(1.0, 1.0),
-    Vec2::new(0.0, 1.0),
-    Vec2::new(1.0, 0.0),
-    Vec2::new(0.0, 0.0),
+pub const CUBE_UVS: &[[f32; 2]; 8] = &[
+    [0.0, 1.0],
+    [1.0, 1.0],
+    [0.0, 0.0],
+    [1.0, 0.0],
+    [1.0, 1.0],
+    [0.0, 1.0],
+    [1.0, 0.0],
+    [0.0, 0.0],
 ];
+
+pub fn cube_normals() -> [[f32; 3]; 8] {
+    [
+        Vec3::new(-1.0, -1.0, 1.0).normalize().into(),
+        Vec3::new(1.0, -1.0, 1.0).normalize().into(),
+        Vec3::new(-1.0, 1.0, 1.0).normalize().into(),
+        Vec3::new(1.0, 1.0, 1.0).normalize().into(),
+        Vec3::new(-1.0, -1.0, -1.0).normalize().into(),
+        Vec3::new(1.0, -1.0, -1.0).normalize().into(),
+        Vec3::new(-1.0, 1.0, -1.0).normalize().into(),
+        Vec3::new(1.0, 1.0, -1.0).normalize().into(),
+    ]
+}
 
 pub fn cube(side: f32) -> [Vec3; 8] {
     [
@@ -75,11 +88,11 @@ pub fn plane(side: f32) -> [Vec3; 4] {
     ]
 }
 
-pub const PLANE_UVS: &[Vec2; 4] = &[
-    Vec2::new(0.0, 0.0), // Bottom Left
-    Vec2::new(1.0, 0.0), // Bottom Right
-    Vec2::new(0.0, 1.0), // Top Left
-    Vec2::new(1.0, 1.0), // Top Right
+pub const PLANE_UVS: &[[f32; 2]; 4] = &[
+    [0.0, 0.0], // Bottom Left
+    [1.0, 0.0], // Bottom Right
+    [0.0, 1.0], // Top Left
+    [1.0, 1.0], // Top Right
 ];
 
 pub const PLANE_INDICES: [TriangleIndices; 2] =

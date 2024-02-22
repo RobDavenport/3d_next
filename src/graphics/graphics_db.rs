@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use glam::{Vec2, Vec3};
+use glam::Vec3;
 
 use crate::shaders::{ColorBlend, PixelShaderInput, Textured};
 
@@ -15,7 +13,7 @@ pub struct GraphicsDb {
 }
 
 // A mesh which is ready to be stored into the DB
-pub struct Mesh<P: PixelShaderInput> {
+pub struct Mesh<const P: usize> {
     pub vertices: VertexList,
     pub indices: IndexList,
     pub parameters: ParameterData<P>,
@@ -23,28 +21,26 @@ pub struct Mesh<P: PixelShaderInput> {
 
 // Keys used to access the GraphicsDb
 #[derive(Clone, Copy)]
-pub struct MeshIndex<P> {
+pub struct MeshIndex<const P: usize> {
     geometry_index: usize,
     parameter_index: MeshParameterIndex<P>,
 }
 
 #[derive(Clone, Copy)]
-pub struct MeshParameterIndex<P> {
-    p: PhantomData<P>,
+pub struct MeshParameterIndex<const P: usize> {
     index: usize,
 }
 
-pub struct MeshReference<'a, P> {
+pub struct MeshReference<'a, const P: usize> {
     pub vertices: &'a [Vec3],
     pub indices: &'a [TriangleIndices],
-    pub parameters: &'a [P],
+    pub parameters: &'a [PixelShaderInput<P>],
 }
 
 impl GraphicsDb {
-    pub fn push_mesh<P>(&mut self, mesh: Mesh<P>) -> MeshIndex<P>
+    pub fn push_mesh<const P: usize>(&mut self, mesh: Mesh<P>) -> MeshIndex<P>
     where
         ParameterDb: ParameterDataBuffer<P>,
-        P: PixelShaderInput,
     {
         let geometry_index = self.vertices.len();
         self.vertices.push(mesh.vertices);
@@ -58,10 +54,9 @@ impl GraphicsDb {
         }
     }
 
-    pub fn get<P>(&self, index: MeshIndex<P>) -> MeshReference<'_, P>
+    pub fn get<const P: usize>(&self, index: MeshIndex<P>) -> MeshReference<'_, P>
     where
         ParameterDb: ParameterDataBuffer<P>,
-        P: PixelShaderInput,
     {
         let vertices = &self.vertices[index.geometry_index].0;
         let indices = &self.indices[index.geometry_index].0;
@@ -83,13 +78,13 @@ pub struct VertexList(pub Box<[Vec3]>);
 
 #[derive(Default)]
 pub struct ParameterDb {
-    vec2s: Vec<ParameterData<Vec2>>,
-    vec3s: Vec<ParameterData<Vec3>>,
+    vec2s: Vec<ParameterData<2>>,
+    vec3s: Vec<ParameterData<3>>,
 }
 
-pub struct ParameterData<P>(pub Box<[P]>);
+pub struct ParameterData<const P: usize>(pub Box<[PixelShaderInput<P>]>);
 
-pub trait ParameterDataBuffer<P> {
+pub trait ParameterDataBuffer<const P: usize> {
     fn buffer(&self) -> &Vec<ParameterData<P>>;
     fn buffer_mut(&mut self) -> &mut Vec<ParameterData<P>>;
 
@@ -99,51 +94,26 @@ pub trait ParameterDataBuffer<P> {
     fn push(&mut self, parameters: ParameterData<P>) -> MeshParameterIndex<P> {
         let index = self.buffer().len();
         self.buffer_mut().push(parameters);
-        MeshParameterIndex {
-            p: PhantomData,
-            index,
-        }
+        MeshParameterIndex { index }
     }
 }
 
-impl ParameterDataBuffer<Vec2> for ParameterDb {
-    fn buffer(&self) -> &Vec<ParameterData<Vec2>> {
+impl ParameterDataBuffer<2> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<2>> {
         &self.vec2s
     }
 
-    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<Vec2>> {
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<2>> {
         &mut self.vec2s
     }
 }
 
-impl ParameterDataBuffer<Vec3> for ParameterDb {
-    fn buffer(&self) -> &Vec<ParameterData<Vec3>> {
+impl ParameterDataBuffer<3> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<3>> {
         &self.vec3s
     }
 
-    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<Vec3>> {
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<3>> {
         &mut self.vec3s
     }
 }
-
-// #[derive(Clone, Copy)]
-// pub struct ShaderIndex<P> {
-//     p: PhantomData<P>,
-//     index: usize,
-// }
-
-// pub trait ShaderDbTrait<T> {
-//     fn get(&self) -> &T;
-// }
-
-// #[derive(Default)]
-// pub struct ShaderDb {
-//     color_blend: ColorBlend,
-//     textu
-// }
-
-// impl ShaderDbTrait<ColorBlend> for ShaderDb {
-//     fn get(&self) -> &ColorBlend {
-//         &self.color_blend
-//     }
-// }

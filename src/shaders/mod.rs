@@ -1,71 +1,66 @@
-use std::ops::{Add, Mul, MulAssign, Sub};
+use std::{
+    array,
+    ops::{Add, Mul, MulAssign, Sub},
+};
 
-use glam::{Vec2, Vec3};
+mod color_blend;
+pub use color_blend::*;
 
-use crate::{image, types::Color};
+mod textured;
+pub use textured::*;
 
-pub trait PixelShaderInput:
-    Copy
-    + Add<Self, Output = Self>
-    + Sub<Self, Output = Self>
-    + Mul<f32, Output = Self>
-    + MulAssign<f32>
-{
-    fn lerp(self, rhs: Self, s: f32) -> Self {
+use crate::types::Color;
+
+#[derive(Clone, Copy)]
+pub struct PixelShaderInput<const P: usize>(pub [f32; P]);
+
+impl<const P: usize> PixelShaderInput<P> {
+    pub fn lerp(self, rhs: Self, s: f32) -> Self {
         self + ((rhs - self) * s)
     }
 }
 
-impl<T> PixelShaderInput for T where
-    T: Copy + Add<T, Output = T> + Sub<Self, Output = Self> + Mul<f32, Output = T> + MulAssign<f32>
-{
+impl<const P: usize> Add<Self> for PixelShaderInput<P> {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] + rhs.0[i]))
+    }
 }
 
-pub trait PixelShader<PSIN: PixelShaderInput> {
-    fn run(&self, parameters: PSIN) -> Color;
+impl<const P: usize> Sub<Self> for PixelShaderInput<P> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] - rhs.0[i]))
+    }
+}
+
+impl<const P: usize> Mul<f32> for PixelShaderInput<P> {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] * rhs))
+    }
+}
+
+impl<const P: usize> MulAssign<f32> for PixelShaderInput<P> {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.0.iter_mut().for_each(|v| *v *= rhs)
+    }
+}
+
+pub trait PixelShader<const PSIN: usize> {
+    fn run(&self, parameters: [f32; PSIN]) -> Color;
 }
 
 #[derive(Default)]
-pub struct ColorBlend;
-
-impl PixelShader<Vec3> for ColorBlend {
-    fn run(&self, parameters: Vec3) -> Color {
-        Color {
-            r: (parameters.x.clamp(0.0, 1.0) * 255.0) as u8,
-            g: (parameters.y.clamp(0.0, 1.0) * 255.0) as u8,
-            b: (parameters.z.clamp(0.0, 1.0) * 255.0) as u8,
-        }
-    }
+pub struct DiffuseTextured {
+    textured: Textured,
 }
 
-pub struct Textured {
-    width: usize,
-    height: usize,
-}
-
-impl Default for Textured {
-    fn default() -> Self {
-        Self {
-            width: image::IMAGE_WIDTH,
-            height: image::IMAGE_HEIGHT,
-        }
-    }
-}
-
-impl Textured {
-    fn sample_2d(&self, u: f32, v: f32) -> Color {
-        let u = (u * (self.width - 1) as f32) as usize;
-        let v = (v * (self.height - 1) as f32) as usize;
-
-        let u = u.clamp(0, self.width - 1);
-        let v = v.clamp(0, self.height - 1);
-
-        image::get_image()[(v * self.width) + u]
-    }
-}
-
-impl PixelShader<Vec2> for Textured {
-    fn run(&self, parameters: Vec2) -> Color {
-        self.sample_2d(parameters.x, parameters.y)
+impl PixelShader<5> for DiffuseTextured {
+    fn run(&self, parameters: [f32; 5]) -> Color {
+        todo!()
     }
 }

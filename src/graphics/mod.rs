@@ -8,8 +8,10 @@ use glam::Vec4;
 pub use gpu::Gpu;
 pub use graphics_db::*;
 
+use crate::shaders::PixelShaderInput;
+
 #[derive(Clone)]
-struct Triangle<P> {
+struct Triangle<const P: usize> {
     positions: [Vec4; 3],
-    parameters: [P; 3],
+    parameters: [PixelShaderInput<P>; 3],
 }

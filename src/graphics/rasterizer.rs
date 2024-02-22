@@ -15,13 +15,12 @@ const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
     // TODO: Incorporate a better boundingbox traversal algorithm
-    pub(super) fn rasterize_triangle<PS, PSIN>(
+    pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
         pixel_shader: &PS,
         triangle: Triangle<PSIN>,
     ) where
         PS: PixelShader<PSIN>,
-        PSIN: PixelShaderInput,
     {
         let a = triangle.positions[0];
         let b = triangle.positions[1];
@@ -89,7 +88,7 @@ impl Gpu {
         }
     }
 
-    fn render_pixels<PS, PSIN>(
+    fn render_pixels<PS, const PSIN: usize>(
         &mut self,
         pixel_shader: &PS,
         x: usize,
@@ -98,7 +97,6 @@ impl Gpu {
         mask: f32x4,
     ) where
         PS: PixelShader<PSIN>,
-        PSIN: PixelShaderInput,
     {
         let [a, b, c] = triangle.vertices;
 
@@ -139,7 +137,7 @@ impl Gpu {
                         * weight_recip;
 
                     // Perform fragment shading (e.g., apply lighting calculations, texture mapping)
-                    let fragment_color = pixel_shader.run(ps_params);
+                    let fragment_color = pixel_shader.run(ps_params.0);
 
                     // Write the fragment color to the frame buffer
                     gc::set_pixel(
@@ -153,18 +151,18 @@ impl Gpu {
     }
 }
 
-struct RenderTriangle<P> {
+struct RenderTriangle<const P: usize> {
     vertices: [RenderVertex<P>; 3],
 }
 
-struct RenderVertex<P> {
+struct RenderVertex<const P: usize> {
     z: f32,
     weight: f32x4,
-    parameters: P,
+    parameters: PixelShaderInput<P>,
 }
 
-impl<P> RenderVertex<P> {
-    fn new(position: Vec4, weight: f32x4, parameters: P) -> Self {
+impl<const P: usize> RenderVertex<P> {
+    fn new(position: Vec4, weight: f32x4, parameters: PixelShaderInput<P>) -> Self {
         Self {
             z: position.z,
             weight,

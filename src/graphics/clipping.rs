@@ -1,10 +1,10 @@
 use glam::Vec4;
 
-use crate::{camera::NEAR_PLANE, shaders::PixelShaderInput};
+use crate::camera::NEAR_PLANE;
 
 use super::Triangle;
 
-pub(super) enum ClipResult<P> {
+pub(super) enum ClipResult<const P: usize> {
     Culled,
     One(Triangle<P>),
     Two((Triangle<P>, Triangle<P>)),
@@ -14,7 +14,7 @@ fn is_in_front_of_near_plane(vertex: &Vec4) -> bool {
     vertex.w < vertex.z
 }
 
-pub(super) fn clip_triangle<P: PixelShaderInput>(triangle: Triangle<P>) -> ClipResult<P> {
+pub(super) fn clip_triangle<const P: usize>(triangle: Triangle<P>) -> ClipResult<P> {
     // Geometric Clipping against near plane
     // We are using a reversed Z
     let a_front = is_in_front_of_near_plane(&triangle.positions[0]);
@@ -38,14 +38,14 @@ pub(super) fn clip_triangle<P: PixelShaderInput>(triangle: Triangle<P>) -> ClipR
     }
 }
 
-fn clip_triangle_one_front<P: PixelShaderInput>(
+fn clip_triangle_one_front<const P: usize>(
     triangle: Triangle<P>,
     front_index: usize,
 ) -> Triangle<P> {
     clip_edges_against_near_plane(triangle, front_index)
 }
 
-fn clip_edges_against_near_plane<P: PixelShaderInput>(
+fn clip_edges_against_near_plane<const P: usize>(
     mut triangle: Triangle<P>,
     origin: usize,
 ) -> Triangle<P> {
@@ -91,7 +91,7 @@ fn clip_edges_against_near_plane<P: PixelShaderInput>(
     triangle
 }
 
-fn clip_triangle_one_behind<P: PixelShaderInput>(
+fn clip_triangle_one_behind<const P: usize>(
     triangle: Triangle<P>,
     back_index: usize,
 ) -> (Triangle<P>, Triangle<P>) {

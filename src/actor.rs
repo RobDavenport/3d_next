@@ -2,14 +2,14 @@ use glam::{Mat4, Vec3};
 
 use crate::graphics::MeshIndex;
 
-pub struct Actor<PSIN> {
+pub struct Actor<const PSIN: usize> {
     pub mesh_id: MeshIndex<PSIN>,
     pub transform: Mat4,
 
     pub delta: f32,
 }
 
-impl<T> Actor<T> {
+impl<const P: usize> Actor<P> {
     pub fn update(&mut self) {
         // Calculate the y-coordinate using a sine wave
         let y = self.delta.sin();

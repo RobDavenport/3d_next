@@ -4,13 +4,12 @@ use std::mem::MaybeUninit;
 use actor::Actor;
 use camera::Camera;
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
-use gamercade_rs::api::text::console_log;
 
 use gamercade_rs::prelude as gc;
-use glam::{Mat4, Vec2, Vec3};
+use glam::{Mat4, Vec3};
 use graphics::Gpu;
 use graphics::{GraphicsDb, IndexList, Mesh, ParameterData, VertexList};
-use math::Math;
+use shaders::PixelShaderInput;
 
 mod actor;
 mod camera;
@@ -27,7 +26,7 @@ static mut GPU: MaybeUninit<Gpu> = MaybeUninit::uninit();
 static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
-    actors: Vec<Actor<Vec2>>,
+    actors: Vec<Actor<2>>,
 }
 
 /// # Safety
@@ -49,7 +48,7 @@ pub unsafe extern "C" fn init() {
             //let color = shapes::CUBE_COLORS[i % shapes::CUBE_COLORS.len()];
             let uv = shapes::CUBE_UVS[i];
             vertices.push(x);
-            parameters.push(uv);
+            parameters.push(PixelShaderInput(uv));
         });
 
     let indices = IndexList(

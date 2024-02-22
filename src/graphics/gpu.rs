@@ -1,11 +1,7 @@
 use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
 use wide::{f32x4, CmpNe};
 
-use crate::{
-    actor::Actor,
-    shaders::{PixelShader, PixelShaderInput},
-    CAMERA, GRAPHICS_DB,
-};
+use crate::{actor::Actor, shaders::PixelShader, CAMERA, GRAPHICS_DB};
 
 use super::{
     clipping::{clip_triangle, ClipResult},
@@ -32,9 +28,8 @@ impl Gpu {
     }
 
     // Adds the triangles fr
-    pub fn render_actor<PS, PSIN>(&mut self, actor: &Actor<PSIN>, pixel_shader: &PS)
+    pub fn render_actor<PS, const PSIN: usize>(&mut self, actor: &Actor<PSIN>, pixel_shader: &PS)
     where
-        PSIN: PixelShaderInput,
         PS: PixelShader<PSIN>,
         ParameterDb: ParameterDataBuffer<PSIN>,
     {
@@ -95,7 +90,10 @@ impl Gpu {
     }
 
     // Converts a triangle from clip space into screen space
-    fn tri_clip_to_screen_space<P>(&self, mut clip_space_triangle: Triangle<P>) -> Triangle<P> {
+    fn tri_clip_to_screen_space<const P: usize>(
+        &self,
+        mut clip_space_triangle: Triangle<P>,
+    ) -> Triangle<P> {
         let clip_to_screen = |clip_space_vertex: Vec4| {
             // Move to cartesian coordinates
             let clip_space_vertex = clip_space_vertex / clip_space_vertex.w;
