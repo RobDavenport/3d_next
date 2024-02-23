@@ -50,7 +50,7 @@ fn generate_images() -> String {
         // Write out the bytes of the image
         let write_path = format!("{OUTPUT_DIR}/{filename}");
         let mut file_out = fs::File::create(&write_path).unwrap();
-        file_out.write(&image_bytes).unwrap();
+        file_out.write_all(&image_bytes).unwrap();
 
         // Write the struct as Rust code
         let filename = filename.to_uppercase();

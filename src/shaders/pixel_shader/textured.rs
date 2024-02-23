@@ -1,17 +1,17 @@
 use glam::Vec3;
 
+use crate::assets::textures;
 use crate::{assets::Texture, types::Color};
 
 use super::PixelShader;
-
 pub struct Textured {
-    texture: &'static Texture,
+    pub texture: &'static Texture,
 }
 
 impl Default for Textured {
     fn default() -> Self {
         Self {
-            texture: crate::assets::textures::BRICKWALL,
+            texture: crate::assets::textures::GAMERCADE,
         }
     }
 }
@@ -54,6 +54,44 @@ impl PixelShader<8> for TexturedLit {
         let light_factor = f32::max(pixel_to_light.dot(normal) * self.light_intensity, 0.0);
 
         Color::from(object_color * (light_factor + self.ambient_light))
-        //Color::from(object_color)
+    }
+}
+
+pub struct TexturedNormalLit {
+    pub light_position: Vec3,
+    pub light_intensity: f32,
+    pub ambient_light: f32,
+    pub diffuse: Textured,
+    pub normal: Textured,
+}
+
+impl Default for TexturedNormalLit {
+    fn default() -> Self {
+        Self {
+            diffuse: Textured {
+                texture: textures::BRICKWALL,
+            },
+            normal: Textured {
+                texture: textures::BRICKWALL_NORMAL,
+            },
+            light_position: Default::default(),
+            light_intensity: Default::default(),
+            ambient_light: Default::default(),
+        }
+    }
+}
+
+impl PixelShader<5> for TexturedNormalLit {
+    fn run(&self, parameters: [f32; 5]) -> Color {
+        // Shader Setup
+        let [u, v, pixel_x, pixel_y, pixel_z] = parameters;
+        let pixel_position = Vec3::new(pixel_x, pixel_y, pixel_z);
+        let normal = self.normal.sample_2d(u, v).to_vec3();
+        let object_color = self.diffuse.sample_2d(u, v).to_vec3();
+
+        let pixel_to_light = (self.light_position - pixel_position).normalize();
+        let light_factor = f32::max(pixel_to_light.dot(normal) * self.light_intensity, 0.0);
+
+        Color::from(object_color * (light_factor + self.ambient_light))
     }
 }

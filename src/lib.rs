@@ -7,6 +7,7 @@ use gamercade_rs::prelude as gc;
 use glam::Vec3;
 use graphics::Gpu;
 use graphics::GraphicsDb;
+use scenes::CubeScene;
 use scenes::{CubesScene, PlaneScene, Scene, TriangleScene};
 
 mod actor;
@@ -38,6 +39,7 @@ pub unsafe extern "C" fn init() {
     let mut graphics_db = GraphicsDb::default();
 
     let scenes: Vec<Box<dyn Scene>> = vec![
+        (Box::new(CubeScene::new(&mut graphics_db))),
         (Box::new(CubesScene::new(&mut graphics_db))),
         (Box::new(PlaneScene::new(&mut graphics_db))),
         (Box::new(TriangleScene::new(&mut graphics_db))),
@@ -95,6 +97,10 @@ pub unsafe extern "C" fn draw() {
     graphics.textured_lit.light_position = camera.position;
     graphics.textured_lit.light_intensity = 1.25;
     graphics.textured_lit.ambient_light = 0.15;
+
+    graphics.textured_normal_lit.light_position = camera.position;
+    graphics.textured_normal_lit.light_intensity = 1.25;
+    graphics.textured_normal_lit.ambient_light = 0.15;
 
     game_state.scenes[game_state.scene_index].draw(gpu, graphics);
 }
