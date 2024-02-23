@@ -89,10 +89,10 @@ pub fn plane(side: f32) -> [Vec3; 4] {
 }
 
 pub const PLANE_UVS: &[[f32; 2]; 4] = &[
-    [0.0, 0.0], // Bottom Left
-    [1.0, 0.0], // Bottom Right
-    [0.0, 1.0], // Top Left
-    [1.0, 1.0], // Top Right
+    [0.0, 1.0], // Bottom Left
+    [1.0, 1.0], // Bottom Right
+    [0.0, 0.0], // Top Left
+    [1.0, 0.0], // Top Right
 ];
 
 pub const PLANE_INDICES: [TriangleIndices; 2] =
