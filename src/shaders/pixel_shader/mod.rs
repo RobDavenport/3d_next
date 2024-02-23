@@ -53,4 +53,3 @@ impl<const P: usize> MulAssign<f32> for VertexParameters<P> {
 pub trait PixelShader<const PSIN: usize> {
     fn run(&self, parameters: [f32; PSIN]) -> Color;
 }
-
