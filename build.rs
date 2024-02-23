@@ -21,7 +21,7 @@ fn main() {
 
     output.push_str(&generate_images());
 
-    let mut output_file = fs::File::create(&modfile_path).unwrap();
+    let mut output_file = fs::File::create(modfile_path).unwrap();
 
     output_file
         .write_all(output.as_bytes())
@@ -43,13 +43,12 @@ fn generate_images() -> String {
         let image = image::load_from_memory(&bytes).unwrap();
         let image_bytes = image
             .pixels()
-            .into_iter()
             .flat_map(|(_x, _y, pixel)| [pixel.0[0], pixel.0[1], pixel.0[2]])
             .collect::<Vec<u8>>();
 
         // Write out the bytes of the image
         let write_path = format!("{OUTPUT_DIR}/{filename}");
-        let mut file_out = fs::File::create(&write_path).unwrap();
+        let mut file_out = fs::File::create(write_path).unwrap();
         file_out.write_all(&image_bytes).unwrap();
 
         // Write the struct as Rust code
@@ -69,7 +68,7 @@ fn generate_images() -> String {
         out.push_str(&append);
     });
 
-    out.push_str("}");
+    out.push('}');
 
     out
 }
