@@ -1,104 +1,49 @@
+use std::{
+    array,
+    ops::{Add, Mul, MulAssign, Sub},
+};
+
 mod pixel_shader;
+mod vertex_shader;
 
-use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
 pub use pixel_shader::*;
+pub use vertex_shader::*;
 
-pub struct VertexShaderOutput<const OUT: usize> {
-    pub position: Vec4,
-    pub parameters: VertexParameters<OUT>,
-}
+#[derive(Clone, Copy)]
+pub struct VertexParameters<const P: usize>(pub [f32; P]);
 
-pub trait VertexShader<const IN: usize, const OUT: usize> {
-    fn run(&self, position: Vec3, input: [f32; IN]) -> VertexShaderOutput<OUT>;
-}
-
-#[derive(Default)]
-pub struct BaseVertexShader {
-    pub model: Mat4,
-    pub view: Mat4,
-    pub projection: Mat4,
-}
-
-impl VertexShader<3, 3> for BaseVertexShader {
-    fn run(&self, position: Vec3, input: [f32; 3]) -> VertexShaderOutput<3> {
-        let mvp = self.projection * (self.view * self.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
-
-        VertexShaderOutput {
-            position,
-            parameters: VertexParameters(input),
-        }
+impl<const P: usize> VertexParameters<P> {
+    pub fn lerp(self, rhs: Self, s: f32) -> Self {
+        self + ((rhs - self) * s)
     }
 }
 
-impl VertexShader<2, 2> for BaseVertexShader {
-    fn run(&self, position: Vec3, input: [f32; 2]) -> VertexShaderOutput<2> {
-        let mvp = self.projection * (self.view * self.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
+impl<const P: usize> Add<Self> for VertexParameters<P> {
+    type Output = Self;
 
-        VertexShaderOutput {
-            position,
-            parameters: VertexParameters(input),
-        }
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] + rhs.0[i]))
     }
 }
 
-impl VertexShader<6, 9> for BaseVertexShader {
-    fn run(&self, position: Vec3, input: [f32; 6]) -> VertexShaderOutput<9> {
-        let [r, g, b, norm_x, norm_y, norm_z] = input;
-        let frag_position = (self.model * position.extend(1.0)).xyz();
+impl<const P: usize> Sub<Self> for VertexParameters<P> {
+    type Output = Self;
 
-        let mvp = self.projection * (self.view * self.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
-
-        VertexShaderOutput {
-            position,
-            parameters: VertexParameters([
-                r,
-                g,
-                b,
-                norm_x,
-                norm_y,
-                norm_z,
-                frag_position.x,
-                frag_position.y,
-                frag_position.z,
-            ]),
-        }
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] - rhs.0[i]))
     }
 }
 
-impl VertexShader<5, 8> for BaseVertexShader {
-    fn run(&self, position: Vec3, input: [f32; 5]) -> VertexShaderOutput<8> {
-        let [u, v, norm_x, norm_y, norm_z] = input;
-        let frag_position = (self.model * position.extend(1.0)).xyz();
+impl<const P: usize> Mul<f32> for VertexParameters<P> {
+    type Output = Self;
 
-        let mvp = self.projection * (self.view * self.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
-
-        VertexShaderOutput {
-            position,
-            parameters: VertexParameters([
-                u,
-                v,
-                norm_x,
-                norm_y,
-                norm_z,
-                frag_position.x,
-                frag_position.y,
-                frag_position.z,
-            ]),
-        }
+    fn mul(self, rhs: f32) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] * rhs))
     }
 }
 
-fn transform_point_to_clip_space(position: &Vec3, mvp: &Mat4) -> Vec4 {
-    // Convert vertex position to homogeneous coordinates (4D)
-    let mut position_homogeneous = position.extend(1.0);
-
-    // Apply projection transformation
-    position_homogeneous = *mvp * position_homogeneous;
-
-    // Return the transformed vertex in clip space
-    position_homogeneous
+impl<const P: usize> MulAssign<f32> for VertexParameters<P> {
+    fn mul_assign(&mut self, rhs: f32) {
+        self.0.iter_mut().for_each(|v| *v *= rhs)
+    }
 }
