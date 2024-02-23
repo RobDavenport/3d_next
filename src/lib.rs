@@ -133,12 +133,12 @@ pub unsafe extern "C" fn draw() {
     graphics.base_vertex_shader.view = camera.view;
 
     graphics.color_blend_lit.light_position = camera.position;
-    graphics.color_blend_lit.light_intensity = 0.95;
-    graphics.color_blend_lit.ambient_light = 0.05;
+    graphics.color_blend_lit.light_intensity = 1.25;
+    graphics.color_blend_lit.ambient_light = 0.15;
 
     graphics.textured_lit.light_position = camera.position;
-    graphics.textured_lit.light_intensity = 0.95;
-    graphics.textured_lit.ambient_light = 0.05;
+    graphics.textured_lit.light_intensity = 1.25;
+    graphics.textured_lit.ambient_light = 0.15;
 
     graphics.base_vertex_shader.model = game_state.actors[0].transform;
     gpu.render_actor(
