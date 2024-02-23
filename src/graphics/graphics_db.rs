@@ -5,6 +5,7 @@ use crate::shaders::{
 };
 
 #[derive(Default)]
+// Houses prepared graphics data to be used for rendering.
 pub struct GraphicsDb {
     vertices: Vec<VertexList>, // Collection of collections of Vertices
     indices: Vec<IndexList>,   // Collection of collections of Index Lists
