@@ -10,9 +10,9 @@ use graphics::GraphicsDb;
 use scenes::{CubesScene, PlaneScene, Scene, TriangleScene};
 
 mod actor;
+mod assets;
 mod camera;
 mod graphics;
-mod image;
 mod math;
 mod scenes;
 mod shaders;

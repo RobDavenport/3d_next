@@ -15,10 +15,10 @@ impl<const P: usize> Actor<P> {
         let y = self.delta.sin();
 
         // Update the object's position
-        self.translate(Vec3::new(0.0, y * 0.1, 0.0));
+        self.translate(Vec3::new(0.0, y * 0.02, 0.0));
 
         // Increment the angle (delta)
-        self.delta += 0.075; // Adjust the increment as needed
+        self.delta += 0.025; // Adjust the increment as needed
     }
 
     pub fn translate(&mut self, translation: Vec3) {

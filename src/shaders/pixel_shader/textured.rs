@@ -1,32 +1,30 @@
 use glam::Vec3;
 
-use crate::{image, types::Color};
+use crate::{assets::Texture, types::Color};
 
 use super::PixelShader;
 
 pub struct Textured {
-    width: usize,
-    height: usize,
+    texture: &'static Texture,
 }
 
 impl Default for Textured {
     fn default() -> Self {
         Self {
-            width: image::IMAGE_WIDTH,
-            height: image::IMAGE_HEIGHT,
+            texture: crate::assets::textures::BRICKWALL,
         }
     }
 }
 
 impl Textured {
     fn sample_2d(&self, u: f32, v: f32) -> Color {
-        let u = (u * (self.width - 1) as f32) as usize;
-        let v = (v * (self.height - 1) as f32) as usize;
+        let u = (u * (self.texture.width - 1) as f32) as usize;
+        let v = (v * (self.texture.height - 1) as f32) as usize;
 
-        let u = u.clamp(0, self.width - 1);
-        let v = v.clamp(0, self.height - 1);
+        let u = u.clamp(0, self.texture.width - 1);
+        let v = v.clamp(0, self.texture.height - 1);
 
-        image::get_image()[(v * self.width) + u]
+        self.texture.get_sample(u, v)
     }
 }
 
