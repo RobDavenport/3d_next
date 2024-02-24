@@ -7,7 +7,7 @@ use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
     shaders::VertexParameters,
-    shapes::{self, cube_normals, CUBE_UVS},
+    shapes::{self, cube_normals, CUBE_SIMPLE_UVS},
 };
 
 pub struct CubesScene {
@@ -20,20 +20,20 @@ impl CubesScene {
         let mut parameters = Vec::new();
         let normals = cube_normals();
 
-        shapes::cube(1.0)
+        shapes::cube_simple(1.0)
             .into_iter()
             .enumerate()
             .for_each(|(i, x)| {
                 vertices.push(x);
                 let normal = normals[i];
-                let uv = CUBE_UVS[i];
+                let uv = CUBE_SIMPLE_UVS[i];
                 parameters.push(VertexParameters([
                     uv[0], uv[1], normal[0], normal[1], normal[2],
                 ]));
             });
 
         let indices = IndexList(
-            shapes::CUBE_INDICES
+            shapes::CUBE_SIMPLE_INDICES
                 .into_iter()
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),

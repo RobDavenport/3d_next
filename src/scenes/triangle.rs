@@ -4,7 +4,7 @@ use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
     shaders::VertexParameters,
-    shapes::{self, CUBE_UVS},
+    shapes::{self, CUBE_SIMPLE_UVS},
 };
 
 use super::Scene;
@@ -38,7 +38,7 @@ impl TriangleScene {
             .enumerate()
             .for_each(|(i, x)| {
                 vertices.push(x);
-                let uv = CUBE_UVS[i];
+                let uv = CUBE_SIMPLE_UVS[i];
                 parameters.push(VertexParameters([uv[0], uv[1]]));
             });
 

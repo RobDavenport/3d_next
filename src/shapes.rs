@@ -16,7 +16,7 @@ use crate::graphics::TriangleIndices;
 // |/       |/
 // 0--------1
 
-pub const CUBE_INDICES: [TriangleIndices; 12] = [
+pub const CUBE_SIMPLE_INDICES: [TriangleIndices; 12] = [
     TriangleIndices(0, 1, 2), // Front
     TriangleIndices(2, 1, 3), // Front
     TriangleIndices(1, 5, 3), // Right
@@ -42,7 +42,7 @@ pub const CUBE_COLORS: &[[f32; 3]; 8] = &[
     [1.0, 0.0, 1.0],
 ];
 
-pub const CUBE_UVS: &[[f32; 2]; 8] = &[
+pub const CUBE_SIMPLE_UVS: &[[f32; 2]; 8] = &[
     [0.0, 1.0],
     [1.0, 1.0],
     [0.0, 0.0],
@@ -66,7 +66,7 @@ pub fn cube_normals() -> [[f32; 3]; 8] {
     ]
 }
 
-pub fn cube(side: f32) -> [Vec3; 8] {
+pub fn cube_simple(side: f32) -> [Vec3; 8] {
     [
         Vec3::new(-side, -side, side),
         Vec3::new(side, -side, side),
