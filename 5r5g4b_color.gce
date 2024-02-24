@@ -1,6 +1,6 @@
 {
   "resolution": "high",
-  "frame_rate": "normal",
+  "frame_rate": "fast",
   "player_count": [
     1,
     1
