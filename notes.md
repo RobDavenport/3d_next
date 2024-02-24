@@ -1,4 +1,7 @@
 Todo:
+Add Tangents to Normal Map
+Use Mesh Shader instead of Vertex Shader, include Triangle Components
+Make Uniforms a single thing and accessable via the individual shaders
 Skinned Animation
 
 
