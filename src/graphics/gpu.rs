@@ -1,3 +1,4 @@
+use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use glam::{Mat3, Vec4, Vec4Swizzles};
 use wide::{f32x4, CmpNe};
 
@@ -16,6 +17,7 @@ pub struct Gpu {
     pub(super) screen_width: usize,
     pub(super) screen_height: usize,
     pub(super) z_buffer: ZBuffer,
+    pub frame_buffer: Box<[GraphicsParameters]>,
 }
 
 impl Gpu {
@@ -24,11 +26,21 @@ impl Gpu {
             screen_height,
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
+            frame_buffer: (0..screen_height * screen_width)
+                .map(|_| Default::default())
+                .collect::<Vec<_>>()
+                .into_boxed_slice(),
         }
     }
 
     pub fn clear_z_buffer(&mut self) {
         self.z_buffer.clear_z_buffer();
+    }
+
+    pub fn clear_frame_buffer(&mut self) {
+        self.frame_buffer
+            .iter_mut()
+            .for_each(|x| *x = GraphicsParameters::new())
     }
 
     // Adds the triangles fr

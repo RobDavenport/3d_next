@@ -1,4 +1,3 @@
-use gamercade_rs::prelude as gc;
 use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt};
 
@@ -14,7 +13,7 @@ const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
 const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
-    // TODO: Incorporate a better boundingbox traversal algorithm
+    // TODO: Consider a better traversal algorithm (Zig Zag)
     pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
         pixel_shader: &PS,
@@ -140,11 +139,8 @@ impl Gpu {
                     let fragment_color = pixel_shader.run(ps_params.0);
 
                     // Write the fragment color to the frame buffer
-                    gc::set_pixel(
-                        fragment_color.to_graphics_params(),
-                        x,
-                        self.screen_height as i32 - y,
-                    );
+                    let pixel_index = (x + (y * self.screen_width as i32)) as usize;
+                    self.frame_buffer[pixel_index] = fragment_color.to_graphics_params();
                 }
             }
         }

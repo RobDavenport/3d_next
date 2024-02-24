@@ -153,8 +153,6 @@ dependencies = [
 [[package]]
 name = "gamercade_rs"
 version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5dbfea47319a09283ff8138f9783052c480bc878ab14322d15fd061ecd095bbd"
 dependencies = [
  "paste",
 ]
