@@ -20,7 +20,7 @@ impl Scene for TriangleScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.triangle.transform;
-        gpu.render_actor::<BaseVertexShader, 2, Textured, 2>(&self.triangle);
+        gpu.render_actor(&self.triangle, BaseVertexShader, Textured);
     }
 }
 

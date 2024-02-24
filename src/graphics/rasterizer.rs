@@ -16,8 +16,11 @@ const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
     // TODO: Consider a better traversal algorithm (Zig Zag)
-    pub(super) fn rasterize_triangle<PS, const PSIN: usize>(&mut self, triangle: Triangle<PSIN>)
-    where
+    pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
+        &mut self,
+        triangle: Triangle<PSIN>,
+        ps: PS,
+    ) where
         PS: PixelShader<PSIN>,
     {
         let a = triangle.positions[0];
@@ -64,7 +67,8 @@ impl Gpu {
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
                     let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
 
-                    self.render_pixels::<PS, PSIN>(
+                    self.render_pixels(
+                        ps,
                         x,
                         y,
                         RenderTriangle {
@@ -93,6 +97,7 @@ impl Gpu {
 
     fn render_pixels<PS, const PSIN: usize>(
         &mut self,
+        _ps: PS,
         x: usize,
         y: usize,
         triangle: RenderTriangle<PSIN>,

@@ -61,6 +61,8 @@ impl Gpu {
     pub fn render_actor<VS, const VSIN: usize, PS, const PSIN: usize>(
         &mut self,
         actor: &Actor<VSIN>,
+        _vs: VS,
+        ps: PS,
     ) where
         VS: VertexShader<VSIN, PSIN>,
         PS: PixelShader<PSIN>,
@@ -100,13 +102,13 @@ impl Gpu {
                 ClipResult::Culled => continue,
                 ClipResult::One(triangle) => {
                     let triangle = self.tri_clip_to_screen_space(triangle);
-                    self.rasterize_triangle::<PS, PSIN>(triangle);
+                    self.rasterize_triangle(triangle, ps);
                 }
                 ClipResult::Two((first, second)) => {
                     let first = self.tri_clip_to_screen_space(first);
                     let second = self.tri_clip_to_screen_space(second);
-                    self.rasterize_triangle::<PS, PSIN>(first);
-                    self.rasterize_triangle::<PS, PSIN>(second);
+                    self.rasterize_triangle(first, ps);
+                    self.rasterize_triangle(second, ps);
                 }
             }
         }

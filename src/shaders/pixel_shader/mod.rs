@@ -6,6 +6,6 @@ pub use textured::*;
 
 use crate::{graphics::Uniforms, types::Color};
 
-pub trait PixelShader<const PSIN: usize> {
+pub trait PixelShader<const PSIN: usize>: Copy {
     fn run(uniforms: &Uniforms, parameters: [f32; PSIN]) -> Color;
 }

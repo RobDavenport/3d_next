@@ -75,7 +75,7 @@ impl Scene for CubesScene {
     fn draw(&self, gpu: &mut Gpu) {
         self.cubes.iter().for_each(|cube| {
             gpu.uniforms.model = cube.transform;
-            gpu.render_actor::<BaseVertexShader, 5, TexturedLit, 8>(cube);
+            gpu.render_actor(cube, BaseVertexShader, TexturedLit);
         })
     }
 }

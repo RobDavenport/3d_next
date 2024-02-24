@@ -18,7 +18,7 @@ impl Scene for PlaneScene {
     }
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.plane.transform;
-        gpu.render_actor::<BaseVertexShader, 2, Textured, 2>(&self.plane);
+        gpu.render_actor(&self.plane, BaseVertexShader, Textured);
     }
 }
 

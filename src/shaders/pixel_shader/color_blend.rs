@@ -4,7 +4,7 @@ use crate::{graphics::Uniforms, types::Color};
 
 use super::PixelShader;
 
-#[derive(Default)]
+#[derive(Clone, Copy)]
 pub struct ColorBlend;
 
 impl PixelShader<3> for ColorBlend {
@@ -13,7 +13,7 @@ impl PixelShader<3> for ColorBlend {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Copy)]
 pub struct ColorBlendLit;
 
 impl PixelShader<9> for ColorBlendLit {

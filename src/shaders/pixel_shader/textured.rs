@@ -4,8 +4,9 @@ use crate::graphics::Uniforms;
 use crate::types::Color;
 
 use super::PixelShader;
-pub struct Textured;
 
+#[derive(Clone, Copy)]
+pub struct Textured;
 impl PixelShader<2> for Textured {
     fn run(uniforms: &Uniforms, parameters: [f32; 2]) -> Color {
         let [u, v] = parameters;
@@ -13,7 +14,7 @@ impl PixelShader<2> for Textured {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Copy)]
 pub struct TexturedLit;
 
 impl PixelShader<8> for TexturedLit {
@@ -31,6 +32,7 @@ impl PixelShader<8> for TexturedLit {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct TexturedNormalLit;
 
 impl PixelShader<5> for TexturedNormalLit {
