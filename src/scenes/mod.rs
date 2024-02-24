@@ -1,5 +1,4 @@
 use crate::Gpu;
-use crate::GraphicsDb;
 
 mod cubes;
 pub use cubes::CubesScene;
@@ -15,5 +14,5 @@ pub use cube::CubeScene;
 
 pub trait Scene {
     fn update(&mut self);
-    fn draw(&self, gpu: &mut Gpu, graphics_db: &mut GraphicsDb);
+    fn draw(&self, gpu: &mut Gpu);
 }

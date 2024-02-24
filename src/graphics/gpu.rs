@@ -1,5 +1,5 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
-use glam::{Mat3, Vec4, Vec4Swizzles};
+use glam::{Mat3, Mat4, Vec3, Vec4, Vec4Swizzles};
 use wide::{f32x4, CmpNe};
 
 use crate::{
@@ -9,7 +9,9 @@ use crate::{
 };
 
 use super::{
-    clipping::{clip_triangle, ClipResult}, rasterizer::X_STEP_SIZE, ParameterDataBuffer, ParameterDb, Triangle
+    clipping::{clip_triangle, ClipResult},
+    rasterizer::X_STEP_SIZE,
+    ParameterDataBuffer, ParameterDb, Triangle, Uniforms,
 };
 
 pub struct Gpu {
@@ -17,7 +19,10 @@ pub struct Gpu {
     pub(super) screen_height: usize,
     pub(super) z_buffer: ZBuffer,
     pub frame_buffer: Box<[GraphicsParameters]>,
+    pub uniforms: Uniforms,
 }
+
+use crate::assets::textures;
 
 impl Gpu {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
@@ -29,6 +34,16 @@ impl Gpu {
                 .map(|_| Default::default())
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
+            uniforms: Uniforms {
+                light_position: Vec3::default(),
+                light_intensity: 1.25,
+                ambient_light: 0.15,
+                diffuse: textures::BRICKWALL,
+                normal: textures::BRICKWALL_NORMAL,
+                model: Mat4::IDENTITY,
+                view: Mat4::IDENTITY,
+                projection: Mat4::IDENTITY,
+            },
         }
     }
 
@@ -46,8 +61,6 @@ impl Gpu {
     pub fn render_actor<VS, const VSIN: usize, PS, const PSIN: usize>(
         &mut self,
         actor: &Actor<VSIN>,
-        vertex_shader: &VS,
-        pixel_shader: &PS,
     ) where
         VS: VertexShader<VSIN, PSIN>,
         PS: PixelShader<PSIN>,
@@ -67,9 +80,9 @@ impl Gpu {
 
             // Run Vertex shader on every vertexs
             // This should output them into clip space
-            let a_clip = vertex_shader.run(a, params[triangle_indices.0].0);
-            let b_clip = vertex_shader.run(b, params[triangle_indices.1].0);
-            let c_clip = vertex_shader.run(c, params[triangle_indices.2].0);
+            let a_clip = VS::run(&self.uniforms, a, params[triangle_indices.0].0);
+            let b_clip = VS::run(&self.uniforms, b, params[triangle_indices.1].0);
+            let c_clip = VS::run(&self.uniforms, c, params[triangle_indices.2].0);
 
             // Culling Stage
             if is_backfacing(a_clip.position, b_clip.position, c_clip.position) {
@@ -87,13 +100,13 @@ impl Gpu {
                 ClipResult::Culled => continue,
                 ClipResult::One(triangle) => {
                     let triangle = self.tri_clip_to_screen_space(triangle);
-                    self.rasterize_triangle(pixel_shader, triangle);
+                    self.rasterize_triangle::<PS, PSIN>(triangle);
                 }
                 ClipResult::Two((first, second)) => {
                     let first = self.tri_clip_to_screen_space(first);
                     let second = self.tri_clip_to_screen_space(second);
-                    self.rasterize_triangle(pixel_shader, first);
-                    self.rasterize_triangle(pixel_shader, second);
+                    self.rasterize_triangle::<PS, PSIN>(first);
+                    self.rasterize_triangle::<PS, PSIN>(second);
                 }
             }
         }

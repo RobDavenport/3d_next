@@ -4,7 +4,7 @@ use super::Scene;
 use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
-    shaders::VertexParameters,
+    shaders::{BaseVertexShader, TexturedNormalLit, VertexParameters},
     shapes::{self, CUBE_SIMPLE_UVS},
 };
 
@@ -51,12 +51,8 @@ impl CubeScene {
 impl Scene for CubeScene {
     fn update(&mut self) {}
 
-    fn draw(&self, gpu: &mut Gpu, graphics_db: &mut GraphicsDb) {
-        graphics_db.base_vertex_shader.model = self.cube.transform;
-        gpu.render_actor(
-            &self.cube,
-            &graphics_db.base_vertex_shader,
-            &graphics_db.textured_normal_lit,
-        );
+    fn draw(&self, gpu: &mut Gpu) {
+        gpu.uniforms.model = self.cube.transform;
+        gpu.render_actor::<BaseVertexShader, 2, TexturedNormalLit, 5>(&self.cube);
     }
 }

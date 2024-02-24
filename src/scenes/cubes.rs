@@ -6,7 +6,7 @@ use super::Scene;
 use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
-    shaders::VertexParameters,
+    shaders::{BaseVertexShader, TexturedLit, VertexParameters},
     shapes::{self, cube_normals, CUBE_SIMPLE_UVS},
 };
 
@@ -72,14 +72,10 @@ impl Scene for CubesScene {
         self.cubes.iter_mut().for_each(|a| a.update());
     }
 
-    fn draw(&self, gpu: &mut Gpu, graphics_db: &mut GraphicsDb) {
+    fn draw(&self, gpu: &mut Gpu) {
         self.cubes.iter().for_each(|cube| {
-            graphics_db.base_vertex_shader.model = cube.transform;
-            gpu.render_actor(
-                cube,
-                &graphics_db.base_vertex_shader,
-                &graphics_db.textured_lit,
-            );
+            gpu.uniforms.model = cube.transform;
+            gpu.render_actor::<BaseVertexShader, 5, TexturedLit, 8>(cube);
         })
     }
 }

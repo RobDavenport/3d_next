@@ -77,7 +77,6 @@ pub unsafe extern "C" fn update() {
 #[no_mangle]
 pub unsafe extern "C" fn draw() {
     let gpu = GPU.assume_init_mut();
-    let graphics = GRAPHICS_DB.assume_init_mut();
     let game_state = GAME_STATE.assume_init_ref();
 
     // Clear all of the buffers
@@ -86,22 +85,14 @@ pub unsafe extern "C" fn draw() {
 
     // For Calculating MVP Later
     let camera = CAMERA.assume_init_ref();
-    graphics.base_vertex_shader.projection = camera.projection;
-    graphics.base_vertex_shader.view = camera.view;
+    gpu.uniforms.projection = camera.projection;
+    gpu.uniforms.view = camera.view;
 
-    graphics.color_blend_lit.light_position = camera.position;
-    graphics.color_blend_lit.light_intensity = 1.25;
-    graphics.color_blend_lit.ambient_light = 0.15;
+    gpu.uniforms.light_position = camera.position;
+    gpu.uniforms.light_intensity = 1.25;
+    gpu.uniforms.ambient_light = 0.15;
 
-    graphics.textured_lit.light_position = camera.position;
-    graphics.textured_lit.light_intensity = 1.25;
-    graphics.textured_lit.ambient_light = 0.15;
-
-    graphics.textured_normal_lit.light_position = camera.position;
-    graphics.textured_normal_lit.light_intensity = 1.25;
-    graphics.textured_normal_lit.ambient_light = 0.15;
-
-    game_state.scenes[game_state.scene_index].draw(gpu, graphics);
+    game_state.scenes[game_state.scene_index].draw(gpu);
 
     gc::write_pixel_buffer(0, &gpu.frame_buffer);
 }

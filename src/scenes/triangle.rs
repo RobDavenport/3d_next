@@ -3,7 +3,7 @@ use glam::Mat4;
 use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
-    shaders::VertexParameters,
+    shaders::{BaseVertexShader, Textured, VertexParameters},
     shapes::{self, CUBE_SIMPLE_UVS},
 };
 
@@ -18,13 +18,9 @@ impl Scene for TriangleScene {
         // Do nothing
     }
 
-    fn draw(&self, gpu: &mut Gpu, graphics_db: &mut GraphicsDb) {
-        graphics_db.base_vertex_shader.model = self.triangle.transform;
-        gpu.render_actor(
-            &self.triangle,
-            &graphics_db.base_vertex_shader,
-            &graphics_db.textured,
-        );
+    fn draw(&self, gpu: &mut Gpu) {
+        gpu.uniforms.model = self.triangle.transform;
+        gpu.render_actor::<BaseVertexShader, 2, Textured, 2>(&self.triangle);
     }
 }
 

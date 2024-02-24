@@ -1,9 +1,6 @@
 use glam::Vec3;
 
-use crate::shaders::{
-    BaseVertexShader, ColorBlend, ColorBlendLit, Textured, TexturedLit, TexturedNormalLit,
-    VertexParameters,
-};
+use crate::shaders::VertexParameters;
 
 // Houses prepared graphics data to be used for rendering.
 #[derive(Default)]
@@ -11,16 +8,6 @@ pub struct GraphicsDb {
     vertices: Vec<VertexList>, // Collection of collections of Vertices
     indices: Vec<IndexList>,   // Collection of collections of Index Lists
     parameters: ParameterDb,   // Collection of collections of Parameter data
-
-    // VertexShaders
-    pub base_vertex_shader: BaseVertexShader,
-
-    // Pixel Shaders
-    pub color_blend: ColorBlend,
-    pub textured: Textured,
-    pub color_blend_lit: ColorBlendLit,
-    pub textured_lit: TexturedLit,
-    pub textured_normal_lit: TexturedNormalLit,
 }
 
 // A mesh which is ready to be stored into the DB
