@@ -55,17 +55,17 @@ impl Gpu {
                 let wc_mask = wc.cmp_gt(zero);
                 let mask = wa_mask & wb_mask & wc_mask;
 
-                // See if any pixels extend out of the bb
-                let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
-                let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
-
-                let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
-
                 if mask.any() {
                     // Normalize the weights
                     let wa = wa / double_triangle_area;
                     let wb = wb / double_triangle_area;
                     let wc = wc / double_triangle_area;
+
+                    // See if any pixels extend out of the bb
+                    // and update mask accordingly
+                    let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
+                    let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
+                    let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
 
                     self.render_pixels(
                         pixel_shader,
