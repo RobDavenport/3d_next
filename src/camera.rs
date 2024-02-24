@@ -22,7 +22,7 @@ pub struct Camera {
 impl Camera {
     // Position and aspect_ratio (width / height)
     pub fn new(position: Vec3, aspect_ratio: f32) -> Self {
-        let sensitivity = 0.09;
+        let sensitivity = 0.05;
         let movement_speed = 0.1;
 
         let hfov = 103f32.to_radians();

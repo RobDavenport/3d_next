@@ -26,7 +26,7 @@ impl Gpu {
             screen_height,
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
-            frame_buffer: (0..(screen_height * screen_width) + super::rasterizer::X_STEP_SIZE)
+            frame_buffer: (0..screen_height * screen_width)
                 .map(|_| Default::default())
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
@@ -131,8 +131,7 @@ pub struct ZBuffer {
 impl ZBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
-            // Add padding in case SIMD access extra values
-            z_buffer: (0..(screen_height * screen_width) + super::rasterizer::X_STEP_SIZE)
+            z_buffer: (0..screen_height * screen_width)
                 .map(|_| f32::INFINITY)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),

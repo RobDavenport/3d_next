@@ -1,5 +1,7 @@
+use std::mem::transmute;
+
 use glam::{Vec2, Vec4, Vec4Swizzles};
-use wide::{f32x4, i32x4, CmpGt};
+use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
 use crate::shaders::{PixelShader, VertexParameters};
 
@@ -47,11 +49,17 @@ impl Gpu {
 
             for x in (min_x..=max_x).step_by(X_STEP_SIZE) {
                 // If the pixel is inside the triangle (barycentric coordinates are non-negative)
-                let zero = f32x4::splat(0.0);
+                let zero = f32x4::ZERO;
                 let wa_mask = wa.cmp_gt(zero);
                 let wb_mask = wb.cmp_gt(zero);
                 let wc_mask = wc.cmp_gt(zero);
                 let mask = wa_mask & wb_mask & wc_mask;
+
+                // See if any pixels extend out of the bb
+                let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
+                let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
+
+                let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
 
                 if mask.any() {
                     // Normalize the weights
@@ -139,8 +147,9 @@ impl Gpu {
                     let fragment_color = pixel_shader.run(ps_params.0);
 
                     // Write the fragment color to the frame buffer
-                    let pixel_index = (x + (y * self.screen_width as i32)) as usize;
-                    self.frame_buffer[pixel_index] = fragment_color.to_graphics_params();
+                    let y = (self.screen_height - y as usize) - 1;
+                    self.frame_buffer[x as usize + (y * self.screen_width)] =
+                        fragment_color.to_graphics_params();
                 }
             }
         }
