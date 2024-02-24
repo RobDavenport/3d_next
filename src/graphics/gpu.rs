@@ -26,7 +26,7 @@ impl Gpu {
             screen_height,
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
-            frame_buffer: (0..screen_height * screen_width)
+            frame_buffer: (0..(screen_height * screen_width) + super::rasterizer::X_STEP_SIZE)
                 .map(|_| Default::default())
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
