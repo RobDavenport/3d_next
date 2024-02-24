@@ -86,8 +86,12 @@ impl PixelShader<5> for TexturedNormalLit {
         // Shader Setup
         let [u, v, pixel_x, pixel_y, pixel_z] = parameters;
         let pixel_position = Vec3::new(pixel_x, pixel_y, pixel_z);
-        let normal = self.normal.sample_2d(u, v).to_vec3();
         let object_color = self.diffuse.sample_2d(u, v).to_vec3();
+
+        // Normal is in (0 -> 1) Ranges
+        // So we need to put it in (-1 -> 1) Range
+        let normal = self.normal.sample_2d(u, v).to_vec3();
+        let normal = ((normal * 2.0) - Vec3::ONE).normalize();
 
         let pixel_to_light = (self.light_position - pixel_position).normalize();
         let light_factor = f32::max(pixel_to_light.dot(normal) * self.light_intensity, 0.0);

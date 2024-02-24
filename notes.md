@@ -1,3 +1,7 @@
+Todo:
+Skinned Animation
+
+
 chatGPT Optimization Suggestions:
 
 Raster/Rendering Level

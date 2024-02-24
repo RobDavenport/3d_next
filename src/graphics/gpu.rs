@@ -9,8 +9,7 @@ use crate::{
 };
 
 use super::{
-    clipping::{clip_triangle, ClipResult},
-    ParameterDataBuffer, ParameterDb, Triangle,
+    clipping::{clip_triangle, ClipResult}, rasterizer::X_STEP_SIZE, ParameterDataBuffer, ParameterDb, Triangle
 };
 
 pub struct Gpu {
@@ -26,7 +25,7 @@ impl Gpu {
             screen_height,
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
-            frame_buffer: (0..screen_height * screen_width)
+            frame_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
                 .map(|_| Default::default())
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
@@ -131,7 +130,7 @@ pub struct ZBuffer {
 impl ZBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
-            z_buffer: (0..screen_height * screen_width)
+            z_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
                 .map(|_| f32::INFINITY)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
