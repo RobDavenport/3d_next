@@ -106,9 +106,12 @@ impl Gpu {
         PS: PixelShader<PSIN>,
     {
         let [a, b, c] = triangle.vertices;
-
-        // Interpolate depth values for the pixels
-        let interpolated_depths = ((a.z * a.weight) + (b.z * b.weight) + (c.z * c.weight)).recip();
+        
+        // Interpolate attributes for rendering, perspective correct
+        let a_weight = a.z * a.weight;
+        let b_weight = b.z * b.weight;
+        let c_weight = c.z * c.weight;
+        let interpolated_depths = (a_weight + b_weight + c_weight).recip();
 
         // Calculate the pixel's index
         let pixel_index = y * self.screen_width + x;
@@ -120,22 +123,15 @@ impl Gpu {
 
         // Continue if any pass the depth test
         if mask > 0 {
-            let weights_a = a.weight.as_array_ref();
-            let weights_b = b.weight.as_array_ref();
-            let weights_c = c.weight.as_array_ref();
-
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
                     let x = x as i32 + X_OFFSETS[bit];
                     let y = y as i32 + Y_OFFSETS[bit];
 
-                    // Interpolate attributes for rendering, perspective correct
-                    let a_weight = a.z * weights_a[bit];
-                    let b_weight = b.z * weights_b[bit];
-                    let c_weight = c.z * weights_c[bit];
-
-                    // Calculate the reciprocal of the sum of weights
-                    let weight_recip = (a_weight + b_weight + c_weight).recip();
+                    let a_weight = a_weight.as_array_ref()[bit];
+                    let b_weight = b_weight.as_array_ref()[bit];
+                    let c_weight = c_weight.as_array_ref()[bit];
+                    let weight_recip = interpolated_depths.as_array_ref()[bit];
 
                     // Sum the Parameres to complete interpolation
                     let ps_params = (a.parameters * a_weight

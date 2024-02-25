@@ -1,9 +1,9 @@
 Todo:
-Add Mesh Importer
-Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
-Rework Shader Input Parameters
-Add Tangents to Normal Map Example
-Skinned Animation
+- Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
+- Rework Shader Input Parameters (supportt Vec, Mat)
+  - Add Tangent Space to Normal Map Example
+- Add Mesh Importer
+  - Skinned Animation
 
 
 chatGPT Optimization Suggestions:
