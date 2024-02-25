@@ -1,7 +1,6 @@
 Todo:
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
-- Rework Shader Input Parameters (supportt Vec, Mat)
-  - Add Tangent Space to Normal Map Example
+- Rework Shader Input Parameters (support Vec, Mat)
 - Add Mesh Importer
   - Skinned Animation
 
