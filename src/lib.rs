@@ -26,7 +26,7 @@ static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
     scenes: Vec<Box<dyn Scene>>,
-    scene_index: usize,
+    scene_index: usize
 }
 
 /// # Safety
@@ -46,7 +46,7 @@ pub unsafe extern "C" fn init() {
 
     GAME_STATE.write(GameState {
         scenes,
-        scene_index: 0,
+        scene_index: 0
     });
     CAMERA.write(Camera::new(
         Vec3::new(0.0, 0.0, 5.0),
@@ -89,8 +89,8 @@ pub unsafe extern "C" fn draw() {
     gpu.uniforms.view = camera.view;
 
     gpu.uniforms.light_position = camera.position;
-    gpu.uniforms.light_intensity = 1.25;
-    gpu.uniforms.ambient_light = 0.15;
+    gpu.uniforms.light_intensity = 1.15;
+    gpu.uniforms.ambient_light = 0.05;
 
     game_state.scenes[game_state.scene_index].draw(gpu);
 

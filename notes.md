@@ -1,6 +1,6 @@
 Todo:
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
-- Rework Shader Input Parameters (support Vec, Mat)
+- Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
 - Add Mesh Importer
   - Skinned Animation
 

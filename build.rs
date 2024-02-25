@@ -8,7 +8,7 @@ use image::GenericImageView;
 const INPUT_DIR: &str = "./assets";
 const OUTPUT_DIR: &str = "./src/assets/generated";
 
-const IMAGES: &[[&str; 2]] = &[
+const TEXTURES: &[[&str; 2]] = &[
     ["gamercade", "png"],
     ["brickwall", "jpg"],
     ["brickwall_normal", "jpg"],
@@ -37,7 +37,7 @@ fn generate_images() -> String {
     use crate::assets::Texture;\n",
     );
 
-    IMAGES.iter().for_each(|[filename, extension]| {
+    TEXTURES.iter().for_each(|[filename, extension]| {
         // Read in the image file
         let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
 
