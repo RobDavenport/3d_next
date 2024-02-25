@@ -16,6 +16,7 @@ pub struct PlaneScene {
 impl Scene for PlaneScene {
     fn update(&mut self) { // Do nothing
     }
+    
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.plane.transform;
         gpu.render_actor(&self.plane, BaseVertexShader, Textured);
