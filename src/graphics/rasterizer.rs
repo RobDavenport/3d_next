@@ -106,7 +106,7 @@ impl Gpu {
         PS: PixelShader<PSIN>,
     {
         let [a, b, c] = triangle.vertices;
-        
+
         // Interpolate attributes for rendering, perspective correct
         let a_weight = a.z * a.weight;
         let b_weight = b.z * b.weight;
@@ -123,24 +123,24 @@ impl Gpu {
 
         // Continue if any pass the depth test
         if mask > 0 {
+            // Interpolate parameters since we need to render at least one pixel
+            // Convert them into SIMD parameters
+            let a_params = a.parameters.splat();
+            let b_params = b.parameters.splat();
+            let c_params = c.parameters.splat();
+
+            // Sum the Parameres to complete interpolation
+            let ps_params = ((a_params * a_weight) + (b_params * b_weight) + (c_params * c_weight))
+                * interpolated_depths;
+
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
                     let x = x as i32 + X_OFFSETS[bit];
                     let y = y as i32 + Y_OFFSETS[bit];
 
-                    let a_weight = a_weight.as_array_ref()[bit];
-                    let b_weight = b_weight.as_array_ref()[bit];
-                    let c_weight = c_weight.as_array_ref()[bit];
-                    let weight_recip = interpolated_depths.as_array_ref()[bit];
-
-                    // Sum the Parameres to complete interpolation
-                    let ps_params = (a.parameters * a_weight
-                        + b.parameters * b_weight
-                        + c.parameters * c_weight)
-                        * weight_recip;
-
-                    // Perform fragment shading (e.g., apply lighting calculations, texture mapping)
-                    let fragment_color = PS::run(&self.uniforms, ps_params.0);
+                    // Pun the pixel shader
+                    let params = ps_params.extract(bit);
+                    let fragment_color = PS::run(&self.uniforms, params);
 
                     // Write the fragment color to the frame buffer
                     let y = (self.screen_height - y as usize) - 1;
