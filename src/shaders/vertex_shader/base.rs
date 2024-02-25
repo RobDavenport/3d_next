@@ -1,4 +1,4 @@
-use glam::{Vec3, Vec4Swizzles};
+use glam::{Mat3, Vec3, Vec4, Vec4Swizzles};
 
 use crate::{graphics::Uniforms, shaders::VertexParameters};
 
@@ -85,17 +85,34 @@ impl VertexShader<5, 8> for BaseVertexShader {
 }
 
 // Used for Textured & Lit via Normal Map
-impl VertexShader<2, 5> for BaseVertexShader {
-    fn run(uniforms: &Uniforms, position: Vec3, input: [f32; 2]) -> VertexShaderOutput<5> {
-        let [u, v] = input;
+impl VertexShader<11, 8> for BaseVertexShader {
+    fn run(uniforms: &Uniforms, position: Vec3, input: [f32; 11]) -> VertexShaderOutput<8> {
+        let [u, v, tx, ty, tz, bx, by, bz, nx, ny, nz] = input;
         let frag_position = (uniforms.model * position.extend(1.0)).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let position = transform_point_to_clip_space(&position, &mvp);
 
+        let t = (uniforms.model * Vec4::new(tx, ty, tz, 0.0)).truncate();
+        let b = (uniforms.model * Vec4::new(bx, by, bz, 0.0)).truncate();
+        let n = (uniforms.model * Vec4::new(nx, ny, nz, 0.0)).truncate();
+        let tbn = Mat3::from_cols(t, b, n).transpose();
+
+        let tan_light = tbn * uniforms.light_position;
+        let tan_pos = tbn * frag_position;
+
         VertexShaderOutput {
             position,
-            parameters: VertexParameters([u, v, frag_position.x, frag_position.y, frag_position.z]),
+            parameters: VertexParameters([
+                u,
+                v,
+                tan_light.x,
+                tan_light.y,
+                tan_light.z,
+                tan_pos.x,
+                tan_pos.y,
+                tan_pos.z,
+            ]),
         }
     }
 }

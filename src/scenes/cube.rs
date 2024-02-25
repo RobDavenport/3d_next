@@ -1,4 +1,4 @@
-use glam::Mat4;
+use glam::{Mat4, Vec3};
 
 use super::Scene;
 use crate::{
@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct CubeScene {
-    pub cube: Actor<2>,
+    pub cube: Actor<11>,
 }
 
 impl CubeScene {
@@ -19,9 +19,15 @@ impl CubeScene {
 
         shapes::cube(1.0)
             .into_iter()
-            .for_each(|(position, uv, _normal)| {
+            .for_each(|(position, uv, normal, tangent)| {
                 vertices.push(position);
-                parameters.push(VertexParameters([uv[0], uv[1]]));
+                let t = Vec3::from(tangent);
+                let n = Vec3::from(normal);
+                let b = n.cross(t);
+
+                parameters.push(VertexParameters([
+                    uv[0], uv[1], t.x, t.y, t.z, b.x, b.y, b.z, n.x, n.y, n.z,
+                ]));
             });
 
         let indices = IndexList(

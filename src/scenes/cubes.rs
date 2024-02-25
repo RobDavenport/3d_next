@@ -21,7 +21,7 @@ impl CubesScene {
 
         shapes::cube(1.0)
             .into_iter()
-            .for_each(|(position, uv, normal)| {
+            .for_each(|(position, uv, normal, _tangent)| {
                 vertices.push(position);
                 parameters.push(VertexParameters([
                     uv[0], uv[1], normal[0], normal[1], normal[2],

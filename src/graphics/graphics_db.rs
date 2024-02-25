@@ -81,6 +81,8 @@ pub struct ParameterDb {
     vec3s: Vec<ParameterData<3>>,
     vec5s: Vec<ParameterData<5>>,
     vec6s: Vec<ParameterData<6>>,
+
+    vec11s: Vec<ParameterData<11>>,
 }
 
 pub struct ParameterData<const P: usize>(pub Box<[VertexParameters<P>]>);
@@ -136,5 +138,15 @@ impl ParameterDataBuffer<6> for ParameterDb {
 
     fn buffer_mut(&mut self) -> &mut Vec<ParameterData<6>> {
         &mut self.vec6s
+    }
+}
+
+impl ParameterDataBuffer<11> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<11>> {
+        &self.vec11s
+    }
+
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<11>> {
+        &mut self.vec11s
     }
 }
