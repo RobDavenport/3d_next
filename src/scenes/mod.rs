@@ -3,6 +3,9 @@ use crate::Gpu;
 mod cubes;
 pub use cubes::CubesScene;
 
+mod cube_model;
+pub use cube_model::CubeModelScene;
+
 mod plane;
 pub use plane::PlaneScene;
 

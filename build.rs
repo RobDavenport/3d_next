@@ -1,8 +1,8 @@
-use std::{
-    fs::{self},
-    io::Write,
-};
+use std::{fs, io::Write};
 
+use bytemuck::from_bytes;
+use glam::Vec3;
+use gltf::{Glb, Gltf};
 use image::GenericImageView;
 
 const INPUT_DIR: &str = "./assets";
@@ -14,7 +14,7 @@ const TEXTURES: &[[&str; 2]] = &[
     ["brickwall_normal", "jpg"],
 ];
 
-const MESHES: &[[&str; 2]] = &[];
+const MESHES: &[[&str; 2]] = &[["BoxVertexColors", "glb"]];
 
 fn main() {
     let modfile_path = format!("{OUTPUT_DIR}/mod.rs");
@@ -71,12 +71,143 @@ fn generate_images() -> String {
         out.push_str(&append);
     });
 
-    out.push('}');
+    out.push_str("}\n");
 
     out
 }
 
 // TODO: Write this
 fn generate_meshes() -> String {
-    String::new()
+    let mut out = String::from(
+        "pub mod meshes {
+        use crate::{graphics::{Mesh, IndexList, VertexList, ParameterData, TriangleIndices}, shaders::VertexParameters};
+        use glam::Vec3;\n",
+    );
+
+    MESHES.iter().for_each(|[filename, extension]| {
+        // Read in the image file
+        let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+
+        let glb = Glb::from_reader(std::fs::File::open(read_path).unwrap()).unwrap();
+        let gltf = Gltf::from_slice(&glb.json).unwrap();
+        let blob = glb.bin.unwrap();
+        let mesh = gltf.meshes().next().unwrap();
+
+        let primitive = mesh.primitives().next().unwrap();
+        let indices_accessor = primitive.indices().unwrap();
+
+        let mut indices = Vec::new();
+        let mut positions = Vec::new();
+        let mut colors = Vec::new();
+        // let mut normals = Vec::new();
+
+        let size = indices_accessor.size();
+        let start = indices_accessor.offset();
+        let end = start + indices_accessor.count() * size;
+
+        for index in blob[start..end].chunks_exact(size * 3) {
+            let tri = if size == 2 {
+                let a = *from_bytes::<u16>(&index[0..size]) as usize;
+                let b = *from_bytes::<u16>(&index[size..2 * size]) as usize;
+                let c = *from_bytes::<u16>(&index[2 * size..3 * size]) as usize;
+                [a, b, c]
+            } else if size == 4 {
+                let a = *from_bytes::<u32>(&index[0..size]) as usize;
+                let b = *from_bytes::<u32>(&index[size..2 * size]) as usize;
+                let c = *from_bytes::<u32>(&index[2 * size..3 * size]) as usize;
+                [a, b, c]
+            } else {
+                panic!("Unhandled byte size for mesh: {filename}");
+            };
+            indices.push(tri)
+        }
+
+        for (kind, attribute) in primitive.attributes() {
+            let accessor = primitive.get(&kind).unwrap();
+            let start = attribute.offset();
+            let end = start + (attribute.count() * attribute.size());
+            let count = accessor.count();
+            let size = accessor.size();
+            println!("{start}..{end}, count: {count} size: {size}");
+            let view = &blob[start..end];
+
+            match kind {
+                gltf::Semantic::Positions => {
+                    let f = accessor.data_type();
+                    println!("POSITION TYPE: {f:?}");
+                    for bytes in view.chunks_exact(size) {
+                        let x = *from_bytes::<f32>(&bytes[0..4]);
+                        let y = *from_bytes::<f32>(&bytes[4..8]);
+                        let z = *from_bytes::<f32>(&bytes[8..12]);
+                        positions.push(Vec3::new(x, y, z));
+                    }
+
+                    println!("pos: count: {count}, positions.len, {}", positions.len());
+                }
+                // gltf::Semantic::TexCoords(_) => {
+                //     for bytes in view.chunks(2 * 4).step_by(stride) {
+                //         let u = f32::from_ne_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
+                //         let v = f32::from_ne_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
+                //         uvs.push([u, v]);
+                //     }
+                // },
+                gltf::Semantic::Colors(_) => {
+                    let c = accessor.data_type();
+                    println!("COLOR TYPE: {c:?}");
+
+                    for bytes in view.chunks_exact(size) {
+                        let r = *from_bytes::<f32>(&bytes[0..4]);
+                        let g = *from_bytes::<f32>(&bytes[4..8]);
+                        let b = *from_bytes::<f32>(&bytes[8..12]);
+                        colors.push([r, g, b]);
+                    }
+                    println!("color: count: {count}, colors.len, {}", colors.len());
+                }
+                _ => continue,
+            }
+        }
+
+        let filename = filename.to_uppercase();
+
+        let indices = indices
+            .iter()
+            .map(|[a, b, c]| format!("TriangleIndices({a}, {b}, {c})"))
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let positions = positions
+            .iter()
+            .map(|position| {
+                format!(
+                    "Vec3::new({:.1}, {:.1}, {:.1})",
+                    position.x, position.y, position.z
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let parameter_data = colors
+            .iter()
+            .map(|[u, v, w]| format!("VertexParameters([{u:.1}, {v:.1}, {w:.1}])",))
+            .collect::<Vec<_>>()
+            .join(",");
+
+        let append = format!(
+            "pub fn {filename}() -> Mesh<3> {{
+                Mesh {{
+                    vertices: VertexList(Box::new([{positions}])),
+                    indices: IndexList(Box::new([{indices}])),
+                    parameters: ParameterData(Box::new([{parameter_data}])),
+                }}
+            }}
+                "
+        );
+
+        // Append the output String
+        out.push_str(&append);
+    });
+
+    out.push_str("}\n");
+
+    out
 }

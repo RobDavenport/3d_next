@@ -6,6 +6,7 @@ use gamercade_rs::prelude as gc;
 use glam::Vec3;
 use graphics::Gpu;
 use graphics::GraphicsDb;
+use scenes::CubeModelScene;
 use scenes::CubeScene;
 use scenes::{CubesScene, PlaneScene, Scene, TriangleScene};
 
@@ -26,7 +27,7 @@ static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
     scenes: Vec<Box<dyn Scene>>,
-    scene_index: usize
+    scene_index: usize,
 }
 
 /// # Safety
@@ -38,6 +39,7 @@ pub unsafe extern "C" fn init() {
     let mut graphics_db = GraphicsDb::default();
 
     let scenes: Vec<Box<dyn Scene>> = vec![
+        (Box::new(CubeModelScene::new(&mut graphics_db))),
         (Box::new(CubeScene::new(&mut graphics_db))),
         (Box::new(CubesScene::new(&mut graphics_db))),
         (Box::new(PlaneScene::new(&mut graphics_db))),
@@ -46,7 +48,7 @@ pub unsafe extern "C" fn init() {
 
     GAME_STATE.write(GameState {
         scenes,
-        scene_index: 0
+        scene_index: 0,
     });
     CAMERA.write(Camera::new(
         Vec3::new(0.0, 0.0, 5.0),
