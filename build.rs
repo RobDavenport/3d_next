@@ -1,6 +1,6 @@
 use std::{fs, io::Write};
 
-use bytemuck::from_bytes;
+use bytemuck::{cast_slice, from_bytes};
 use glam::Vec3;
 use gltf::{Glb, Gltf};
 use image::GenericImageView;
@@ -99,10 +99,11 @@ fn generate_meshes() -> String {
         let mut indices = Vec::new();
         let mut positions = Vec::new();
         let mut colors = Vec::new();
+        let mut uvs = Vec::new();
         // let mut normals = Vec::new();
 
         let size = indices_accessor.size();
-        let start = indices_accessor.offset();
+        let start = indices_accessor.offset() + indices_accessor.view().unwrap().offset();
         let end = start + indices_accessor.count() * size;
 
         for index in blob[start..end].chunks_exact(size * 3) {
@@ -123,45 +124,27 @@ fn generate_meshes() -> String {
         }
 
         for (kind, attribute) in primitive.attributes() {
-            let accessor = primitive.get(&kind).unwrap();
-            let start = attribute.offset();
+            let view = attribute.view().unwrap();
+            let start = attribute.offset() + view.offset();
             let end = start + (attribute.count() * attribute.size());
-            let count = accessor.count();
-            let size = accessor.size();
-            println!("{start}..{end}, count: {count} size: {size}");
             let view = &blob[start..end];
+            let view: &[f32] = cast_slice(view);
 
             match kind {
                 gltf::Semantic::Positions => {
-                    let f = accessor.data_type();
-                    println!("POSITION TYPE: {f:?}");
-                    for bytes in view.chunks_exact(size) {
-                        let x = *from_bytes::<f32>(&bytes[0..4]);
-                        let y = *from_bytes::<f32>(&bytes[4..8]);
-                        let z = *from_bytes::<f32>(&bytes[8..12]);
-                        positions.push(Vec3::new(x, y, z));
+                    for p in view.chunks_exact(3) {
+                        positions.push(Vec3::new(p[0], p[1], p[2]));
                     }
-
-                    println!("pos: count: {count}, positions.len, {}", positions.len());
                 }
-                // gltf::Semantic::TexCoords(_) => {
-                //     for bytes in view.chunks(2 * 4).step_by(stride) {
-                //         let u = f32::from_ne_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]);
-                //         let v = f32::from_ne_bytes([bytes[4], bytes[5], bytes[6], bytes[7]]);
-                //         uvs.push([u, v]);
-                //     }
-                // },
-                gltf::Semantic::Colors(_) => {
-                    let c = accessor.data_type();
-                    println!("COLOR TYPE: {c:?}");
-
-                    for bytes in view.chunks_exact(size) {
-                        let r = *from_bytes::<f32>(&bytes[0..4]);
-                        let g = *from_bytes::<f32>(&bytes[4..8]);
-                        let b = *from_bytes::<f32>(&bytes[8..12]);
-                        colors.push([r, g, b]);
+                gltf::Semantic::TexCoords(_) => {
+                    for uv in view.chunks_exact(2) {
+                        uvs.push([uv[0], uv[1]]);
                     }
-                    println!("color: count: {count}, colors.len, {}", colors.len());
+                }
+                gltf::Semantic::Colors(_) => {
+                    for c in view.chunks_exact(3) {
+                        colors.push([c[0], c[1], c[2]]);
+                    }
                 }
                 _ => continue,
             }
