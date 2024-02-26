@@ -6,9 +6,7 @@ use gamercade_rs::prelude as gc;
 use glam::Vec3;
 use graphics::Gpu;
 use graphics::GraphicsDb;
-use scenes::CubeModelScene;
-use scenes::CubeScene;
-use scenes::{CubesScene, PlaneScene, Scene, TriangleScene};
+use scenes::*;
 
 mod actor;
 mod assets;
@@ -40,6 +38,8 @@ pub unsafe extern "C" fn init() {
 
     let scenes: Vec<Box<dyn Scene>> = vec![
         (Box::new(CubeModelScene::new(&mut graphics_db))),
+        (Box::new(FoxModelScene::new(&mut graphics_db))),
+        (Box::new(DuckModelScene::new(&mut graphics_db))),
         (Box::new(CubeScene::new(&mut graphics_db))),
         (Box::new(CubesScene::new(&mut graphics_db))),
         (Box::new(PlaneScene::new(&mut graphics_db))),

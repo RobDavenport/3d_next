@@ -3,13 +3,13 @@ use glam::Mat4;
 use crate::{
     actor::Actor,
     graphics::GraphicsDb,
-    shaders::{BaseVertexShader, ColorBlend},
+    shaders::{BaseVertexShader, ColorBlendLit},
 };
 
 use super::Scene;
 
 pub struct CubeModelScene {
-    cube: Actor<3>,
+    cube: Actor<6>,
 }
 
 impl CubeModelScene {
@@ -29,7 +29,7 @@ impl CubeModelScene {
 impl Scene for CubeModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.cube.transform;
-        gpu.render_actor(&self.cube, BaseVertexShader, ColorBlend);
+        gpu.render_actor(&self.cube, BaseVertexShader, ColorBlendLit);
     }
 
     fn update(&mut self) {

@@ -20,6 +20,7 @@ impl Scene for TriangleScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.triangle.transform;
+        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE;
         gpu.render_actor(&self.triangle, BaseVertexShader, Textured);
     }
 }

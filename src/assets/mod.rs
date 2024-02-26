@@ -1,10 +1,7 @@
 mod generated;
 pub use generated::*;
 
-use crate::{
-    graphics::{IndexList, ParameterData, VertexList},
-    types::Color,
-};
+use crate::types::Color;
 
 pub struct Texture {
     pub width: usize,

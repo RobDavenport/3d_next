@@ -71,6 +71,7 @@ impl Scene for CubesScene {
     fn draw(&self, gpu: &mut Gpu) {
         self.cubes.iter().for_each(|cube| {
             gpu.uniforms.model = cube.transform;
+            gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL;
             gpu.render_actor(cube, BaseVertexShader, TexturedLit);
         })
     }
