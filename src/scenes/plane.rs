@@ -3,8 +3,8 @@ use glam::Mat4;
 use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
-    shaders::{BaseVertexShader, Textured, VertexParameters},
-    shapes::{self, PLANE_UVS},
+    shaders::{BaseVertexShader, Textured},
+    shapes,
 };
 
 use super::Scene;

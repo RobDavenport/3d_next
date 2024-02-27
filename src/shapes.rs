@@ -76,8 +76,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     // UVs, Normals, Tangent
     // Front
     VertexParameters([
-        CUBE_SIMPLE_UVS[0].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         0.0,
         0.0,
         1.0,
@@ -86,8 +86,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[1].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         0.0,
         0.0,
         1.0,
@@ -96,8 +96,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[2].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         0.0,
         0.0,
         1.0,
@@ -106,8 +106,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[3].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         0.0,
         0.0,
         1.0,
@@ -117,8 +117,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
     // Right
     VertexParameters([
-        CUBE_SIMPLE_UVS[1].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         1.0,
         0.0,
         0.0,
@@ -127,8 +127,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         -1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[5].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         1.0,
         0.0,
         0.0,
@@ -137,8 +137,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         -1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[3].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         1.0,
         0.0,
         0.0,
@@ -147,8 +147,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         -1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[7].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         1.0,
         0.0,
         0.0,
@@ -158,8 +158,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
     // Back
     VertexParameters([
-        CUBE_SIMPLE_UVS[5].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         0.0,
         0.0,
         -1.0,
@@ -168,8 +168,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[4].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         0.0,
         0.0,
         -1.0,
@@ -178,8 +178,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[7].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         0.0,
         0.0,
         -1.0,
@@ -188,8 +188,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[6].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         0.0,
         0.0,
         -1.0,
@@ -199,8 +199,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
     // Left
     VertexParameters([
-        CUBE_SIMPLE_UVS[4].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         -1.0,
         0.0,
         0.0,
@@ -209,8 +209,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[0].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         -1.0,
         0.0,
         0.0,
@@ -219,8 +219,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[6].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         -1.0,
         0.0,
         0.0,
@@ -229,8 +229,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         1.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[2].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         -1.0,
         0.0,
         0.0,
@@ -240,8 +240,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
     // Top
     VertexParameters([
-        CUBE_SIMPLE_UVS[2].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         0.0,
         1.0,
         0.0,
@@ -250,8 +250,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[3].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         0.0,
         1.0,
         0.0,
@@ -260,8 +260,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[6].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         0.0,
         1.0,
         0.0,
@@ -270,8 +270,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[7].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         0.0,
         1.0,
         0.0,
@@ -281,8 +281,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
     // Bottom
     VertexParameters([
-        CUBE_SIMPLE_UVS[4].0[0],
-        CUBE_SIMPLE_UVS[0].0[1],
+        PLANE_UVS[0].0[0],
+        PLANE_UVS[0].0[1],
         0.0,
         -1.0,
         0.0,
@@ -291,8 +291,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[5].0[0],
-        CUBE_SIMPLE_UVS[1].0[1],
+        PLANE_UVS[1].0[0],
+        PLANE_UVS[1].0[1],
         0.0,
         -1.0,
         0.0,
@@ -301,8 +301,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[0].0[0],
-        CUBE_SIMPLE_UVS[2].0[1],
+        PLANE_UVS[2].0[0],
+        PLANE_UVS[2].0[1],
         0.0,
         -1.0,
         0.0,
@@ -311,8 +311,8 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
     ]),
     VertexParameters([
-        CUBE_SIMPLE_UVS[1].0[0],
-        CUBE_SIMPLE_UVS[3].0[1],
+        PLANE_UVS[3].0[0],
+        PLANE_UVS[3].0[1],
         0.0,
         -1.0,
         0.0,
@@ -320,43 +320,6 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
         0.0,
         0.0,
     ]),
-];
-
-pub const CUBE_SIMPLE_INDICES: &[TriangleIndices; 12] = &[
-    TriangleIndices(0, 1, 2), // Front
-    TriangleIndices(2, 1, 3), // Front
-    TriangleIndices(1, 5, 3), // Right
-    TriangleIndices(3, 5, 7), // Right
-    TriangleIndices(2, 3, 6), // Top
-    TriangleIndices(3, 7, 6), // Top
-    TriangleIndices(4, 7, 5), // Back
-    TriangleIndices(4, 6, 7), // Back
-    TriangleIndices(0, 2, 4), // Left
-    TriangleIndices(2, 6, 4), // Left
-    TriangleIndices(0, 4, 1), // Bottom
-    TriangleIndices(1, 4, 5), // Bottom
-];
-
-pub const CUBE_COLORS: &[VertexParameters<3>] = &[
-    VertexParameters([0.0, 0.0, 1.0]),
-    VertexParameters([0.0, 1.0, 0.0]),
-    VertexParameters([0.0, 1.0, 1.0]),
-    VertexParameters([1.0, 0.0, 0.0]),
-    VertexParameters([1.0, 0.0, 1.0]),
-    VertexParameters([1.0, 1.0, 0.0]),
-    VertexParameters([1.0, 1.0, 1.0]),
-    VertexParameters([1.0, 0.0, 1.0]),
-];
-
-pub const CUBE_SIMPLE_UVS: &[VertexParameters<2>; 8] = &[
-    VertexParameters([0.0, 1.0]),
-    VertexParameters([1.0, 1.0]),
-    VertexParameters([0.0, 0.0]),
-    VertexParameters([1.0, 0.0]),
-    VertexParameters([1.0, 1.0]),
-    VertexParameters([0.0, 1.0]),
-    VertexParameters([1.0, 0.0]),
-    VertexParameters([0.0, 0.0]),
 ];
 
 pub const CUBE_SIMPLE: &[Vec3] = &[
