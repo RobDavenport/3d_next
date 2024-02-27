@@ -5,7 +5,6 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     assets::meshes,
-    gc,
     shaders::{BaseVertexShader, TexturedLit},
 };
 
