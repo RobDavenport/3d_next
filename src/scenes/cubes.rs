@@ -6,38 +6,20 @@ use super::Scene;
 use crate::{
     actor::Actor,
     graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
-    shaders::{BaseVertexShader, TexturedLit, VertexParameters},
+    shaders::{BaseVertexShader, TexturedNormalLit},
     shapes,
 };
 
 pub struct CubesScene {
-    pub cubes: Vec<Actor<5>>,
+    pub cubes: Vec<Actor<8>>,
 }
 
 impl CubesScene {
     pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let mut vertices = Vec::new();
-        let mut parameters = Vec::new();
-
-        shapes::cube(1.0)
-            .into_iter()
-            .for_each(|(position, uv, normal, _tangent)| {
-                vertices.push(position);
-                parameters.push(VertexParameters([
-                    uv[0], uv[1], normal[0], normal[1], normal[2],
-                ]));
-            });
-
-        let indices = IndexList(
-            shapes::CUBE_INDICES
-                .into_iter()
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
-        );
         let actor_id = graphics_db.push_mesh(Mesh {
-            vertices: VertexList(vertices.into_boxed_slice()),
-            indices,
-            parameters: ParameterData(parameters.into_boxed_slice()),
+            vertices: VertexList(shapes::CUBE),
+            indices: IndexList(shapes::CUBE_INDICES),
+            parameters: ParameterData(shapes::CUBE_PARAMETERS),
         });
 
         let positions = [
@@ -72,7 +54,8 @@ impl Scene for CubesScene {
         self.cubes.iter().for_each(|cube| {
             gpu.uniforms.model = cube.transform;
             gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL;
-            gpu.render_actor(cube, BaseVertexShader, TexturedLit);
+            gpu.uniforms.normal = crate::assets::textures::BRICKWALL_NORMAL;
+            gpu.render_actor(cube, BaseVertexShader, TexturedNormalLit);
         })
     }
 }

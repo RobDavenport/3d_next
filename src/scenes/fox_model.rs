@@ -14,7 +14,7 @@ pub struct FoxModelScene {
 
 impl FoxModelScene {
     pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::FOX());
+        let actor_id = graphics_db.push_mesh(crate::assets::meshes::FOX);
 
         Self {
             fox: Actor {

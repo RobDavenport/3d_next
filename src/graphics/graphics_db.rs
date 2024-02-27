@@ -70,9 +70,9 @@ impl GraphicsDb {
 #[derive(Clone, Copy)]
 pub struct TriangleIndices(pub usize, pub usize, pub usize);
 
-pub struct IndexList(pub Box<[TriangleIndices]>);
+pub struct IndexList(pub &'static [TriangleIndices]);
 
-pub struct VertexList(pub Box<[Vec3]>);
+pub struct VertexList(pub &'static [Vec3]);
 
 // TODO: Could make a macro for this...
 #[derive(Default)]
@@ -82,10 +82,11 @@ pub struct ParameterDb {
     vec5s: Vec<ParameterData<5>>,
     vec6s: Vec<ParameterData<6>>,
 
+    vec8s: Vec<ParameterData<8>>,
     vec11s: Vec<ParameterData<11>>,
 }
 
-pub struct ParameterData<const P: usize>(pub Box<[VertexParameters<P>]>);
+pub struct ParameterData<const P: usize>(pub &'static [VertexParameters<P>]);
 
 pub trait ParameterDataBuffer<const P: usize> {
     fn buffer(&self) -> &Vec<ParameterData<P>>;
@@ -138,6 +139,16 @@ impl ParameterDataBuffer<6> for ParameterDb {
 
     fn buffer_mut(&mut self) -> &mut Vec<ParameterData<6>> {
         &mut self.vec6s
+    }
+}
+
+impl ParameterDataBuffer<8> for ParameterDb {
+    fn buffer(&self) -> &Vec<ParameterData<8>> {
+        &self.vec8s
+    }
+
+    fn buffer_mut(&mut self) -> &mut Vec<ParameterData<8>> {
+        &mut self.vec8s
     }
 }
 

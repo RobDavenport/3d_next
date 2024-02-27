@@ -1,6 +1,6 @@
 use glam::Vec3;
 
-use crate::graphics::TriangleIndices;
+use crate::{graphics::TriangleIndices, shaders::VertexParameters};
 
 // RH Coordinate System
 // +X is Right
@@ -16,7 +16,7 @@ use crate::graphics::TriangleIndices;
 // |/       |/
 // 0--------1
 
-pub const CUBE_INDICES: [TriangleIndices; 12] = [
+pub const CUBE_INDICES: &[TriangleIndices; 12] = &[
     // Front
     TriangleIndices(0, 1, 2),
     TriangleIndices(2, 1, 3),
@@ -38,45 +38,291 @@ pub const CUBE_INDICES: [TriangleIndices; 12] = [
 ];
 
 // Position, UV, Normals
-pub fn cube(side: f32) -> [(Vec3, [f32; 2], [f32; 3], [f32; 3]); 24] {
-    let c = cube_simple(side);
-    let uvs = CUBE_SIMPLE_UVS;
-    // Position, UVs, Normals, Tangent
-    [
-        // Front
-        (c[0], uvs[0], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]),
-        (c[1], uvs[1], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]),
-        (c[2], uvs[2], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]),
-        (c[3], uvs[3], [0.0, 0.0, 1.0], [1.0, 0.0, 0.0]),
-        // Right
-        (c[1], uvs[0], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]),
-        (c[5], uvs[1], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]),
-        (c[3], uvs[2], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]),
-        (c[7], uvs[3], [1.0, 0.0, 0.0], [0.0, 0.0, -1.0]),
-        // Back
-        (c[5], uvs[0], [0.0, 0.0, -1.0], [-1.0, 0.0, 0.0]),
-        (c[4], uvs[1], [0.0, 0.0, -1.0], [-1.0, 0.0, 0.0]),
-        (c[7], uvs[2], [0.0, 0.0, -1.0], [-1.0, 0.0, 0.0]),
-        (c[6], uvs[3], [0.0, 0.0, -1.0], [-1.0, 0.0, 0.0]),
-        // Left
-        (c[4], uvs[0], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]),
-        (c[0], uvs[1], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]),
-        (c[6], uvs[2], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]),
-        (c[2], uvs[3], [-1.0, 0.0, 0.0], [0.0, 0.0, 1.0]),
-        // Top
-        (c[2], uvs[0], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[3], uvs[1], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[6], uvs[2], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[7], uvs[3], [0.0, 1.0, 0.0], [1.0, 0.0, 0.0]),
-        // Bottom
-        (c[4], uvs[0], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[5], uvs[1], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[0], uvs[2], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]),
-        (c[1], uvs[3], [0.0, -1.0, 0.0], [1.0, 0.0, 0.0]),
-    ]
-}
+pub const SIDE: f32 = 1.0;
+pub const CUBE: &[Vec3; 24] = &[
+    // Front
+    CUBE_SIMPLE[0],
+    CUBE_SIMPLE[1],
+    CUBE_SIMPLE[2],
+    CUBE_SIMPLE[3],
+    // Right
+    CUBE_SIMPLE[1],
+    CUBE_SIMPLE[5],
+    CUBE_SIMPLE[3],
+    CUBE_SIMPLE[7],
+    // Back
+    CUBE_SIMPLE[5],
+    CUBE_SIMPLE[4],
+    CUBE_SIMPLE[7],
+    CUBE_SIMPLE[6],
+    // Left
+    CUBE_SIMPLE[4],
+    CUBE_SIMPLE[0],
+    CUBE_SIMPLE[6],
+    CUBE_SIMPLE[2],
+    // Top
+    CUBE_SIMPLE[2],
+    CUBE_SIMPLE[3],
+    CUBE_SIMPLE[6],
+    CUBE_SIMPLE[7],
+    // Bottom
+    CUBE_SIMPLE[4],
+    CUBE_SIMPLE[5],
+    CUBE_SIMPLE[0],
+    CUBE_SIMPLE[1],
+];
 
-pub const CUBE_SIMPLE_INDICES: [TriangleIndices; 12] = [
+pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
+    // UVs, Normals, Tangent
+    // Front
+    VertexParameters([
+        CUBE_SIMPLE_UVS[0].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[1].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[2].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[3].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    // Right
+    VertexParameters([
+        CUBE_SIMPLE_UVS[1].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[5].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[3].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[7].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -1.0,
+    ]),
+    // Back
+    VertexParameters([
+        CUBE_SIMPLE_UVS[5].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        0.0,
+        0.0,
+        -1.0,
+        -1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[4].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        0.0,
+        0.0,
+        -1.0,
+        -1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[7].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        0.0,
+        0.0,
+        -1.0,
+        -1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[6].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        0.0,
+        0.0,
+        -1.0,
+        -1.0,
+        0.0,
+        0.0,
+    ]),
+    // Left
+    VertexParameters([
+        CUBE_SIMPLE_UVS[4].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[0].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[6].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[2].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        -1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+    ]),
+    // Top
+    VertexParameters([
+        CUBE_SIMPLE_UVS[2].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[3].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[6].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[7].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    // Bottom
+    VertexParameters([
+        CUBE_SIMPLE_UVS[4].0[0],
+        CUBE_SIMPLE_UVS[0].0[1],
+        0.0,
+        -1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[5].0[0],
+        CUBE_SIMPLE_UVS[1].0[1],
+        0.0,
+        -1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[0].0[0],
+        CUBE_SIMPLE_UVS[2].0[1],
+        0.0,
+        -1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+    VertexParameters([
+        CUBE_SIMPLE_UVS[1].0[0],
+        CUBE_SIMPLE_UVS[3].0[1],
+        0.0,
+        -1.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+    ]),
+];
+
+pub const CUBE_SIMPLE_INDICES: &[TriangleIndices; 12] = &[
     TriangleIndices(0, 1, 2), // Front
     TriangleIndices(2, 1, 3), // Front
     TriangleIndices(1, 5, 3), // Right
@@ -91,71 +337,54 @@ pub const CUBE_SIMPLE_INDICES: [TriangleIndices; 12] = [
     TriangleIndices(1, 4, 5), // Bottom
 ];
 
-pub const CUBE_COLORS: &[[f32; 3]; 8] = &[
-    [0.0, 0.0, 1.0],
-    [0.0, 1.0, 0.0],
-    [0.0, 1.0, 1.0],
-    [1.0, 0.0, 0.0],
-    [1.0, 0.0, 1.0],
-    [1.0, 1.0, 0.0],
-    [1.0, 1.0, 1.0],
-    [1.0, 0.0, 1.0],
+pub const CUBE_COLORS: &[VertexParameters<3>] = &[
+    VertexParameters([0.0, 0.0, 1.0]),
+    VertexParameters([0.0, 1.0, 0.0]),
+    VertexParameters([0.0, 1.0, 1.0]),
+    VertexParameters([1.0, 0.0, 0.0]),
+    VertexParameters([1.0, 0.0, 1.0]),
+    VertexParameters([1.0, 1.0, 0.0]),
+    VertexParameters([1.0, 1.0, 1.0]),
+    VertexParameters([1.0, 0.0, 1.0]),
 ];
 
-pub const CUBE_SIMPLE_UVS: &[[f32; 2]; 8] = &[
-    [0.0, 1.0],
-    [1.0, 1.0],
-    [0.0, 0.0],
-    [1.0, 0.0],
-    [1.0, 1.0],
-    [0.0, 1.0],
-    [1.0, 0.0],
-    [0.0, 0.0],
+pub const CUBE_SIMPLE_UVS: &[VertexParameters<2>; 8] = &[
+    VertexParameters([0.0, 1.0]),
+    VertexParameters([1.0, 1.0]),
+    VertexParameters([0.0, 0.0]),
+    VertexParameters([1.0, 0.0]),
+    VertexParameters([1.0, 1.0]),
+    VertexParameters([0.0, 1.0]),
+    VertexParameters([1.0, 0.0]),
+    VertexParameters([0.0, 0.0]),
 ];
 
-pub fn cube_normals() -> [[f32; 3]; 8] {
-    [
-        Vec3::new(-1.0, -1.0, 1.0).normalize().into(),
-        Vec3::new(1.0, -1.0, 1.0).normalize().into(),
-        Vec3::new(-1.0, 1.0, 1.0).normalize().into(),
-        Vec3::new(1.0, 1.0, 1.0).normalize().into(),
-        Vec3::new(-1.0, -1.0, -1.0).normalize().into(),
-        Vec3::new(1.0, -1.0, -1.0).normalize().into(),
-        Vec3::new(-1.0, 1.0, -1.0).normalize().into(),
-        Vec3::new(1.0, 1.0, -1.0).normalize().into(),
-    ]
-}
-
-pub fn cube_simple(side: f32) -> [Vec3; 8] {
-    [
-        Vec3::new(-side, -side, side),
-        Vec3::new(side, -side, side),
-        Vec3::new(-side, side, side),
-        Vec3::new(side, side, side),
-        Vec3::new(-side, -side, -side),
-        Vec3::new(side, -side, -side),
-        Vec3::new(-side, side, -side),
-        Vec3::new(side, side, -side),
-    ]
-}
-
-pub fn plane(side: f32) -> [Vec3; 4] {
-    [
-        Vec3::new(-side, -side, 0.0), //Bottom Left
-        Vec3::new(side, -side, 0.0),  // Bottom Right
-        Vec3::new(-side, side, 0.0),  // Top Left
-        Vec3::new(side, side, 0.0),   // Top Right
-    ]
-}
-
-pub const PLANE_UVS: &[[f32; 2]; 4] = &[
-    [0.0, 1.0], // Bottom Left
-    [1.0, 1.0], // Bottom Right
-    [0.0, 0.0], // Top Left
-    [1.0, 0.0], // Top Right
+pub const CUBE_SIMPLE: &[Vec3] = &[
+    Vec3::new(-SIDE, -SIDE, SIDE),
+    Vec3::new(SIDE, -SIDE, SIDE),
+    Vec3::new(-SIDE, SIDE, SIDE),
+    Vec3::new(SIDE, SIDE, SIDE),
+    Vec3::new(-SIDE, -SIDE, -SIDE),
+    Vec3::new(SIDE, -SIDE, -SIDE),
+    Vec3::new(-SIDE, SIDE, -SIDE),
+    Vec3::new(SIDE, SIDE, -SIDE),
 ];
 
-pub const PLANE_INDICES: [TriangleIndices; 2] =
-    [TriangleIndices(0, 1, 2), TriangleIndices(2, 1, 3)];
+pub const PLANE: &[Vec3] = &[
+    Vec3::new(-SIDE, -SIDE, 0.0), //Bottom Left
+    Vec3::new(SIDE, -SIDE, 0.0),  // Bottom Right
+    Vec3::new(-SIDE, SIDE, 0.0),  // Top Left
+    Vec3::new(SIDE, SIDE, 0.0),   // Top Right
+];
 
-pub const TRI_INDICES: [TriangleIndices; 1] = [TriangleIndices(0, 1, 2)];
+pub const PLANE_UVS: &[VertexParameters<2>; 4] = &[
+    VertexParameters([0.0, 1.0]), // Bottom Left
+    VertexParameters([1.0, 1.0]), // Bottom Right
+    VertexParameters([0.0, 0.0]), // Top Left
+    VertexParameters([1.0, 0.0]), // Top Right
+];
+
+pub const PLANE_INDICES: &[TriangleIndices; 2] =
+    &[TriangleIndices(0, 1, 2), TriangleIndices(2, 1, 3)];
+
+pub const TRI_INDICES: &[TriangleIndices; 1] = &[TriangleIndices(0, 1, 2)];

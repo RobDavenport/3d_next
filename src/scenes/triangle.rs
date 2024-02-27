@@ -27,28 +27,10 @@ impl Scene for TriangleScene {
 
 impl TriangleScene {
     pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let mut vertices = Vec::new();
-        let mut parameters = Vec::new();
-
-        shapes::plane(1.0)
-            .into_iter()
-            .enumerate()
-            .for_each(|(i, x)| {
-                vertices.push(x);
-                let uv = CUBE_SIMPLE_UVS[i];
-                parameters.push(VertexParameters([uv[0], uv[1]]));
-            });
-
-        let indices = IndexList(
-            shapes::TRI_INDICES
-                .into_iter()
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
-        );
         let actor_id = graphics_db.push_mesh(Mesh {
-            vertices: VertexList(vertices.into_boxed_slice()),
-            indices,
-            parameters: ParameterData(parameters.into_boxed_slice()),
+            vertices: VertexList(shapes::PLANE),
+            indices: IndexList(shapes::TRI_INDICES),
+            parameters: ParameterData(shapes::CUBE_SIMPLE_UVS),
         });
 
         Self {

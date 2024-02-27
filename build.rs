@@ -258,14 +258,11 @@ fn generate_meshes() -> String {
             .join(",");
 
         let append = format!(
-            "pub fn {filename}() -> Mesh<{attribute_count}> {{
-                Mesh {{
-                    vertices: VertexList(Box::new([{positions}])),
-                    indices: IndexList(Box::new([{indices}])),
-                    parameters: ParameterData(Box::new([{parameter_data}])),
-                }}
-            }}
-                "
+            "pub const {filename}: Mesh<{attribute_count}> = Mesh {{
+                vertices: VertexList(&[{positions}]),
+                indices: IndexList(&[{indices}]),
+                parameters: ParameterData(&[{parameter_data}]),
+            }};\n"
         );
 
         // Import Images from the .glb

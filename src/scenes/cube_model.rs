@@ -14,7 +14,7 @@ pub struct CubeModelScene {
 
 impl CubeModelScene {
     pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::BOXVERTEXCOLORS());
+        let actor_id = graphics_db.push_mesh(crate::assets::meshes::BOXVERTEXCOLORS);
 
         Self {
             cube: Actor {

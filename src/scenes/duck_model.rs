@@ -14,7 +14,7 @@ pub struct DuckModelScene {
 
 impl DuckModelScene {
     pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::DUCK());
+        let actor_id = graphics_db.push_mesh(crate::assets::meshes::DUCK);
 
         Self {
             duck: Actor {

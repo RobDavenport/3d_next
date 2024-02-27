@@ -85,17 +85,17 @@ impl VertexShader<5, 8> for BaseVertexShader {
 }
 
 // Used for Textured & Lit via Normal Map
-impl VertexShader<11, 8> for BaseVertexShader {
-    fn run(uniforms: &Uniforms, position: Vec3, input: [f32; 11]) -> VertexShaderOutput<8> {
-        let [u, v, tx, ty, tz, bx, by, bz, nx, ny, nz] = input;
+impl VertexShader<8, 8> for BaseVertexShader {
+    fn run(uniforms: &Uniforms, position: Vec3, input: [f32; 8]) -> VertexShaderOutput<8> {
+        let [u, v, nx, ny, nz, tx, ty, tz] = input;
         let frag_position = (uniforms.model * position.extend(1.0)).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let position = transform_point_to_clip_space(&position, &mvp);
 
         let t = (uniforms.model * Vec4::new(tx, ty, tz, 0.0)).truncate();
-        let b = (uniforms.model * Vec4::new(bx, by, bz, 0.0)).truncate();
         let n = (uniforms.model * Vec4::new(nx, ny, nz, 0.0)).truncate();
+        let b = n.cross(t);
         let tbn = Mat3::from_cols(t, b, n).transpose();
 
         let tan_light = tbn * uniforms.light_position;
