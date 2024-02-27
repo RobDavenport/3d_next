@@ -19,7 +19,7 @@ impl FoxModelScene {
         Self {
             fox: Actor {
                 mesh_id: actor_id,
-                transform: Mat4::from_scale(Vec3::splat(0.03)),
+                transform: Mat4::from_scale(Vec3::splat(0.015)),
                 delta: 0.0,
             },
         }
