@@ -3,7 +3,7 @@ use glam::Mat4;
 use super::Scene;
 use crate::{
     actor::Actor,
-    graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
+    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, TexturedNormalLit},
     shapes::{self},
 };
@@ -13,16 +13,14 @@ pub struct CubeScene {
 }
 
 impl CubeScene {
-    pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(Mesh {
-            vertices: VertexList(shapes::CUBE),
-            indices: IndexList(shapes::CUBE_INDICES),
-            parameters: ParameterData(shapes::CUBE_PARAMETERS),
-        });
-
+    pub fn new() -> Self {
         Self {
             cube: Actor {
-                mesh_id: actor_id,
+                mesh: Mesh {
+                    vertices: VertexList(shapes::CUBE),
+                    indices: IndexList(shapes::CUBE_INDICES),
+                    parameters: VertexParametersList(shapes::CUBE_PARAMETERS),
+                },
                 transform: Mat4::IDENTITY,
                 delta: 0.0,
             },
@@ -35,7 +33,7 @@ impl Scene for CubeScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.cube.transform;
-        gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL;
+        gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_T;
         gpu.render_actor(&self.cube, BaseVertexShader, TexturedNormalLit);
     }
 }

@@ -7,14 +7,15 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-glam = "0.25.0"
+glam = { version = "0.25.0", features = ["bytemuck"] }
+bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics"] }
 wide = "0.7.15"
 gamercade_rs = { path = "../gc_console/gamercade_rs" }
 
 [build-dependencies]
 image = "0.24.9"
 gltf = "1.4.0"
-glam = "0.25.0"
+glam = { version = "0.25.0", features = ["bytemuck"] }
 bytemuck = "1.14.3"
 
 [lib]

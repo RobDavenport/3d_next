@@ -6,11 +6,13 @@ use std::{
 mod pixel_shader;
 mod vertex_shader;
 
+use bytemuck::{Pod, Zeroable};
 pub use pixel_shader::*;
 pub use vertex_shader::*;
 use wide::f32x4;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Pod, Zeroable)]
+#[repr(transparent)]
 pub struct VertexParameters<const P: usize>(pub [f32; P]);
 
 pub struct VertexParametersSimd<const P: usize>(pub [f32x4; P]);

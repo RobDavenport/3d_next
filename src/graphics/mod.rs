@@ -1,12 +1,11 @@
 mod gpu;
-pub mod graphics_db;
 
 mod clipping;
 mod rasterizer;
 
+use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3, Vec4};
 pub use gpu::Gpu;
-pub use graphics_db::*;
 
 use crate::{assets::Texture, shaders::VertexParameters};
 
@@ -29,3 +28,24 @@ pub struct Uniforms {
     pub view: Mat4,
     pub projection: Mat4,
 }
+
+#[derive(Clone, Copy)]
+pub struct VertexParametersList<const P: usize>(pub &'static [VertexParameters<P>]);
+
+// A mesh which is ready to be used
+#[derive(Clone, Copy)]
+pub struct Mesh<const P: usize> {
+    pub vertices: VertexList,
+    pub indices: IndexList,
+    pub parameters: VertexParametersList<P>,
+}
+
+#[derive(Clone, Copy, Pod, Zeroable)]
+#[repr(C)]
+pub struct TriangleIndices(pub u32, pub u32, pub u32);
+
+#[derive(Clone, Copy)]
+pub struct IndexList(pub &'static [TriangleIndices]);
+
+#[derive(Clone, Copy)]
+pub struct VertexList(pub &'static [Vec3]);

@@ -15,24 +15,37 @@ const TEXTURES: &[[&str; 2]] = &[
 
 const MESHES: &[[&str; 2]] = &[["BoxVertexColors", "glb"], ["Fox", "glb"], ["Duck", "glb"]];
 
-struct Texture {
+// For output files
+const TEXTURES_EXTENSION: &str = "T";
+const VERTICES_EXTENSION: &str = "V";
+const INDICES_EXTENSION: &str = "I";
+const PARAMETERS_EXTENSION: &str = "P";
+
+struct TextureOutput {
     name: String,
     width: u32,
     height: u32,
     image_data: Vec<u8>,
 }
 
-impl Texture {
+// Writes the bytes of the file
+fn write_file(filename: &str, data: &[u8]) {
+    let write_path = format!("{OUTPUT_DIR}/{filename}");
+    let mut file_out = fs::File::create(write_path).unwrap();
+    file_out.write_all(data).unwrap();
+}
+
+impl TextureOutput {
     fn to_output(&self) -> String {
         // Write the struct as Rust code
-        let filename = self.name.to_uppercase();
+        let filename = format!("{}_{TEXTURES_EXTENSION}", self.name);
         let width = self.width;
         let height = self.height;
 
         // Write out the bytes of the image
-        let write_path = format!("{OUTPUT_DIR}/{filename}");
-        let mut file_out = fs::File::create(write_path).unwrap();
-        file_out.write_all(&self.image_data).unwrap();
+        write_file(&filename, &self.image_data);
+
+        let filename = filename.to_uppercase();
 
         format!(
             "
@@ -40,6 +53,40 @@ impl Texture {
         width: {width},
         height: {height},
         data: include_bytes!(\"{filename}\")
+    }};\n"
+        )
+    }
+}
+
+struct StaticMeshOutput {
+    name: String,
+    vertices: Vec<Vec3>,
+    indices: Vec<[u32; 3]>,
+    parameters: Vec<f32>,
+    attribute_count: usize,
+}
+
+impl StaticMeshOutput {
+    fn to_output(&self) -> String {
+        // Write out the bytes of the mesh data
+        let verts = format!("{}_{VERTICES_EXTENSION}", self.name);
+        let indices = format!("{}_{INDICES_EXTENSION}", self.name);
+        let parameters = format!("{}_{PARAMETERS_EXTENSION}", self.name);
+
+        write_file(&verts, cast_slice(&self.vertices));
+        write_file(&indices, cast_slice(&self.indices));
+        write_file(&parameters, cast_slice(&self.parameters));
+
+        let name = self.name.to_uppercase();
+
+        let p = self.attribute_count;
+
+        format!(
+            "
+    pub const {name}: &StaticMesh<{p}> = &StaticMesh {{
+        vertices: include_bytes!(\"{verts}\"),
+        indices: include_bytes!(\"{indices}\"),
+        parameters: include_bytes!(\"{parameters}\"),
     }};\n"
         )
     }
@@ -78,7 +125,7 @@ fn generate_images() -> String {
             .flat_map(|(_x, _y, pixel)| [pixel.0[0], pixel.0[1], pixel.0[2]])
             .collect::<Vec<u8>>();
 
-        let texture = Texture {
+        let texture = TextureOutput {
             name: filename.to_string(),
             width: image.width(),
             height: image.height(),
@@ -98,9 +145,7 @@ fn generate_images() -> String {
 fn generate_meshes() -> String {
     let mut out = String::from(
         "pub mod meshes {
-        use crate::{graphics::{Mesh, IndexList, VertexList, ParameterData, TriangleIndices}, shaders::VertexParameters};
-        use crate::assets::Texture;
-        use glam::Vec3;\n",
+    use crate::assets::{StaticMesh, Texture};\n",
     );
 
     MESHES.iter().for_each(|[filename, extension]| {
@@ -178,14 +223,14 @@ fn generate_meshes() -> String {
 
             for index in blob[start..end].chunks_exact(size * 3) {
                 let tri = if size == 2 {
-                    let a = *from_bytes::<u16>(&index[0..2]) as usize;
-                    let b = *from_bytes::<u16>(&index[2..4]) as usize;
-                    let c = *from_bytes::<u16>(&index[4..6]) as usize;
+                    let a = *from_bytes::<u16>(&index[0..2]) as u32;
+                    let b = *from_bytes::<u16>(&index[2..4]) as u32;
+                    let c = *from_bytes::<u16>(&index[4..6]) as u32;
                     [a, b, c]
                 } else if size == 4 {
-                    let a = *from_bytes::<u32>(&index[0..4]) as usize;
-                    let b = *from_bytes::<u32>(&index[4..8]) as usize;
-                    let c = *from_bytes::<u32>(&index[8..12]) as usize;
+                    let a = *from_bytes::<u32>(&index[0..4]) as u32;
+                    let b = *from_bytes::<u32>(&index[4..8]) as u32;
+                    let c = *from_bytes::<u32>(&index[8..12]) as u32;
                     [a, b, c]
                 } else {
                     panic!("Unhandled byte size for mesh: {filename}");
@@ -195,75 +240,50 @@ fn generate_meshes() -> String {
             println!("Triangles found: {}", indices.len());
         } else {
             for n in (0..positions.len()).step_by(3) {
+                let n = n as u32;
                 indices.push([n, n + 1, n + 2])
             }
         }
 
-        let filename = filename.to_uppercase();
-
-        let indices = indices
-            .iter()
-            .map(|[a, b, c]| format!("TriangleIndices({a}, {b}, {c})"))
-            .collect::<Vec<_>>()
-            .join(",");
-
         let mut parameters = Vec::<Vec<f32>>::new();
 
-        let positions = positions
-            .iter()
-            .enumerate()
-            .map(|(index, position)| {
-                let mut this_vertex_parameters = Vec::new();
-                // Colors, UVs, Normals
-                if let Some(color) = colors.get(index) {
-                    this_vertex_parameters.push(color.x);
-                    this_vertex_parameters.push(color.y);
-                    this_vertex_parameters.push(color.z);
-                }
+        positions.iter().enumerate().for_each(|(index, _)| {
+            let mut this_vertex_parameters = Vec::new();
+            // Colors, UVs, Normals
+            if let Some(color) = colors.get(index) {
+                this_vertex_parameters.push(color.x);
+                this_vertex_parameters.push(color.y);
+                this_vertex_parameters.push(color.z);
+            }
 
-                if let Some(uv) = uvs.get(index) {
-                    this_vertex_parameters.push(uv.x);
-                    this_vertex_parameters.push(uv.y);
-                }
+            if let Some(uv) = uvs.get(index) {
+                this_vertex_parameters.push(uv.x);
+                this_vertex_parameters.push(uv.y);
+            }
 
-                if let Some(normal) = normals.get(index) {
-                    this_vertex_parameters.push(normal.x);
-                    this_vertex_parameters.push(normal.y);
-                    this_vertex_parameters.push(normal.z);
-                }
+            if let Some(normal) = normals.get(index) {
+                this_vertex_parameters.push(normal.x);
+                this_vertex_parameters.push(normal.y);
+                this_vertex_parameters.push(normal.z);
+            }
 
-                parameters.push(this_vertex_parameters);
+            parameters.push(this_vertex_parameters);
+        });
 
-                format!(
-                    "Vec3::new({}f32, {}f32, {}f32)",
-                    position.x, position.y, position.z
-                )
-            })
-            .collect::<Vec<_>>()
-            .join(",");
+        let parameters = parameters.into_iter().flatten().collect::<Vec<_>>();
 
-        let parameter_data = parameters
-            .iter()
-            .map(|parameters| {
-                format!(
-                    "VertexParameters([{}])",
-                    parameters
-                        .iter()
-                        .map(|p| format!("{p}f32"))
-                        .collect::<Vec<_>>()
-                        .join(",")
-                )
-            })
-            .collect::<Vec<_>>()
-            .join(",");
+        let static_mesh = StaticMeshOutput {
+            name: filename.to_string(),
+            vertices: positions,
+            indices,
+            parameters,
+            attribute_count,
+        };
 
-        let append = format!(
-            "pub const {filename}: Mesh<{attribute_count}> = Mesh {{
-                vertices: VertexList(&[{positions}]),
-                indices: IndexList(&[{indices}]),
-                parameters: ParameterData(&[{parameter_data}]),
-            }};\n"
-        );
+        let append = static_mesh.to_output();
+
+        // Append the output String
+        out.push_str(&append);
 
         // Import Images from the .glb
         for (index, image) in images.iter().enumerate() {
@@ -317,7 +337,7 @@ fn generate_meshes() -> String {
                 image_data.push(b);
             }
 
-            let texture = Texture {
+            let texture = TextureOutput {
                 name: format!("{filename}_{index}"),
                 width: image.width,
                 height: image.height,
@@ -326,9 +346,6 @@ fn generate_meshes() -> String {
 
             out.push_str(&texture.to_output());
         }
-
-        // Append the output String
-        out.push_str(&append);
     });
 
     out.push_str("}\n");

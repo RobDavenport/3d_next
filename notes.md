@@ -1,5 +1,4 @@
 Todo:
-- Adjust importer to save Vertex Positions, Attributes, Indices, as raw bytes via `include_bytes!()`
 - Skinned Animation
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]

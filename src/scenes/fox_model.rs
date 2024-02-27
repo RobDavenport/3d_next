@@ -2,7 +2,7 @@ use glam::{Mat4, Vec3};
 
 use crate::{
     actor::Actor,
-    graphics::GraphicsDb,
+    assets::meshes,
     shaders::{BaseVertexShader, Textured},
 };
 
@@ -13,12 +13,10 @@ pub struct FoxModelScene {
 }
 
 impl FoxModelScene {
-    pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::FOX);
-
+    pub fn new() -> Self {
         Self {
             fox: Actor {
-                mesh_id: actor_id,
+                mesh: meshes::FOX.as_mesh(),
                 transform: Mat4::from_scale(Vec3::splat(0.015)),
                 delta: 0.0,
             },
@@ -29,7 +27,7 @@ impl FoxModelScene {
 impl Scene for FoxModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.fox.transform;
-        gpu.uniforms.diffuse = crate::assets::meshes::FOX_0;
+        gpu.uniforms.diffuse = crate::assets::meshes::FOX_0_T;
         gpu.render_actor(&self.fox, BaseVertexShader, Textured);
     }
 

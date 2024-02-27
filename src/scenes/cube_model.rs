@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    graphics::GraphicsDb,
+    assets::meshes,
     shaders::{BaseVertexShader, ColorBlendLit},
 };
 
@@ -13,12 +13,10 @@ pub struct CubeModelScene {
 }
 
 impl CubeModelScene {
-    pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::BOXVERTEXCOLORS);
-
+    pub fn new() -> Self {
         Self {
             cube: Actor {
-                mesh_id: actor_id,
+                mesh: meshes::BOXVERTEXCOLORS.as_mesh(),
                 transform: Mat4::IDENTITY,
                 delta: 0.0,
             },

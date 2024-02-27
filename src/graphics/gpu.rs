@@ -5,13 +5,12 @@ use wide::{f32x4, CmpNe};
 use crate::{
     actor::Actor,
     shaders::{PixelShader, VertexShader},
-    GRAPHICS_DB,
 };
 
 use super::{
     clipping::{clip_triangle, ClipResult},
     rasterizer::X_STEP_SIZE,
-    ParameterDataBuffer, ParameterDb, Triangle, Uniforms,
+    Triangle, Uniforms,
 };
 
 pub struct Gpu {
@@ -38,8 +37,8 @@ impl Gpu {
                 light_position: Vec3::default(),
                 light_intensity: 1.25,
                 ambient_light: 0.15,
-                diffuse: textures::BRICKWALL,
-                normal: textures::BRICKWALL_NORMAL,
+                diffuse: textures::BRICKWALL_T,
+                normal: textures::BRICKWALL_NORMAL_T,
                 model: Mat4::IDENTITY,
                 view: Mat4::IDENTITY,
                 projection: Mat4::IDENTITY,
@@ -66,25 +65,22 @@ impl Gpu {
     ) where
         VS: VertexShader<VSIN, PSIN>,
         PS: PixelShader<PSIN>,
-        ParameterDb: ParameterDataBuffer<VSIN>,
     {
-        let graphics_db = unsafe { GRAPHICS_DB.assume_init_ref() };
-        let mesh = graphics_db.get(actor.mesh_id);
-        let vertex_list = mesh.vertices;
-        let indices = mesh.indices;
+        let vertex_list = actor.mesh.vertices.0;
+        let indices = actor.mesh.indices.0;
 
         // Iterate each triangle of the mesh
         for triangle_indices in indices.iter() {
-            let a = vertex_list[triangle_indices.0];
-            let b = vertex_list[triangle_indices.1];
-            let c = vertex_list[triangle_indices.2];
-            let params = mesh.parameters;
+            let a = vertex_list[triangle_indices.0 as usize];
+            let b = vertex_list[triangle_indices.1 as usize];
+            let c = vertex_list[triangle_indices.2 as usize];
+            let params = actor.mesh.parameters;
 
             // Run Vertex shader on every vertexs
             // This should output them into clip space
-            let a_clip = VS::run(&self.uniforms, a, params[triangle_indices.0].0);
-            let b_clip = VS::run(&self.uniforms, b, params[triangle_indices.1].0);
-            let c_clip = VS::run(&self.uniforms, c, params[triangle_indices.2].0);
+            let a_clip = VS::run(&self.uniforms, a, params.0[triangle_indices.0 as usize].0);
+            let b_clip = VS::run(&self.uniforms, b, params.0[triangle_indices.1 as usize].0);
+            let c_clip = VS::run(&self.uniforms, c, params.0[triangle_indices.2 as usize].0);
 
             // Culling Stage
             if is_backfacing(a_clip.position, b_clip.position, c_clip.position) {

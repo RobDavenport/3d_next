@@ -1,9 +1,9 @@
 use glam::{Mat4, Vec3};
 
-use crate::graphics::MeshIndex;
+use crate::graphics::Mesh;
 
 pub struct Actor<const PSIN: usize> {
-    pub mesh_id: MeshIndex<PSIN>,
+    pub mesh: Mesh<PSIN>,
     pub transform: Mat4,
 
     pub delta: f32,

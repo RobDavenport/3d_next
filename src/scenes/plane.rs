@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    graphics::{Gpu, GraphicsDb, IndexList, Mesh, ParameterData, VertexList},
+    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, Textured},
     shapes,
 };
@@ -19,22 +19,20 @@ impl Scene for PlaneScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.plane.transform;
-        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE;
+        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE_T;
         gpu.render_actor(&self.plane, BaseVertexShader, Textured);
     }
 }
 
 impl PlaneScene {
-    pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(Mesh {
-            vertices: VertexList(shapes::PLANE),
-            indices: IndexList(shapes::PLANE_INDICES),
-            parameters: ParameterData(shapes::PLANE_UVS),
-        });
-
+    pub fn new() -> Self {
         Self {
             plane: Actor {
-                mesh_id: actor_id,
+                mesh: Mesh {
+                    vertices: VertexList(shapes::PLANE),
+                    indices: IndexList(shapes::PLANE_INDICES),
+                    parameters: VertexParametersList(shapes::PLANE_UVS),
+                },
                 transform: Mat4::IDENTITY,
                 delta: 0.0,
             },

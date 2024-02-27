@@ -1,7 +1,12 @@
 mod generated;
 pub use generated::*;
 
-use crate::types::Color;
+use crate::{
+    graphics::{IndexList, Mesh, VertexList, VertexParametersList},
+    types::Color,
+};
+
+use bytemuck::cast_slice;
 
 pub struct Texture {
     pub width: usize,
@@ -19,5 +24,21 @@ impl Texture {
         let index = ((v * self.width) + u) * Self::STRIDE;
         let slice = &self.data[index..index + Self::STRIDE];
         Color::new(slice[0], slice[1], slice[2])
+    }
+}
+
+pub struct StaticMesh<const P: usize> {
+    pub vertices: &'static [u8],
+    pub indices: &'static [u8],
+    pub parameters: &'static [u8],
+}
+
+impl<const P: usize> StaticMesh<P> {
+    pub fn as_mesh(&self) -> Mesh<P> {
+        Mesh {
+            vertices: VertexList(cast_slice(self.vertices)),
+            indices: IndexList(cast_slice(self.indices)),
+            parameters: VertexParametersList(cast_slice(self.parameters)),
+        }
     }
 }

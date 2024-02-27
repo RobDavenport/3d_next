@@ -5,7 +5,6 @@ use camera::Camera;
 use gamercade_rs::prelude as gc;
 use glam::Vec3;
 use graphics::Gpu;
-use graphics::GraphicsDb;
 use scenes::*;
 
 mod actor;
@@ -21,7 +20,6 @@ mod types;
 static mut GAME_STATE: MaybeUninit<GameState> = MaybeUninit::uninit();
 static mut CAMERA: MaybeUninit<Camera> = MaybeUninit::uninit();
 static mut GPU: MaybeUninit<Gpu> = MaybeUninit::uninit();
-static mut GRAPHICS_DB: MaybeUninit<GraphicsDb> = MaybeUninit::uninit();
 
 pub struct GameState {
     scenes: Vec<Box<dyn Scene>>,
@@ -34,16 +32,15 @@ pub struct GameState {
 pub unsafe extern "C" fn init() {
     let screen_width = gc::width();
     let screen_height = gc::height();
-    let mut graphics_db = GraphicsDb::default();
 
     let scenes: Vec<Box<dyn Scene>> = vec![
-        (Box::new(CubeModelScene::new(&mut graphics_db))),
-        (Box::new(FoxModelScene::new(&mut graphics_db))),
-        (Box::new(DuckModelScene::new(&mut graphics_db))),
-        (Box::new(CubeScene::new(&mut graphics_db))),
-        (Box::new(CubesScene::new(&mut graphics_db))),
-        (Box::new(PlaneScene::new(&mut graphics_db))),
-        (Box::new(TriangleScene::new(&mut graphics_db))),
+        (Box::new(CubeModelScene::new())),
+        (Box::new(FoxModelScene::new())),
+        (Box::new(DuckModelScene::new())),
+        (Box::new(CubeScene::new())),
+        (Box::new(CubesScene::new())),
+        (Box::new(PlaneScene::new())),
+        (Box::new(TriangleScene::new())),
     ];
 
     GAME_STATE.write(GameState {
@@ -55,7 +52,6 @@ pub unsafe extern "C" fn init() {
         screen_width as f32 / screen_height as f32,
     ));
     GPU.write(Gpu::new(screen_width, screen_height));
-    GRAPHICS_DB.write(graphics_db);
 }
 
 /// # Safety

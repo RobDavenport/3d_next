@@ -2,7 +2,7 @@ use glam::{Mat4, Vec3};
 
 use crate::{
     actor::Actor,
-    graphics::GraphicsDb,
+    assets::meshes,
     shaders::{BaseVertexShader, TexturedLit},
 };
 
@@ -13,12 +13,10 @@ pub struct DuckModelScene {
 }
 
 impl DuckModelScene {
-    pub fn new(graphics_db: &mut GraphicsDb) -> Self {
-        let actor_id = graphics_db.push_mesh(crate::assets::meshes::DUCK);
-
+    pub fn new() -> Self {
         Self {
             duck: Actor {
-                mesh_id: actor_id,
+                mesh: meshes::DUCK.as_mesh(),
                 transform: Mat4::from_scale(Vec3::splat(0.01)),
                 delta: 0.0,
             },
@@ -29,7 +27,7 @@ impl DuckModelScene {
 impl Scene for DuckModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.duck.transform;
-        gpu.uniforms.diffuse = crate::assets::meshes::DUCK_0;
+        gpu.uniforms.diffuse = meshes::DUCK_0_T;
         gpu.render_actor(&self.duck, BaseVertexShader, TexturedLit);
     }
 
