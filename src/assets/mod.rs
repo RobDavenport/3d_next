@@ -18,8 +18,8 @@ impl Texture {
     const STRIDE: usize = 3;
 
     pub fn get_sample(&self, u: f32, v: f32) -> Color {
-        let u = (u * (self.width - 1) as f32).clamp(0.0, (self.width - 1) as f32) as usize;
-        let v = (v * (self.height - 1) as f32).clamp(0.0, (self.height - 1) as f32) as usize;
+        let u = (u.abs().fract() * self.width as f32) as usize;
+        let v = (v.abs().fract() * self.height as f32) as usize;
 
         let index = ((v * self.width) + u) * Self::STRIDE;
         let slice = &self.data[index..index + Self::STRIDE];

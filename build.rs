@@ -13,7 +13,12 @@ const TEXTURES: &[[&str; 2]] = &[
     ["brickwall_normal", "jpg"],
 ];
 
-const MESHES: &[[&str; 2]] = &[["BoxVertexColors", "glb"], ["Fox", "glb"], ["Duck", "glb"]];
+const MESHES: &[[&str; 2]] = &[
+    ["BoxVertexColors", "glb"],
+    ["Fox", "glb"],
+    ["Duck", "glb"],
+    ["DamagedHelmet", "glb"],
+];
 
 // For output files
 const TEXTURES_EXTENSION: &str = "T";

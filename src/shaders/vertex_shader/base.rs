@@ -66,6 +66,7 @@ impl VertexShader<5, 8> for BaseVertexShader {
         let frag_position = (uniforms.model * position.extend(1.0)).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
+        let normal = (uniforms.model * Vec3::new(norm_x, norm_y, norm_z).extend(0.0)).normalize();
         let position = transform_point_to_clip_space(&position, &mvp);
 
         VertexShaderOutput {
@@ -73,9 +74,9 @@ impl VertexShader<5, 8> for BaseVertexShader {
             parameters: VertexParameters([
                 u,
                 v,
-                norm_x,
-                norm_y,
-                norm_z,
+                normal.x,
+                normal.y,
+                normal.z,
                 frag_position.x,
                 frag_position.y,
                 frag_position.z,

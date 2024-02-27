@@ -21,6 +21,9 @@ pub use duck_model::DuckModelScene;
 mod fox_model;
 pub use fox_model::FoxModelScene;
 
+mod helmet_model;
+pub use helmet_model::HelmetModelScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);
