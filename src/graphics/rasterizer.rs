@@ -1,5 +1,3 @@
-use std::mem::transmute;
-
 use glam::{Vec2, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
