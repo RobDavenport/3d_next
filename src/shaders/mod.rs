@@ -15,6 +15,7 @@ use wide::f32x4;
 #[repr(transparent)]
 pub struct VertexParameters<const P: usize>(pub [f32; P]);
 
+#[derive(Clone)]
 pub struct VertexParametersSimd<const P: usize>(pub [f32x4; P]);
 
 impl<const P: usize> Mul<f32x4> for VertexParametersSimd<P> {
