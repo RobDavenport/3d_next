@@ -1,9 +1,9 @@
 use std::mem::transmute;
 
-use glam::{Vec2, Vec4, Vec4Swizzles};
+use glam::{Vec2, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
-use crate::shaders::{PixelShader, VertexParameters};
+use crate::shaders::{PixelShader, VertexParametersSimd};
 
 use super::{Gpu, Triangle};
 
@@ -34,11 +34,14 @@ impl Gpu {
         let max_y = (a.y.max(b.y).max(c.y).min((self.screen_height - 1) as f32)) as usize;
 
         // Triangle Setup
-        let double_triangle_area = double_triangle_area(a.xy(), b.xy(), c.xy());
+        let one_over_2_triangle_area = double_triangle_area(a.xy(), b.xy(), c.xy()).recip();
         let top_left = Vec2::new(min_x as f32, min_y as f32);
         let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
         let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
         let (c_edge, mut wc_row) = EdgeStepper::initialize(a.xy(), b.xy(), top_left);
+
+        // Pre-calculate the differences for faster interpolation
+        let mut render_triangle = RenderTriangle::setup(triangle);
 
         // Iterate over each pixel in the bounding box
         for y in (min_y..=max_y).step_by(Y_STEP_SIZE) {
@@ -56,30 +59,19 @@ impl Gpu {
                 let mask = wa_mask & wb_mask & wc_mask;
 
                 if mask.any() {
-                    // Normalize the weights
-                    let wa = wa / double_triangle_area;
-                    let wb = wb / double_triangle_area;
-                    let wc = wc / double_triangle_area;
-
                     // See if any pixels extend out of the bb
                     // and update mask accordingly
                     let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
                     let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
 
-                    self.render_pixels(
-                        ps,
-                        x,
-                        y,
-                        RenderTriangle {
-                            vertices: [
-                                RenderVertex::new(a, wa, triangle.parameters[0]),
-                                RenderVertex::new(b, wb, triangle.parameters[1]),
-                                RenderVertex::new(c, wc, triangle.parameters[2]),
-                            ],
-                        },
-                        mask,
-                    );
+                    // Normalize the weights
+                    // A's weights arent used during interpolation
+                    render_triangle.vertices[0].weight = wa * one_over_2_triangle_area;
+                    render_triangle.vertices[1].weight = wb * one_over_2_triangle_area;
+                    render_triangle.vertices[2].weight = wc * one_over_2_triangle_area;
+
+                    self.render_pixels(ps, x, y, &render_triangle, mask);
                 }
 
                 // Increment weights one step to the right
@@ -100,18 +92,22 @@ impl Gpu {
         _ps: PS,
         x: usize,
         y: usize,
-        triangle: RenderTriangle<PSIN>,
+        triangle: &RenderTriangle<PSIN>,
         mask: f32x4,
     ) where
         PS: PixelShader<PSIN>,
     {
-        let [a, b, c] = triangle.vertices;
+        let a = &triangle.vertices[0];
+        let b = &triangle.vertices[1];
+        let c = &triangle.vertices[2];
 
-        // Interpolate attributes for rendering, perspective correct
-        let a_weight = a.z * a.weight;
-        let b_weight = b.z * b.weight;
-        let c_weight = c.z * c.weight;
-        let interpolated_depths = (a_weight + b_weight + c_weight).recip();
+        let a_params = &a.parameters;
+        let b_params = &b.parameters;
+        let c_params = &c.parameters;
+
+        // Since this isn't perspective correct, we can use a simpler formula
+        let interpolated_depths =
+            a.z + (triangle.b_sub_az * b.weight) + (triangle.c_sub_az * c.weight);
 
         // Calculate the pixel's index
         let pixel_index = y * self.screen_width + x;
@@ -124,14 +120,11 @@ impl Gpu {
         // Continue if any pass the depth test
         if mask > 0 {
             // Interpolate parameters since we need to render at least one pixel
-            // Convert them into SIMD parameters
-            let a_params = a.parameters.splat();
-            let b_params = b.parameters.splat();
-            let c_params = c.parameters.splat();
-
-            // Sum the Parameres to complete interpolation
-            let ps_params = ((a_params * a_weight) + (b_params * b_weight) + (c_params * c_weight))
-                * interpolated_depths;
+            // Parameters have already been multiplied by Z in the creation of "RenderTriangle"
+            let ps_params = ((a_params.clone() * a.weight)
+                + (b_params.clone() * b.weight)
+                + (c_params.clone() * c.weight))
+                * interpolated_depths.recip();
 
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
@@ -154,18 +147,46 @@ impl Gpu {
 
 struct RenderTriangle<const P: usize> {
     vertices: [RenderVertex<P>; 3],
+    b_sub_az: f32,
+    c_sub_az: f32,
+}
+
+impl<const P: usize> RenderTriangle<P> {
+    fn setup(triangle: Triangle<P>) -> RenderTriangle<P> {
+        Self {
+            vertices: [
+                RenderVertex::new(
+                    triangle.positions[0].z,
+                    f32x4::default(),
+                    (triangle.parameters[0] * triangle.positions[0].z).splat(),
+                ),
+                RenderVertex::new(
+                    triangle.positions[1].z,
+                    f32x4::default(),
+                    (triangle.parameters[1] * triangle.positions[1].z).splat(),
+                ),
+                RenderVertex::new(
+                    triangle.positions[2].z,
+                    f32x4::default(),
+                    (triangle.parameters[2] * triangle.positions[2].z).splat(),
+                ),
+            ],
+            b_sub_az: triangle.positions[1].z - triangle.positions[0].z,
+            c_sub_az: triangle.positions[2].z - triangle.positions[0].z,
+        }
+    }
 }
 
 struct RenderVertex<const P: usize> {
     z: f32,
     weight: f32x4,
-    parameters: VertexParameters<P>,
+    parameters: VertexParametersSimd<P>,
 }
 
 impl<const P: usize> RenderVertex<P> {
-    fn new(position: Vec4, weight: f32x4, parameters: VertexParameters<P>) -> Self {
+    fn new(z: f32, weight: f32x4, parameters: VertexParametersSimd<P>) -> Self {
         Self {
-            z: position.z,
+            z,
             weight,
             parameters,
         }

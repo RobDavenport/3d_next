@@ -142,7 +142,7 @@ impl ZBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
             z_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
-                .map(|_| f32::INFINITY)
+                .map(|_| f32::NEG_INFINITY)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
         }
@@ -150,7 +150,9 @@ impl ZBuffer {
 
     // Clears the Z buffer by setting all values to f32::INFINITY
     fn clear_z_buffer(&mut self) {
-        self.z_buffer.iter_mut().for_each(|d| *d = f32::INFINITY);
+        self.z_buffer
+            .iter_mut()
+            .for_each(|d| *d = f32::NEG_INFINITY);
     }
 
     // Returns a u32x4 mask if the value was closer the target value
@@ -164,7 +166,7 @@ impl ZBuffer {
         ]);
 
         //Take the max values between depths and current depths
-        let merged_max = depths.min(current_depths);
+        let merged_max = depths.max(current_depths);
 
         // If it's on the triangle, take the max value from the previous stetp
         // If its not on the triangle, take the previous value
