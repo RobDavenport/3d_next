@@ -1,4 +1,6 @@
-use glam::{Vec2, Vec4Swizzles};
+use std::mem::transmute;
+
+use glam::{Vec2, Vec4, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
 use crate::shaders::{PixelShader, VertexParameters, VertexParametersSimd};
@@ -13,7 +15,7 @@ const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
 const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
-    // TODO: Consider a better traversal algorithm (Zig Zag) or tiles
+    // TODO: Consider a better traversal algorithm (Zig Zag)
     pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
         triangle: Triangle<PSIN>,
@@ -37,7 +39,6 @@ impl Gpu {
         let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
         let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
         let (c_edge, mut wc_row) = EdgeStepper::initialize(a.xy(), b.xy(), top_left);
-        let mut render_triangle = RenderTriangle::setup(triangle);
 
         let mut triangle = RenderTriangle::setup(&triangle);
 
@@ -66,7 +67,7 @@ impl Gpu {
                     // and update mask accordingly
                     let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
-                    let mask = bytemuck::cast(bb_valid_mask);
+                    let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
 
                     self.render_pixels(ps, x, y, &triangle, mask);
                 }
@@ -136,36 +137,6 @@ impl Gpu {
 
 struct RenderTriangle<const P: usize> {
     vertices: [RenderVertex<P>; 3],
-    b_sub_az: f32,
-    c_sub_az: f32,
-}
-
-impl<const P: usize> RenderTriangle<P> {
-    // Premultiplies parameters by Z and places
-    // them into SIMD-ready buffers
-    fn setup(triangle: Triangle<P>) -> RenderTriangle<P> {
-        Self {
-            vertices: [
-                RenderVertex::new(
-                    triangle.positions[0].z,
-                    f32x4::default(),
-                    (triangle.parameters[0] * triangle.positions[0].z).splat(),
-                ),
-                RenderVertex::new(
-                    triangle.positions[1].z,
-                    f32x4::default(),
-                    (triangle.parameters[1] * triangle.positions[1].z).splat(),
-                ),
-                RenderVertex::new(
-                    triangle.positions[2].z,
-                    f32x4::default(),
-                    (triangle.parameters[2] * triangle.positions[2].z).splat(),
-                ),
-            ],
-            b_sub_az: triangle.positions[1].z - triangle.positions[0].z,
-            c_sub_az: triangle.positions[2].z - triangle.positions[0].z,
-        }
-    }
 }
 
 impl<const P: usize> RenderTriangle<P> {
@@ -199,9 +170,9 @@ struct RenderVertex<const P: usize> {
 }
 
 impl<const P: usize> RenderVertex<P> {
-    fn new(z: f32, weight: f32x4, parameters: VertexParametersSimd<P>) -> Self {
+    fn new(position: Vec4, weight: f32x4, parameters: VertexParameters<P>) -> Self {
         Self {
-            z,
+            z: position.z,
             weight,
             parameters: parameters.splat(),
         }
