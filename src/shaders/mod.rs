@@ -34,6 +34,14 @@ impl<const P: usize> Add<Self> for VertexParametersSimd<P> {
     }
 }
 
+impl<const P: usize> Sub<Self> for VertexParametersSimd<P> {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(array::from_fn(|i| self.0[i] - rhs.0[i]))
+    }
+}
+
 impl<const P: usize> VertexParametersSimd<P> {
     pub fn extract(&self, index: usize) -> [f32; P] {
         array::from_fn(|i| self.0[i].as_array_ref()[index])
