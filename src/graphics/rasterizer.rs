@@ -1,5 +1,3 @@
-use std::mem::transmute;
-
 use glam::{Vec2, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
@@ -15,7 +13,7 @@ const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
 const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
 
 impl Gpu {
-    // TODO: Consider a better traversal algorithm (Zig Zag)
+    // TODO: Consider a better traversal algorithm (Zig Zag) or tiles
     pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
         triangle: Triangle<PSIN>,
@@ -39,8 +37,6 @@ impl Gpu {
         let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
         let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
         let (c_edge, mut wc_row) = EdgeStepper::initialize(a.xy(), b.xy(), top_left);
-
-        // Pre-calculate the differences for faster interpolation
         let mut render_triangle = RenderTriangle::setup(triangle);
 
         // Iterate over each pixel in the bounding box
@@ -63,10 +59,9 @@ impl Gpu {
                     // and update mask accordingly
                     let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
-                    let mask = unsafe { mask & transmute::<_, f32x4>(bb_valid_mask) };
+                    let mask = bytemuck::cast(bb_valid_mask);
 
-                    // Normalize the weights
-                    // A's weights arent used during interpolation
+                    // Normalize & update weights
                     render_triangle.vertices[0].weight = wa * one_over_2_triangle_area;
                     render_triangle.vertices[1].weight = wb * one_over_2_triangle_area;
                     render_triangle.vertices[2].weight = wc * one_over_2_triangle_area;
@@ -152,6 +147,8 @@ struct RenderTriangle<const P: usize> {
 }
 
 impl<const P: usize> RenderTriangle<P> {
+    // Premultiplies parameters by Z and places
+    // them into SIMD-ready buffers
     fn setup(triangle: Triangle<P>) -> RenderTriangle<P> {
         Self {
             vertices: [
