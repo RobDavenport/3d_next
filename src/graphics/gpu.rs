@@ -1,6 +1,4 @@
-use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use glam::{Mat3, Mat4, Vec3, Vec4, Vec4Swizzles};
-use wide::{f32x4, CmpNe};
 
 use crate::{
     actor::Actor,
@@ -8,8 +6,9 @@ use crate::{
 };
 
 use super::{
-    clipping::{clip_triangle, ClipResult},
-    rasterizer::X_STEP_SIZE,
+    clipping::{clip_triangle, ClipResult, ClippingPlane},
+    frame_buffer::FrameBuffer,
+    z_buffer::ZBuffer,
     Triangle, Uniforms,
 };
 
@@ -17,7 +16,7 @@ pub struct Gpu {
     pub(super) screen_width: usize,
     pub(super) screen_height: usize,
     pub(super) z_buffer: ZBuffer,
-    pub frame_buffer: Box<[GraphicsParameters]>,
+    pub frame_buffer: FrameBuffer,
     pub uniforms: Uniforms,
 }
 
@@ -29,10 +28,7 @@ impl Gpu {
             screen_height,
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
-            frame_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
-                .map(|_| Default::default())
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
+            frame_buffer: FrameBuffer::new(screen_width, screen_height),
             uniforms: Uniforms {
                 light_position: Vec3::default(),
                 light_intensity: 1.25,
@@ -47,13 +43,11 @@ impl Gpu {
     }
 
     pub fn clear_z_buffer(&mut self) {
-        self.z_buffer.clear_z_buffer();
+        self.z_buffer.clear();
     }
 
     pub fn clear_frame_buffer(&mut self) {
-        self.frame_buffer
-            .iter_mut()
-            .for_each(|x| *x = GraphicsParameters::new())
+        self.frame_buffer.clear();
     }
 
     // Adds the triangles fr
@@ -92,8 +86,10 @@ impl Gpu {
                 parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
             };
 
+            // TODO: Clip against the other planes
+
             // Clip triangles, and whatever remains, rasterize them
-            let clip_result = clip_triangle(triangle);
+            let clip_result = clip_triangle(ClippingPlane::Near, triangle);
             match clip_result {
                 ClipResult::Culled => continue,
                 ClipResult::One(triangle) => {
@@ -131,58 +127,6 @@ impl Gpu {
         clip_space_triangle.positions[2] = clip_to_screen(clip_space_triangle.positions[2]);
 
         clip_space_triangle
-    }
-}
-
-pub struct ZBuffer {
-    pub z_buffer: Box<[f32]>,
-}
-
-impl ZBuffer {
-    pub fn new(screen_width: usize, screen_height: usize) -> Self {
-        Self {
-            z_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
-                .map(|_| f32::NEG_INFINITY)
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
-        }
-    }
-
-    // Clears the Z buffer by setting all values to f32::INFINITY
-    fn clear_z_buffer(&mut self) {
-        self.z_buffer
-            .iter_mut()
-            .for_each(|d| *d = f32::NEG_INFINITY);
-    }
-
-    // Returns a u32x4 mask if the value was closer the target value
-    // and therefore should be drawn. Also updates the buffer with the new value
-    pub fn test_and_set(&mut self, pixel_index: usize, depths: f32x4, mask: f32x4) -> i32 {
-        let current_depths = f32x4::new([
-            self.z_buffer[pixel_index],
-            self.z_buffer[pixel_index + 1],
-            self.z_buffer[pixel_index + 2],
-            self.z_buffer[pixel_index + 3],
-        ]);
-
-        //Take the max values between depths and current depths
-        let merged_max = depths.max(current_depths);
-
-        // If it's on the triangle, take the max value from the previous stetp
-        // If its not on the triangle, take the previous value
-        let new_depths = mask.blend(merged_max, current_depths);
-
-        // Check if we got any new values
-        let changed = new_depths.cmp_ne(current_depths);
-
-        // If we did, we need to update the buffer and return the output
-        if changed.any() {
-            let data = self.z_buffer[pixel_index..pixel_index].as_mut_ptr();
-            unsafe { (data as *mut [f32; 4]).write(new_depths.into()) }
-            changed.move_mask()
-        } else {
-            0
-        }
     }
 }
 

@@ -93,5 +93,5 @@ pub unsafe extern "C" fn draw() {
 
     game_state.scenes[game_state.scene_index].draw(gpu);
 
-    gc::write_pixel_buffer(0, &gpu.frame_buffer);
+    gc::write_pixel_buffer(0, &gpu.frame_buffer.frame_buffer);
 }

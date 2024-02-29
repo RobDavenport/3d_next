@@ -1,11 +1,17 @@
-mod gpu;
-
 mod clipping;
+mod frame_buffer;
+mod gpu;
 mod rasterizer;
+mod render_tile;
+mod tile_manager;
+mod z_buffer;
+
+pub use frame_buffer::FrameBuffer;
+pub use gpu::Gpu;
+pub use z_buffer::ZBuffer;
 
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3, Vec4};
-pub use gpu::Gpu;
 
 use crate::{assets::Texture, shaders::VertexParameters};
 

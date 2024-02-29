@@ -4,22 +4,55 @@ use crate::camera::NEAR_PLANE;
 
 use super::Triangle;
 
+#[derive(Clone, Copy)]
+pub(crate) enum ClippingPlane {
+    Near,
+    Left,
+    Right,
+    Top,
+    Bottom,
+}
+
+impl ClippingPlane {
+    fn first() -> Self {
+        Self::Near
+    }
+
+    fn next(self) -> Option<ClippingPlane> {
+        match self {
+            Self::Near => Some(Self::Left),
+            Self::Left => Some(Self::Right),
+            Self::Right => Some(Self::Top),
+            Self::Top => Some(Self::Bottom),
+            Self::Bottom => None,
+        }
+    }
+
+    pub(crate) fn point_front_of_plane(&self, vertex: &Vec4) -> bool {
+        match self {
+            Self::Near => vertex.w < vertex.z,
+            Self::Left => vertex.x > -vertex.w,
+            Self::Right => vertex.x < vertex.w,
+            Self::Top => vertex.y < vertex.w,
+            Self::Bottom => vertex.y > -vertex.w,
+        }
+    }
+}
+
 pub(super) enum ClipResult<const P: usize> {
     Culled,
     One(Triangle<P>),
     Two((Triangle<P>, Triangle<P>)),
 }
 
-fn is_in_front_of_near_plane(vertex: &Vec4) -> bool {
-    vertex.w < vertex.z
-}
-
-pub(super) fn clip_triangle<const P: usize>(triangle: Triangle<P>) -> ClipResult<P> {
-    // Geometric Clipping against near plane
-    // We are using a reversed Z
-    let a_front = is_in_front_of_near_plane(&triangle.positions[0]);
-    let b_front = is_in_front_of_near_plane(&triangle.positions[1]);
-    let c_front = is_in_front_of_near_plane(&triangle.positions[2]);
+pub(super) fn clip_triangle<const P: usize>(
+    plane: ClippingPlane,
+    triangle: Triangle<P>,
+) -> ClipResult<P> {
+    // Geometric Clipping against frustum
+    let a_front = plane.point_front_of_plane(&triangle.positions[0]);
+    let b_front = plane.point_front_of_plane(&triangle.positions[1]);
+    let c_front = plane.point_front_of_plane(&triangle.positions[2]);
 
     match (a_front, b_front, c_front) {
         // Simple Cases
@@ -27,25 +60,87 @@ pub(super) fn clip_triangle<const P: usize>(triangle: Triangle<P>) -> ClipResult
         (true, true, true) => ClipResult::One(triangle), // All in front, just pass through
 
         // Handle One In Front
-        (true, false, false) => ClipResult::One(clip_triangle_one_front(triangle, 0)),
-        (false, true, false) => ClipResult::One(clip_triangle_one_front(triangle, 1)),
-        (false, false, true) => ClipResult::One(clip_triangle_one_front(triangle, 2)),
+        (true, false, false) => ClipResult::One(clip_triangle_one_front(plane, triangle, 0)),
+        (false, true, false) => ClipResult::One(clip_triangle_one_front(plane, triangle, 1)),
+        (false, false, true) => ClipResult::One(clip_triangle_one_front(plane, triangle, 2)),
 
         // Handle One Behind
-        (false, true, true) => ClipResult::Two(clip_triangle_one_behind(triangle, 0)),
-        (true, false, true) => ClipResult::Two(clip_triangle_one_behind(triangle, 1)),
-        (true, true, false) => ClipResult::Two(clip_triangle_one_behind(triangle, 2)),
+        (false, true, true) => ClipResult::Two(clip_triangle_one_behind(plane, triangle, 0)),
+        (true, false, true) => ClipResult::Two(clip_triangle_one_behind(plane, triangle, 1)),
+        (true, true, false) => ClipResult::Two(clip_triangle_one_behind(plane, triangle, 2)),
     }
 }
 
 fn clip_triangle_one_front<const P: usize>(
+    plane: ClippingPlane,
     triangle: Triangle<P>,
     front_index: usize,
 ) -> Triangle<P> {
-    clip_edges_against_near_plane(triangle, front_index)
+    clip_edges_against_plane(plane, triangle, front_index)
 }
 
-fn clip_edges_against_near_plane<const P: usize>(
+fn get_clip_factors<const P: usize>(
+    plane: ClippingPlane,
+    triangle: &Triangle<P>,
+    origin: usize,
+) -> (f32, f32) {
+    let b_index = (origin + 1) % 3;
+    let c_index = (origin + 2) % 3;
+
+    let a = triangle.positions[origin];
+    let b = triangle.positions[b_index];
+    let c = triangle.positions[c_index];
+
+    let (a_clipped, ab, ac) = match plane {
+        ClippingPlane::Near => {
+            // Get the distance of A from the near plane
+            let aw_clipped = a.w - NEAR_PLANE;
+
+            // Vectors from A->B and A->C
+            let ab = (b.w - NEAR_PLANE) - aw_clipped;
+            let ac = (c.w - NEAR_PLANE) - aw_clipped;
+
+            // Negate aw_clipped as we use reversed depth
+            (-aw_clipped, ab, ac)
+        }
+        ClippingPlane::Left => {
+            let ax_clipped = a.x + 1.0;
+            let ab = (b.x + 1.0) - ax_clipped;
+            let ac = (c.x + 1.0) - ax_clipped;
+
+            (ax_clipped, ab, ac)
+        }
+        ClippingPlane::Right => {
+            let ax_clipped = a.x - 1.0;
+            let ab = (b.x - 1.0) - ax_clipped;
+            let ac = (c.x - 1.0) - ax_clipped;
+
+            (ax_clipped, ab, ac)
+        }
+        ClippingPlane::Top => {
+            let ax_clipped = a.y + 1.0;
+            let ab = (b.y + 1.0) - ax_clipped;
+            let ac = (c.y + 1.0) - ax_clipped;
+
+            (ax_clipped, ab, ac)
+        }
+        ClippingPlane::Bottom => {
+            let ax_clipped = a.y - 1.0;
+            let ab = (b.y - 1.0) - ax_clipped;
+            let ac = (c.y - 1.0) - ax_clipped;
+
+            (ax_clipped, ab, ac)
+        }
+    };
+
+    // Find how much to lerp
+    let ab_factor = a_clipped / ab;
+    let ac_factor = a_clipped / ac;
+    (ab_factor, ac_factor)
+}
+
+fn clip_edges_against_plane<const P: usize>(
+    plane: ClippingPlane,
     mut triangle: Triangle<P>,
     origin: usize,
 ) -> Triangle<P> {
@@ -64,17 +159,7 @@ fn clip_edges_against_near_plane<const P: usize>(
     // End Setup
 
     // Begin Clipping
-    // Get the distance of A from the near plane
-    let aw_clipped = a.w - NEAR_PLANE;
-
-    // Vectors from A->B and A->C
-    let ab = (b.w - NEAR_PLANE) - aw_clipped;
-    let ac = (c.w - NEAR_PLANE) - aw_clipped;
-
-    // Find how much to lerp
-    // Negate aw_clipped as we use reversed depth
-    let ab_factor = -aw_clipped / ab;
-    let ac_factor = -aw_clipped / ac;
+    let (ab_factor, ac_factor) = get_clip_factors(plane, &triangle, origin);
 
     // Lerp all the things
     let b_clipped = a.lerp(b, ab_factor);
@@ -92,6 +177,7 @@ fn clip_edges_against_near_plane<const P: usize>(
 }
 
 fn clip_triangle_one_behind<const P: usize>(
+    plane: ClippingPlane,
     triangle: Triangle<P>,
     back_index: usize,
 ) -> (Triangle<P>, Triangle<P>) {
@@ -100,7 +186,7 @@ fn clip_triangle_one_behind<const P: usize>(
     let o2 = (back_index + 2) % 3;
 
     // Clip the triangle
-    let behind_triangle = clip_edges_against_near_plane(triangle.clone(), back_index);
+    let behind_triangle = clip_edges_against_plane(plane, triangle.clone(), back_index);
 
     // Verts: o2, b2, b1
     let first = Triangle {

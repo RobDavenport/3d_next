@@ -1,8 +1,10 @@
 Todo:
+- Consider tiled renderer?
+- Geometric Clipping against view frustum?
 - Skinned Animation
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
-- Consider tiled renderer?
+
 
 ---
 
