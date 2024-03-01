@@ -5,16 +5,16 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     assets::meshes,
-    shaders::{BaseVertexShader, HelmetShader},
+    shaders::{BaseVertexShader, TexturedLit},
 };
 
 use super::Scene;
 
-pub struct HelmetModelScene {
+pub struct HelmetModelSimpleScene {
     helmet: Actor<5>,
 }
 
-impl HelmetModelScene {
+impl HelmetModelSimpleScene {
     pub fn new() -> Self {
         Self {
             helmet: Actor {
@@ -26,11 +26,11 @@ impl HelmetModelScene {
     }
 }
 
-impl Scene for HelmetModelScene {
+impl Scene for HelmetModelSimpleScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.helmet.transform;
         gpu.uniforms.diffuse = meshes::DAMAGEDHELMET_0_T;
-        gpu.render_actor(&self.helmet, BaseVertexShader, HelmetShader);
+        gpu.render_actor(&self.helmet, BaseVertexShader, TexturedLit);
     }
 
     fn update(&mut self) {

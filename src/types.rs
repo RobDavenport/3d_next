@@ -29,14 +29,6 @@ impl Color {
         Self { r, g, b }
     }
 
-    pub fn to_vec3(self) -> Vec3 {
-        Vec3::new(
-            self.r as f32 / 255.0,
-            self.g as f32 / 255.0,
-            self.b as f32 / 255.0,
-        )
-    }
-
     pub fn to_graphics_params(self) -> GraphicsParameters {
         let a_level = self.r / 8;
         let g_level = self.g / 8;

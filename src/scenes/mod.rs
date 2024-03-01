@@ -24,6 +24,9 @@ pub use fox_model::FoxModelScene;
 mod helmet_model;
 pub use helmet_model::HelmetModelScene;
 
+mod helmet_model_simple;
+pub use helmet_model_simple::HelmetModelSimpleScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);

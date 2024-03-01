@@ -35,6 +35,7 @@ pub unsafe extern "C" fn init() {
 
     let scenes: Vec<Box<dyn Scene>> = vec![
         (Box::new(HelmetModelScene::new())),
+        (Box::new(HelmetModelSimpleScene::new())),
         (Box::new(CubeModelScene::new())),
         (Box::new(FoxModelScene::new())),
         (Box::new(DuckModelScene::new())),
@@ -65,7 +66,13 @@ pub unsafe extern "C" fn update() {
     camera.update();
 
     if let Some(true) = gc::button_select_pressed(0) {
-        game_state.scene_index = (game_state.scene_index + 1) % game_state.scenes.len();
+        game_state.scene_index += 1;
+        game_state.scene_index %= game_state.scenes.len();
+    } else if let Some(true) = gc::button_start_pressed(0) {
+        if game_state.scene_index == 0 {
+            game_state.scene_index = game_state.scenes.len();
+        }
+        game_state.scene_index -= 1;
     }
 
     game_state.scenes[game_state.scene_index].update();

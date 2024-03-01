@@ -4,7 +4,7 @@ use super::Scene;
 use crate::{
     actor::Actor,
     graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
-    shaders::{BaseVertexShader, TexturedNormalLit},
+    shaders::{BaseVertexShader, TexturedNormalMapLit},
     shapes::{self},
 };
 
@@ -34,6 +34,6 @@ impl Scene for CubeScene {
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.cube.transform;
         gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_T;
-        gpu.render_actor(&self.cube, BaseVertexShader, TexturedNormalLit);
+        gpu.render_actor(&self.cube, BaseVertexShader, TexturedNormalMapLit);
     }
 }

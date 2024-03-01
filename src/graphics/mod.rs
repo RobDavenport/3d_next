@@ -13,7 +13,10 @@ pub use z_buffer::ZBuffer;
 use bytemuck::{Pod, Zeroable};
 use glam::{Mat4, Vec3, Vec4};
 
-use crate::{assets::Texture, shaders::VertexParameters};
+use crate::{
+    assets::{meshes, textures, Texture},
+    shaders::VertexParameters,
+};
 
 #[derive(Clone)]
 struct Triangle<const P: usize> {
@@ -28,11 +31,31 @@ pub struct Uniforms {
     pub ambient_light: f32,
     pub diffuse: &'static Texture,
     pub normal: &'static Texture,
+    pub emissive: &'static Texture,
+    pub occlusion: &'static Texture,
 
     // Vertex Shader
     pub model: Mat4,
     pub view: Mat4,
     pub projection: Mat4,
+}
+
+impl Default for Uniforms {
+    fn default() -> Self {
+        Self {
+            light_position: Vec3::default(),
+            light_intensity: 1.25,
+            ambient_light: 0.15,
+            diffuse: textures::BRICKWALL_T,
+            normal: textures::BRICKWALL_NORMAL_T,
+            emissive: meshes::DAMAGEDHELMET_2_T,
+            occlusion: meshes::DAMAGEDHELMET_3_T,
+
+            model: Mat4::IDENTITY,
+            view: Mat4::IDENTITY,
+            projection: Mat4::IDENTITY,
+        }
+    }
 }
 
 #[derive(Clone, Copy)]

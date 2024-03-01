@@ -5,6 +5,13 @@ Todo:
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
 
+---
+Helmet Model Textures
+0 - Diffuse Texture
+1 - Metallic Roughness
+2 - Emissive
+3 - Occlusion Map
+4 - Normals
 
 ---
 

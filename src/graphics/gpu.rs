@@ -1,4 +1,4 @@
-use glam::{Mat3, Mat4, Vec3, Vec4, Vec4Swizzles};
+use glam::{Mat3, Vec4, Vec4Swizzles};
 
 use crate::{
     actor::Actor,
@@ -20,8 +20,6 @@ pub struct Gpu {
     pub uniforms: Uniforms,
 }
 
-use crate::assets::textures;
-
 impl Gpu {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
@@ -29,16 +27,7 @@ impl Gpu {
             screen_width,
             z_buffer: ZBuffer::new(screen_width, screen_height),
             frame_buffer: FrameBuffer::new(screen_width, screen_height),
-            uniforms: Uniforms {
-                light_position: Vec3::default(),
-                light_intensity: 1.25,
-                ambient_light: 0.15,
-                diffuse: textures::BRICKWALL_T,
-                normal: textures::BRICKWALL_NORMAL_T,
-                model: Mat4::IDENTITY,
-                view: Mat4::IDENTITY,
-                projection: Mat4::IDENTITY,
-            },
+            uniforms: Uniforms::default(),
         }
     }
 
