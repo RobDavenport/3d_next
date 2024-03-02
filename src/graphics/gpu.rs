@@ -6,7 +6,6 @@ use crate::{
 };
 
 use super::{
-    clipping::{clip_triangle, ClipResult, ClippingPlane},
     frame_buffer::FrameBuffer,
     z_buffer::ZBuffer,
     Triangle, Uniforms,

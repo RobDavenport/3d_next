@@ -19,7 +19,7 @@ impl HelmetModelSimpleScene {
         Self {
             helmet: Actor {
                 mesh: meshes::DAMAGEDHELMET.as_mesh(),
-                transform: Mat4::from_scale(Vec3::splat(3.0)) * Mat4::from_rotation_x(FRAC_PI_2),
+                transform: Mat4::from_scale(Vec3::splat(4.0)) * Mat4::from_rotation_x(FRAC_PI_2),
                 delta: 0.0,
             },
         }

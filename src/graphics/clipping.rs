@@ -1,4 +1,4 @@
-use gamercade_rs::api::text::console_log;
+use arrayvec::ArrayVec;
 use glam::Vec4;
 
 use crate::camera::NEAR_PLANE;
@@ -224,16 +224,20 @@ fn clip_triangle_one_behind<const P: usize>(
 }
 
 impl Gpu {
-    pub(crate) fn clip_stage<const P: usize>(&mut self, triangle: Triangle<P>) -> Vec<Triangle<P>> {
+    pub(crate) fn clip_stage<const P: usize>(
+        &mut self,
+        triangle: Triangle<P>,
+    ) -> ArrayVec<Triangle<P>, 13> {
         // Clip triangles, and whatever remains, rasterize them
         let mut plane_iter = ClippingPlane::first();
         let mut input;
-        let mut output = vec![triangle];
+        let mut output = ArrayVec::<_, 13>::new();
 
+        output.push(triangle);
         while let Some(clip) = plane_iter {
             // Take the previous output and run it through clipping
             input = output;
-            output = Vec::new();
+            output = ArrayVec::new();
 
             // Clip all of the triangles against the plane
             input.drain(..).for_each(|triangle| {

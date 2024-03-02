@@ -34,14 +34,14 @@ pub unsafe extern "C" fn init() {
     let screen_height = gc::height();
 
     let scenes: Vec<Box<dyn Scene>> = vec![
-        // (Box::new(HelmetModelScene::new())),
-        // (Box::new(HelmetModelSimpleScene::new())),
-        // (Box::new(CubeModelScene::new())),
-        // (Box::new(FoxModelScene::new())),
-        // (Box::new(DuckModelScene::new())),
-        // (Box::new(CubeScene::new())),
-        // (Box::new(CubesScene::new())),
-        // (Box::new(PlaneScene::new())),
+        (Box::new(HelmetModelScene::new())),
+        (Box::new(HelmetModelSimpleScene::new())),
+        (Box::new(CubeModelScene::new())),
+        (Box::new(FoxModelScene::new())),
+        (Box::new(DuckModelScene::new())),
+        (Box::new(CubeScene::new())),
+        (Box::new(CubesScene::new())),
+        (Box::new(PlaneScene::new())),
         (Box::new(TriangleScene::new())),
     ];
 
