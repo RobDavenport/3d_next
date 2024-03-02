@@ -1,8 +1,9 @@
+use gamercade_rs::api::text::console_log;
 use glam::Vec4;
 
 use crate::camera::NEAR_PLANE;
 
-use super::Triangle;
+use super::{Gpu, Triangle};
 
 #[derive(Clone, Copy)]
 pub(crate) enum ClippingPlane {
@@ -14,8 +15,8 @@ pub(crate) enum ClippingPlane {
 }
 
 impl ClippingPlane {
-    fn first() -> Self {
-        Self::Near
+    fn first() -> Option<Self> {
+        Some(Self::Near)
     }
 
     fn next(self) -> Option<ClippingPlane> {
@@ -30,11 +31,11 @@ impl ClippingPlane {
 
     pub(crate) fn point_front_of_plane(&self, vertex: &Vec4) -> bool {
         match self {
-            Self::Near => vertex.w < vertex.z,
-            Self::Left => vertex.x > -vertex.w,
-            Self::Right => vertex.x < vertex.w,
-            Self::Top => vertex.y < vertex.w,
-            Self::Bottom => vertex.y > -vertex.w,
+            Self::Near => vertex.z > vertex.w,
+            Self::Left => vertex.x < -vertex.w,
+            Self::Right => vertex.x > vertex.w,
+            Self::Top => vertex.y < -vertex.w,
+            Self::Bottom => vertex.y > vertex.w,
         }
     }
 }
@@ -97,39 +98,42 @@ fn get_clip_factors<const P: usize>(
             let aw_clipped = a.w - NEAR_PLANE;
 
             // Vectors from A->B and A->C
-            let ab = (b.w - NEAR_PLANE) - aw_clipped;
-            let ac = (c.w - NEAR_PLANE) - aw_clipped;
+            let ab = a.w - b.w;
+            let ac = a.w - c.w;
 
-            // Negate aw_clipped as we use reversed depth
-            (-aw_clipped, ab, ac)
+            (aw_clipped, ab, ac)
         }
         ClippingPlane::Left => {
-            let ax_clipped = a.x + 1.0;
-            let ab = (b.x + 1.0) - ax_clipped;
-            let ac = (c.x + 1.0) - ax_clipped;
+            let ax_clipped = a.x + a.w;
+
+            let ab = ax_clipped - (b.x + b.w);
+            let ac = ax_clipped - (c.x + c.w);
 
             (ax_clipped, ab, ac)
         }
         ClippingPlane::Right => {
-            let ax_clipped = a.x - 1.0;
-            let ab = (b.x - 1.0) - ax_clipped;
-            let ac = (c.x - 1.0) - ax_clipped;
+            let ax_clipped = a.x - a.w;
+
+            let ab = ax_clipped - (b.x - b.w);
+            let ac = ax_clipped - (c.x - c.w);
 
             (ax_clipped, ab, ac)
         }
         ClippingPlane::Top => {
-            let ax_clipped = a.y + 1.0;
-            let ab = (b.y + 1.0) - ax_clipped;
-            let ac = (c.y + 1.0) - ax_clipped;
+            let ay_clipped = a.y + a.w;
 
-            (ax_clipped, ab, ac)
+            let ab = ay_clipped - (b.y + b.w);
+            let ac = ay_clipped - (c.y + c.w);
+
+            (ay_clipped, ab, ac)
         }
         ClippingPlane::Bottom => {
-            let ax_clipped = a.y - 1.0;
-            let ab = (b.y - 1.0) - ax_clipped;
-            let ac = (c.y - 1.0) - ax_clipped;
+            let ay_clipped = a.y - a.w;
 
-            (ax_clipped, ab, ac)
+            let ab = ay_clipped - (b.y - b.w);
+            let ac = ay_clipped - (c.y - c.w);
+
+            (ay_clipped, ab, ac)
         }
     };
 
@@ -217,4 +221,37 @@ fn clip_triangle_one_behind<const P: usize>(
     };
 
     (first, second)
+}
+
+impl Gpu {
+    pub(crate) fn clip_stage<const P: usize>(&mut self, triangle: Triangle<P>) -> Vec<Triangle<P>> {
+        // Clip triangles, and whatever remains, rasterize them
+        let mut plane_iter = ClippingPlane::first();
+        let mut input;
+        let mut output = vec![triangle];
+
+        while let Some(clip) = plane_iter {
+            // Take the previous output and run it through clipping
+            input = output;
+            output = Vec::new();
+
+            // Clip all of the triangles against the plane
+            input.drain(..).for_each(|triangle| {
+                let clip_result = clip_triangle(clip, triangle);
+                match clip_result {
+                    ClipResult::Culled => (),
+                    ClipResult::One(triangle) => output.push(triangle),
+                    ClipResult::Two((first, second)) => {
+                        output.push(first);
+                        output.push(second)
+                    }
+                }
+            });
+
+            // Step to the next plane
+            plane_iter = clip.next();
+        }
+
+        output
+    }
 }

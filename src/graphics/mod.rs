@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[derive(Clone)]
-struct Triangle<const P: usize> {
+pub(crate) struct Triangle<const P: usize> {
     positions: [Vec4; 3],
     parameters: [VertexParameters<P>; 3],
 }

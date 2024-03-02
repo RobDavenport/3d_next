@@ -75,23 +75,12 @@ impl Gpu {
                 parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
             };
 
-            // TODO: Clip against the other planes
+            let mut clipped_triangles = self.clip_stage(triangle);
 
-            // Clip triangles, and whatever remains, rasterize them
-            let clip_result = clip_triangle(ClippingPlane::Near, triangle);
-            match clip_result {
-                ClipResult::Culled => continue,
-                ClipResult::One(triangle) => {
-                    let triangle = self.tri_clip_to_screen_space(triangle);
-                    self.rasterize_triangle(triangle, ps);
-                }
-                ClipResult::Two((first, second)) => {
-                    let first = self.tri_clip_to_screen_space(first);
-                    let second = self.tri_clip_to_screen_space(second);
-                    self.rasterize_triangle(first, ps);
-                    self.rasterize_triangle(second, ps);
-                }
-            }
+            clipped_triangles.drain(..).for_each(|clip_space_triangle| {
+                let triangle = self.tri_clip_to_screen_space(clip_space_triangle);
+                self.rasterize_triangle(triangle, ps);
+            })
         }
     }
 
