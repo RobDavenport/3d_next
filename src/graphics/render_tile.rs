@@ -6,13 +6,20 @@
 // VeryLow Valid Widths: 4, 8, 16, 32
 // VeryLow Valid Heights 1, 2, 3, 6, 9, 18
 
-use super::{FrameBuffer, ZBuffer};
+use super::{rasterizer::RenderTriangle, FrameBuffer, ZBuffer};
 
+// W and H represent the width and height of the tile
 pub struct RenderTile<const W: usize, const H: usize> {
-    x: usize,
-    y: usize,
+    x: usize, // Left point
+    y: usize, // Top point
     z_bufffer: ZBuffer,
     frame_buffer: FrameBuffer,
+}
+
+pub enum BinTestResult {
+    TrivialAccept, // Entire tile is within the triangle
+    TrivialReject, // Entire triangle is outside of the tile
+    Overlap,       // Partially overlapping tile and triangle
 }
 
 impl<const W: usize, const H: usize> RenderTile<W, H> {

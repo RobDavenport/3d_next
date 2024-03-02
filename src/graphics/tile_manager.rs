@@ -28,4 +28,12 @@ impl<const W: usize, const H: usize> TileManager<W, H> {
 
         Self { tiles }
     }
+
+    pub const fn w(&self) -> usize {
+        W
+    }
+
+    pub const fn h(&self) -> usize {
+        H
+    }
 }

@@ -145,10 +145,10 @@ pub(crate) struct RenderTriangle<const P: usize> {
     a_params: VertexParametersSimd<P>,
     b_sub_a: RenderVertex<P>,
     c_sub_a: RenderVertex<P>,
-    min_x: f32,
-    max_x: f32,
-    min_y: f32,
-    max_y: f32,
+    pub(crate) min_x: f32,
+    pub(crate) max_x: f32,
+    pub(crate) min_y: f32,
+    pub(crate) max_y: f32,
 }
 
 impl<const P: usize> RenderTriangle<P> {

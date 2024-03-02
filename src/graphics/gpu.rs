@@ -6,11 +6,10 @@ use crate::{
 };
 
 use super::{
-    frame_buffer::FrameBuffer, rasterizer::RenderTriangle, render_tile::RenderTile,
-    z_buffer::ZBuffer, Triangle, Uniforms,
+    clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
+    tile_manager::TileManager, z_buffer::ZBuffer, Triangle, Uniforms,
 };
 
-pub(super) const CLIPPING_MAX_OUTPUT: usize = 13;
 pub(super) const TRIANGLES_PER_BIN: usize = 8;
 
 pub struct Gpu {
@@ -19,6 +18,7 @@ pub struct Gpu {
     pub(super) z_buffer: ZBuffer,
     pub frame_buffer: FrameBuffer,
     pub uniforms: Uniforms,
+    pub render_tiles: TileManager<32, 18>,
 }
 
 impl Gpu {
@@ -29,6 +29,7 @@ impl Gpu {
             z_buffer: ZBuffer::new(screen_width, screen_height),
             frame_buffer: FrameBuffer::new(screen_width, screen_height),
             uniforms: Uniforms::default(),
+            render_tiles: TileManager::new(screen_width, screen_height),
         }
     }
 
@@ -71,19 +72,38 @@ impl Gpu {
                 continue; // Skip this triangle if it's a backface
             }
 
+            // Clipping Stage
             let triangle = Triangle {
                 positions: [a_clip.position, b_clip.position, c_clip.position],
                 parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
             };
+            let clip_result = self.clip_stage(triangle);
 
-            // Clipping Stage
-            let mut clipped_triangles = self.clip_stage(triangle);
+            // Rasterize
+            match clip_result {
+                ClipResult::Culled => continue,
+                ClipResult::One(triangle) => {
+                    let triangle = self.tri_clip_to_screen_space(triangle);
+                    let triangle = RenderTriangle::setup(triangle);
+                    self.rasterize_triangle(triangle, ps);
+                }
+                ClipResult::Two((first, second)) => {
+                    let first = self.tri_clip_to_screen_space(first);
+                    let second = self.tri_clip_to_screen_space(second);
 
-            // Rasterization
-            clipped_triangles.drain(..).for_each(|clip_space_triangle| {
-                let triangle = self.tri_clip_to_screen_space(clip_space_triangle);
-                self.rasterize_triangle(RenderTriangle::setup(triangle), ps);
-            })
+                    let first = RenderTriangle::setup(first);
+                    let second = RenderTriangle::setup(second);
+
+                    self.rasterize_triangle(first, ps);
+                    self.rasterize_triangle(second, ps);
+                }
+            }
+
+            // // Binning
+            // let tile_min_x = (triangle.min_x / self.render_tiles.w() as f32).floor() as usize;
+            // let tile_min_y = (triangle.min_y / self.render_tiles.h() as f32).floor() as usize;
+            // let tile_max_x = (triangle.max_x / self.render_tiles.w() as f32).ceil() as usize;
+            // let tile_max_y = (triangle.max_x / self.render_tiles.h() as f32).ceil() as usize;
         }
     }
 
