@@ -1,3 +1,4 @@
+mod binner;
 mod clipping;
 mod frame_buffer;
 mod gpu;

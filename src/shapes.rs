@@ -340,6 +340,12 @@ pub const PLANE: &[Vec3] = &[
     Vec3::new(SIDE, SIDE, 0.0),   // Top Right
 ];
 
+pub const TRIANGLE: &[Vec3] = &[
+    Vec3::new(-SIDE, -SIDE, 0.0), //Bottom Left
+    Vec3::new(SIDE, -SIDE, 0.0),  // Bottom Right
+    Vec3::new(-SIDE, SIDE, 0.0),  // Top Left
+];
+
 pub const PLANE_UVS: &[VertexParameters<2>; 4] = &[
     VertexParameters([0.0, 1.0]), // Bottom Left
     VertexParameters([1.0, 1.0]), // Bottom Right

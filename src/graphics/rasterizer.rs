@@ -9,8 +9,112 @@ use super::{Gpu, Triangle};
 pub(super) const X_STEP_SIZE: usize = 4;
 pub(super) const Y_STEP_SIZE: usize = 1;
 
-const X_OFFSETS: [i32; 4] = [0, 1, 2, 3];
-const Y_OFFSETS: [i32; 4] = [0, 0, 0, 0];
+const X_STAMP_OFFSETS: [i32; 4] = [0, 1, 2, 3];
+const Y_STAMP_OFFSETS: [i32; 4] = [0, 0, 0, 0];
+
+pub struct EdgeStepperCombined {
+    one_over_triangle_2a: f32,
+
+    a_edge: EdgeStepper,
+    b_edge: EdgeStepper,
+    c_edge: EdgeStepper,
+
+    wa_row: f32x4,
+    wb_row: f32x4,
+    wc_row: f32x4,
+
+    wa: f32x4,
+    wb: f32x4,
+    wc: f32x4,
+}
+
+impl EdgeStepperCombined {
+    pub fn new<const P: usize>(
+        triangle: &RenderTriangle<P>,
+        top_left: Vec2,
+        initial_x_stamp: &[i32; 4],
+        initial_y_stamp: &[i32; 4],
+        x_step: i32,
+        y_step: i32,
+    ) -> Self {
+        // Local Setup
+        let a = triangle.a.xy();
+        let b = triangle.b;
+        let c = triangle.c;
+
+        // Initialize steppers
+        let one_over_triangle_2a = double_triangle_area(a, b, c).recip();
+        let (a_edge, wa_row) = EdgeStepper::initialize(
+            b,
+            c,
+            top_left,
+            initial_x_stamp,
+            initial_y_stamp,
+            x_step,
+            y_step,
+        );
+        let (b_edge, wb_row) = EdgeStepper::initialize(
+            c,
+            a,
+            top_left,
+            initial_x_stamp,
+            initial_y_stamp,
+            x_step,
+            y_step,
+        );
+        let (c_edge, wc_row) = EdgeStepper::initialize(
+            a,
+            b,
+            top_left,
+            initial_x_stamp,
+            initial_y_stamp,
+            x_step,
+            y_step,
+        );
+
+        Self {
+            one_over_triangle_2a,
+            a_edge,
+            b_edge,
+            c_edge,
+            wa_row,
+            wb_row,
+            wc_row,
+            wa: wa_row,
+            wb: wa_row,
+            wc: wa_row,
+        }
+    }
+
+    pub fn step_x(&mut self) {
+        // Increment weights one step to the right
+        self.wa += self.a_edge.step_x;
+        self.wb += self.b_edge.step_x;
+        self.wc += self.c_edge.step_x;
+    }
+
+    pub fn reset_row(&mut self) {
+        self.wa = self.wa_row;
+        self.wb = self.wb_row;
+        self.wc = self.wc_row;
+    }
+
+    pub fn step_y(&mut self) {
+        // Increment weights one step down
+        self.wa_row += self.a_edge.step_y;
+        self.wb_row += self.b_edge.step_y;
+        self.wc_row += self.c_edge.step_y;
+    }
+
+    pub fn point_inside_triangle_mask(&self) -> f32x4 {
+        // If the pixel is inside the triangle (barycentric coordinates are non-negative)
+        let wa_mask = self.wa.cmp_gt(f32x4::ZERO);
+        let wb_mask = self.wb.cmp_gt(f32x4::ZERO);
+        let wc_mask = self.wc.cmp_gt(f32x4::ZERO);
+        let mask = wa_mask & wb_mask & wc_mask;
+        mask
+    }
+}
 
 impl Gpu {
     // TODO: Consider a better traversal algorithm (Zig Zag)
@@ -21,10 +125,6 @@ impl Gpu {
     ) where
         PS: PixelShader<PSIN>,
     {
-        let a = triangle.a.xy();
-        let b = triangle.b;
-        let c = triangle.c;
-
         // Determine the bounding box of the triangle in screen space
         let min_x = triangle.min_x.max(0.0) as usize;
         let min_y = triangle.min_y.max(0.0) as usize;
@@ -32,52 +132,45 @@ impl Gpu {
         let max_y = triangle.max_y.min((self.screen_height - 1) as f32) as usize;
 
         // Triangle Setup
-        let one_over_triangle_2a = double_triangle_area(a, b, c).recip();
         let top_left = Vec2::new(min_x as f32, min_y as f32);
-        let (a_edge, mut wa_row) = EdgeStepper::initialize(b, c, top_left);
-        let (b_edge, mut wb_row) = EdgeStepper::initialize(c, a, top_left);
-        let (c_edge, mut wc_row) = EdgeStepper::initialize(a, b, top_left);
+        let mut stepper = EdgeStepperCombined::new(
+            &triangle,
+            top_left,
+            &X_STAMP_OFFSETS,
+            &Y_STAMP_OFFSETS,
+            X_STEP_SIZE as i32,
+            Y_STEP_SIZE as i32,
+        );
 
         // Iterate over each pixel in the bounding box
         for y in (min_y..=max_y).step_by(Y_STEP_SIZE) {
-            // Barycentric coordinates at start of row
-            let mut wa = wa_row;
-            let mut wb = wb_row;
-            let mut wc = wc_row;
-
+            stepper.reset_row();
             for x in (min_x..=max_x).step_by(X_STEP_SIZE) {
                 // If the pixel is inside the triangle (barycentric coordinates are non-negative)
-                let zero = f32x4::ZERO;
-                let wa_mask = wa.cmp_gt(zero);
-                let wb_mask = wb.cmp_gt(zero);
-                let wc_mask = wc.cmp_gt(zero);
-                let mask = wa_mask & wb_mask & wc_mask;
+                let mask = stepper.point_inside_triangle_mask();
 
                 if mask.any() {
                     // Normalize the weights
                     // a's weight is skipped
-                    triangle.b_sub_a.weight = wb * one_over_triangle_2a;
-                    triangle.c_sub_a.weight = wc * one_over_triangle_2a;
+                    triangle.b_sub_a.weight = stepper.wb * stepper.one_over_triangle_2a;
+                    triangle.c_sub_a.weight = stepper.wc * stepper.one_over_triangle_2a;
 
                     // See if any pixels extend out of the bb
                     // and update mask accordingly
-                    let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_OFFSETS);
+                    let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_STAMP_OFFSETS);
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
                     let mask = mask & bytemuck::cast::<_, f32x4>(bb_valid_mask);
 
                     self.render_pixels(ps, x, y, &triangle, mask);
                 }
 
-                // Increment weights one step to the right
-                wa += a_edge.step_x;
-                wb += b_edge.step_x;
-                wc += c_edge.step_x;
+                // One step right
+                stepper.step_x();
             }
 
-            // Increment weights one step down
-            wa_row += a_edge.step_y;
-            wb_row += b_edge.step_y;
-            wc_row += c_edge.step_y;
+            // One step down
+            // Also resets the X's to start of row values
+            stepper.step_y()
         }
     }
 
@@ -121,8 +214,8 @@ impl Gpu {
 
             for bit in 0..4 {
                 if (mask & 1 << bit) != 0 {
-                    let x = x as i32 + X_OFFSETS[bit];
-                    let y = y as i32 + Y_OFFSETS[bit];
+                    let x = x as i32 + X_STAMP_OFFSETS[bit];
+                    let y = y as i32 + Y_STAMP_OFFSETS[bit];
 
                     // Pun the pixel shader
                     let params = ps_params.extract(bit);
@@ -204,21 +297,29 @@ struct EdgeStepper {
 }
 
 impl EdgeStepper {
-    fn initialize(v0: Vec2, v1: Vec2, origin: Vec2) -> (Self, f32x4) {
+    fn initialize(
+        v0: Vec2,
+        v1: Vec2,
+        origin: Vec2,
+        initial_x_stamp: &[i32; 4],
+        initial_y_stamp: &[i32; 4],
+        x_step: i32,
+        y_step: i32,
+    ) -> (Self, f32x4) {
         // Edge setup
         let a = v0.y - v1.y;
         let b = v1.x - v0.x;
         let c = v0.x * v1.y - v0.y * v1.x;
 
         // Step Deltas
-        let step_x = f32x4::splat(a * X_STEP_SIZE as f32);
-        let step_y = f32x4::splat(b * Y_STEP_SIZE as f32);
+        let step_x = f32x4::splat(a * x_step as f32);
+        let step_y = f32x4::splat(b * y_step as f32);
 
         let out = Self { step_x, step_y };
 
         // x/y values for initial pixel block
-        let x: f32x4 = f32x4::splat(origin.x) + i32x4::from(X_OFFSETS).round_float();
-        let y: f32x4 = f32x4::splat(origin.y) + i32x4::from(Y_OFFSETS).round_float();
+        let x: f32x4 = f32x4::splat(origin.x) + i32x4::new(*initial_x_stamp).round_float();
+        let y: f32x4 = f32x4::splat(origin.y) + i32x4::new(*initial_y_stamp).round_float();
 
         // Edge function weights at origin
         let weight = f32x4::splat(a) * x + f32x4::splat(b) * y + f32x4::splat(c);

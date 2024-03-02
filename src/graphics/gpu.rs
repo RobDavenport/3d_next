@@ -18,7 +18,7 @@ pub struct Gpu {
     pub(super) z_buffer: ZBuffer,
     pub frame_buffer: FrameBuffer,
     pub uniforms: Uniforms,
-    pub render_tiles: TileManager<32, 18>,
+    pub(super) render_tiles: TileManager<32, 18>,
 }
 
 impl Gpu {
@@ -79,12 +79,15 @@ impl Gpu {
             };
             let clip_result = self.clip_stage(triangle);
 
-            // Rasterize
+            // Triangle Setup -> Pass to binner
+            // TODO: Complete Binning
             match clip_result {
                 ClipResult::Culled => continue,
                 ClipResult::One(triangle) => {
                     let triangle = self.tri_clip_to_screen_space(triangle);
                     let triangle = RenderTriangle::setup(triangle);
+
+                    //self.bin_triangle(triangle);
                     self.rasterize_triangle(triangle, ps);
                 }
                 ClipResult::Two((first, second)) => {
@@ -94,17 +97,16 @@ impl Gpu {
                     let first = RenderTriangle::setup(first);
                     let second = RenderTriangle::setup(second);
 
+                    //self.bin_triangle(first);
+                    //self.bin_triangle(second);
+
                     self.rasterize_triangle(first, ps);
                     self.rasterize_triangle(second, ps);
                 }
             }
-
-            // // Binning
-            // let tile_min_x = (triangle.min_x / self.render_tiles.w() as f32).floor() as usize;
-            // let tile_min_y = (triangle.min_y / self.render_tiles.h() as f32).floor() as usize;
-            // let tile_max_x = (triangle.max_x / self.render_tiles.w() as f32).ceil() as usize;
-            // let tile_max_y = (triangle.max_x / self.render_tiles.h() as f32).ceil() as usize;
         }
+
+        // TODO: Run any remaining tiles
     }
 
     // Converts a triangle from clip space into screen space
