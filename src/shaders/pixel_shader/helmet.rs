@@ -16,7 +16,10 @@ impl PixelShader<8> for HelmetShader {
         let index = uniforms.diffuse.get_index(u, v);
         let object_color = uniforms.diffuse.index_vec(index);
         let emissive = uniforms.emissive.index_vec(index);
-        let occlusion = uniforms.occlusion.index_vec(index).x;
+        let occlusion = uniforms.occlusion.index_vec(index);
+
+        // Lighting Calculations
+        // TODO: Add tangent & normal map to this shader
 
         let pixel_to_light = (uniforms.light_position - pixel_position).normalize();
         let light_factor = f32::max(pixel_to_light.dot(normal) * uniforms.light_intensity, 0.0);

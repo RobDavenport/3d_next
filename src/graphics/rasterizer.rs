@@ -1,4 +1,4 @@
-use glam::{Vec2, Vec4Swizzles};
+use glam::{Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
 use crate::shaders::{PixelShader, VertexParameters, VertexParametersSimd};
@@ -16,29 +16,27 @@ impl Gpu {
     // TODO: Consider a better traversal algorithm (Zig Zag)
     pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
-        triangle: Triangle<PSIN>,
+        mut triangle: RenderTriangle<PSIN>,
         ps: PS,
     ) where
         PS: PixelShader<PSIN>,
     {
-        let a = triangle.positions[0];
-        let b = triangle.positions[1];
-        let c = triangle.positions[2];
+        let a = triangle.a.xy();
+        let b = triangle.b;
+        let c = triangle.c;
 
         // Determine the bounding box of the triangle in screen space
-        let min_x = a.x.min(b.x).min(c.x).max(0.0) as usize;
-        let min_y = a.y.min(b.y).min(c.y).max(0.0) as usize;
-        let max_x = (a.x.max(b.x).max(c.x).min((self.screen_width - 1) as f32)) as usize;
-        let max_y = (a.y.max(b.y).max(c.y).min((self.screen_height - 1) as f32)) as usize;
+        let min_x = triangle.min_x.max(0.0) as usize;
+        let min_y = triangle.min_y.max(0.0) as usize;
+        let max_x = triangle.max_x.min((self.screen_width - 1) as f32) as usize;
+        let max_y = triangle.max_y.min((self.screen_height - 1) as f32) as usize;
 
         // Triangle Setup
-        let one_over_triangle_2a = double_triangle_area(a.xy(), b.xy(), c.xy()).recip();
+        let one_over_triangle_2a = double_triangle_area(a, b, c).recip();
         let top_left = Vec2::new(min_x as f32, min_y as f32);
-        let (a_edge, mut wa_row) = EdgeStepper::initialize(b.xy(), c.xy(), top_left);
-        let (b_edge, mut wb_row) = EdgeStepper::initialize(c.xy(), a.xy(), top_left);
-        let (c_edge, mut wc_row) = EdgeStepper::initialize(a.xy(), b.xy(), top_left);
-
-        let mut triangle = RenderTriangle::setup(triangle);
+        let (a_edge, mut wa_row) = EdgeStepper::initialize(b, c, top_left);
+        let (b_edge, mut wb_row) = EdgeStepper::initialize(c, a, top_left);
+        let (c_edge, mut wc_row) = EdgeStepper::initialize(a, b, top_left);
 
         // Iterate over each pixel in the bounding box
         for y in (min_y..=max_y).step_by(Y_STEP_SIZE) {
@@ -94,15 +92,16 @@ impl Gpu {
         PS: PixelShader<PSIN>,
     {
         let RenderTriangle {
-            a_z,
+            a,
             a_params,
             b_sub_a,
             c_sub_a,
+            ..
         } = triangle;
 
         // Interpolate depth for depth testing, using simplified formula
         let interpolated_depths =
-            (*a_z) + (b_sub_a.z * b_sub_a.weight) + (c_sub_a.z * c_sub_a.weight);
+            (a.z) + (b_sub_a.z * b_sub_a.weight) + (c_sub_a.z * c_sub_a.weight);
 
         // Calculate the pixel's index
         let pixel_index = y * self.screen_width + x;
@@ -139,28 +138,46 @@ impl Gpu {
     }
 }
 
-struct RenderTriangle<const P: usize> {
-    a_z: f32,
+pub(crate) struct RenderTriangle<const P: usize> {
+    a: Vec3,
+    b: Vec2,
+    c: Vec2,
     a_params: VertexParametersSimd<P>,
     b_sub_a: RenderVertex<P>,
     c_sub_a: RenderVertex<P>,
+    min_x: f32,
+    max_x: f32,
+    min_y: f32,
+    max_y: f32,
 }
 
 impl<const P: usize> RenderTriangle<P> {
-    pub fn setup(triangle: Triangle<P>) -> Self {
+    pub(crate) fn setup(triangle: Triangle<P>) -> Self {
         let a = triangle.positions[0];
         let b = triangle.positions[1];
         let c = triangle.positions[2];
+
+        let min_x = a.x.min(b.x).min(c.x);
+        let max_x = a.x.max(b.x).max(c.x);
+
+        let min_y = a.y.min(b.y).min(c.y);
+        let max_y = a.y.max(b.y).max(c.y);
 
         let a_params = triangle.parameters[0] * a.z;
         let b_params = (triangle.parameters[1] * b.z) - a_params;
         let c_params = (triangle.parameters[2] * c.z) - a_params;
 
         Self {
-            a_z: a.z,
+            a: a.xyz(),
+            b: b.xy(),
+            c: c.xy(),
             a_params: a_params.splat(),
             b_sub_a: RenderVertex::new(b.z - a.z, b_params),
             c_sub_a: RenderVertex::new(c.z - a.z, c_params),
+            min_x,
+            min_y,
+            max_x,
+            max_y,
         }
     }
 }

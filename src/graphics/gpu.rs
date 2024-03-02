@@ -6,10 +6,12 @@ use crate::{
 };
 
 use super::{
-    frame_buffer::FrameBuffer,
-    z_buffer::ZBuffer,
-    Triangle, Uniforms,
+    frame_buffer::FrameBuffer, rasterizer::RenderTriangle, render_tile::RenderTile,
+    z_buffer::ZBuffer, Triangle, Uniforms,
 };
+
+pub(super) const CLIPPING_MAX_OUTPUT: usize = 13;
+pub(super) const TRIANGLES_PER_BIN: usize = 8;
 
 pub struct Gpu {
     pub(super) screen_width: usize,
@@ -74,11 +76,13 @@ impl Gpu {
                 parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
             };
 
+            // Clipping Stage
             let mut clipped_triangles = self.clip_stage(triangle);
 
+            // Rasterization
             clipped_triangles.drain(..).for_each(|clip_space_triangle| {
                 let triangle = self.tri_clip_to_screen_space(clip_space_triangle);
-                self.rasterize_triangle(triangle, ps);
+                self.rasterize_triangle(RenderTriangle::setup(triangle), ps);
             })
         }
     }

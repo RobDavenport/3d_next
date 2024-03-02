@@ -3,7 +3,7 @@ use glam::Vec4;
 
 use crate::camera::NEAR_PLANE;
 
-use super::{Gpu, Triangle};
+use super::{gpu::CLIPPING_MAX_OUTPUT, Gpu, Triangle};
 
 #[derive(Clone, Copy)]
 pub(crate) enum ClippingPlane {
@@ -227,7 +227,7 @@ impl Gpu {
     pub(crate) fn clip_stage<const P: usize>(
         &mut self,
         triangle: Triangle<P>,
-    ) -> ArrayVec<Triangle<P>, 13> {
+    ) -> ArrayVec<Triangle<P>, CLIPPING_MAX_OUTPUT> {
         // Clip triangles, and whatever remains, rasterize them
         let mut plane_iter = ClippingPlane::first();
         let mut input;
