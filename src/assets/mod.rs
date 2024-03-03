@@ -57,10 +57,14 @@ pub struct StaticMesh<const P: usize> {
 
 impl<const P: usize> StaticMesh<P> {
     pub fn as_mesh(&self) -> Mesh<P> {
+        let vertices = VertexList(cast_slice(self.vertices));
+        let indices = IndexList(cast_slice(self.indices));
+        let parameters = VertexParametersList(cast_slice(self.parameters));
+
         Mesh {
-            vertices: VertexList(cast_slice(self.vertices)),
-            indices: IndexList(cast_slice(self.indices)),
-            parameters: VertexParametersList(cast_slice(self.parameters)),
+            vertices,
+            indices,
+            parameters,
         }
     }
 }
