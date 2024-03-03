@@ -111,8 +111,7 @@ impl EdgeStepperCombined {
         let wa_mask = self.wa.cmp_gt(f32x4::ZERO);
         let wb_mask = self.wb.cmp_gt(f32x4::ZERO);
         let wc_mask = self.wc.cmp_gt(f32x4::ZERO);
-        let mask = wa_mask & wb_mask & wc_mask;
-        mask
+        wa_mask & wb_mask & wc_mask
     }
 }
 
@@ -222,8 +221,7 @@ impl Gpu {
                     let fragment_color = PS::run(&self.uniforms, params);
 
                     // Write the fragment color to the frame buffer
-                    let y = (self.screen_height - y as usize) - 1;
-                    self.frame_buffer[x as usize + (y * self.screen_width)] =
+                    self.frame_buffer[x as usize + (y as usize * self.screen_width)] =
                         fragment_color.to_graphics_params();
                 }
             }

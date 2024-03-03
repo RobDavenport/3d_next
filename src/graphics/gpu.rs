@@ -72,10 +72,11 @@ impl Gpu {
                 continue; // Skip this triangle if it's a backface
             }
 
-            // Clipping Stage
+            // Clipping Stage - Triangle is being re-wound here as the later
+            // Y-flip for NDC -> Screen space reverses winding order
             let triangle = Triangle {
-                positions: [a_clip.position, b_clip.position, c_clip.position],
-                parameters: [a_clip.parameters, b_clip.parameters, c_clip.parameters],
+                positions: [a_clip.position, c_clip.position, b_clip.position],
+                parameters: [a_clip.parameters, c_clip.parameters, b_clip.parameters],
             };
             let clip_result = self.clip_stage(triangle);
 
@@ -120,7 +121,7 @@ impl Gpu {
 
             // Convert NDC coordinates to screen space
             let screen_x = (clip_space_vertex.x + 1.0) * (self.screen_width as f32 / 2.0);
-            let screen_y = (1.0 - clip_space_vertex.y) * (self.screen_height as f32 / 2.0);
+            let screen_y = (clip_space_vertex.y + 1.0) * (self.screen_height as f32 / 2.0);
 
             Vec4::new(screen_x, screen_y, clip_space_vertex.z, clip_space_vertex.w)
         };

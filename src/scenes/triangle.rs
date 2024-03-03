@@ -30,7 +30,7 @@ impl TriangleScene {
         Self {
             triangle: Actor {
                 mesh: Mesh {
-                    vertices: VertexList(shapes::PLANE),
+                    vertices: VertexList(shapes::TRIANGLE),
                     indices: IndexList(shapes::TRI_INDICES),
                     parameters: VertexParametersList(shapes::PLANE_UVS),
                 },
