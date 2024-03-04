@@ -166,7 +166,7 @@ fn clip_triangle_one_behind<const P: usize>(
 }
 
 impl Gpu {
-    pub(super) fn clip_stage<const P: usize>(&mut self, triangle: Triangle<P>) -> ClipResult<P> {
+    pub(super) fn clip_stage<const P: usize>(&self, triangle: Triangle<P>) -> ClipResult<P> {
         // Clip triangles, and whatever remains, rasterize them
         const TRIVIAL_PLANES: &[ClippingPlane] = &[
             ClippingPlane::Left,

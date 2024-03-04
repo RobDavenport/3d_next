@@ -11,8 +11,6 @@ use super::{
     tile_manager::TileManager, Triangle, Uniforms,
 };
 
-pub(super) const TRIANGLES_PER_BIN: usize = 8;
-
 pub struct Gpu {
     pub(super) screen_width: usize,
     pub(super) screen_height: usize,

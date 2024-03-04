@@ -1,4 +1,3 @@
-use gamercade_rs::api::text::console_log;
 use glam::Vec2;
 
 use crate::shaders::PixelShader;

@@ -1,4 +1,3 @@
-use gamercade_rs::api::text::console_log;
 use glam::{Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
