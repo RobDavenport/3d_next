@@ -1,5 +1,4 @@
 In Progress
-- Stop using inverse camera matrix
 - Tiled Rendering
 
 Todo:

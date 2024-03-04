@@ -1,4 +1,4 @@
-use std::f32::consts::{FRAC_PI_2, TAU};
+use std::f32::consts::{FRAC_PI_2, PI, TAU};
 
 use glam::{Mat4, Vec3};
 
@@ -7,7 +7,7 @@ use gamercade_rs::prelude as gc;
 use crate::math::Math;
 
 const PITCH_CLAMP: f32 = FRAC_PI_2 * 0.99;
-pub const NEAR_PLANE: f32 = -1.0;
+pub const NEAR_PLANE: f32 = 1.0;
 
 pub struct Camera {
     pub position: Vec3,
@@ -30,11 +30,11 @@ impl Camera {
 
         Camera {
             position,
-            yaw: 0.0,
+            yaw: PI,
             pitch: 0.0,
             sensitivity,
             movement_speed,
-            projection: Mat4::perspective_infinite_reverse_rh(vfov, aspect_ratio, NEAR_PLANE),
+            projection: Mat4::perspective_infinite_rh(vfov, aspect_ratio, NEAR_PLANE),
             view: Mat4::look_to_rh(position, Vec3::NEG_Z, Vec3::Y),
         }
     }
@@ -44,9 +44,9 @@ impl Camera {
 
         // Look Up/Down
         if Some(true) == gc::button_up_held(0) {
-            self.pitch -= self.sensitivity;
+            self.pitch += self.sensitivity;
         } else if Some(true) == gc::button_down_held(0) {
-            self.pitch += self.sensitivity
+            self.pitch -= self.sensitivity
         }
         self.pitch = self.pitch.max(-PITCH_CLAMP).min(PITCH_CLAMP); // Clamp pitch to prevent flipping
 
@@ -65,16 +65,16 @@ impl Camera {
         // Keyboard movement
         let mut velocity = Vec3::ZERO;
         if let Some(true) = gc::button_b_held(0) {
-            velocity += self.view.forward_vector();
-        } else if let Some(true) = gc::button_c_held(0) {
             velocity -= self.view.forward_vector();
+        } else if let Some(true) = gc::button_c_held(0) {
+            velocity += self.view.forward_vector();
         };
 
         // Strafe Right/Left
         if let Some(true) = gc::button_d_held(0) {
-            velocity -= self.view.right_vector();
-        } else if let Some(true) = gc::button_a_held(0) {
             velocity += self.view.right_vector();
+        } else if let Some(true) = gc::button_a_held(0) {
+            velocity -= self.view.right_vector();
         };
 
         self.position += velocity * self.movement_speed;

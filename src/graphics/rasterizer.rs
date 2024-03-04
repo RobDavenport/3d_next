@@ -254,17 +254,17 @@ impl<const P: usize> RenderTriangle<P> {
         let min_y = a.y.min(b.y).min(c.y);
         let max_y = a.y.max(b.y).max(c.y);
 
-        let a_params = triangle.parameters[0] * a.z;
-        let b_params = (triangle.parameters[1] * b.z) - a_params;
-        let c_params = (triangle.parameters[2] * c.z) - a_params;
+        let a_params = triangle.parameters[0] * a.w;
+        let b_params = (triangle.parameters[1] * b.w) - a_params;
+        let c_params = (triangle.parameters[2] * c.w) - a_params;
 
         Self {
-            a: a.xyz(),
+            a: a.xyw(),
             b: b.xy(),
             c: c.xy(),
             a_params: a_params.splat(),
-            b_sub_a: RenderVertex::new(b.z - a.z, b_params),
-            c_sub_a: RenderVertex::new(c.z - a.z, c_params),
+            b_sub_a: RenderVertex::new(b.w - a.w, b_params),
+            c_sub_a: RenderVertex::new(c.w - a.w, c_params),
             min_x,
             min_y,
             max_x,

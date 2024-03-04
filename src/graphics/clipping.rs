@@ -16,11 +16,11 @@ pub enum ClippingPlane {
 impl ClippingPlane {
     fn point_front_of_plane(&self, vertex: &Vec4) -> bool {
         match self {
-            Self::Near => vertex.z > vertex.w,
-            Self::Left => vertex.x < -vertex.w,
-            Self::Right => vertex.x > vertex.w,
-            Self::Top => vertex.y < -vertex.w,
-            Self::Bottom => vertex.y > vertex.w,
+            Self::Near => vertex.z > NEAR_PLANE,
+            Self::Left => vertex.x < vertex.w,
+            Self::Right => vertex.x > -vertex.w,
+            Self::Top => vertex.y < vertex.w,
+            Self::Bottom => vertex.y > -vertex.w,
         }
     }
 }
@@ -98,11 +98,11 @@ fn clip_edges_against_near_plane<const P: usize>(
 
     // Begin Clipping
     // Distance from near plane
-    let aw_clipped = a.w - NEAR_PLANE;
+    let aw_clipped = a.z - NEAR_PLANE;
 
     // Vectors from A->B and A->C
-    let ab = a.w - b.w;
-    let ac = a.w - c.w;
+    let ab = a.z - b.z;
+    let ac = a.z - c.z;
 
     // Find how much to lerp
     let ab_factor = aw_clipped / ab;
@@ -184,47 +184,3 @@ impl Gpu {
         geometric_clip_triangle(ClippingPlane::Near, triangle)
     }
 }
-
-// Clipping logic for other planes, not needed now
-// ClippingPlane::Near => {
-//     // Get the distance of A from the near plane
-//     let aw_clipped = a.w - NEAR_PLANE;
-
-//     // Vectors from A->B and A->C
-//     let ab = a.w - b.w;
-//     let ac = a.w - c.w;
-
-//     (aw_clipped, ab, ac)
-// }
-// ClippingPlane::Left => {
-//     let ax_clipped = a.x + a.w;
-
-//     let ab = ax_clipped - (b.x + b.w);
-//     let ac = ax_clipped - (c.x + c.w);
-
-//     (ax_clipped, ab, ac)
-// }
-// ClippingPlane::Right => {
-//     let ax_clipped = a.x - a.w;
-
-//     let ab = ax_clipped - (b.x - b.w);
-//     let ac = ax_clipped - (c.x - c.w);
-
-//     (ax_clipped, ab, ac)
-// }
-// ClippingPlane::Top => {
-//     let ay_clipped = a.y + a.w;
-
-//     let ab = ay_clipped - (b.y + b.w);
-//     let ac = ay_clipped - (c.y + c.w);
-
-//     (ay_clipped, ab, ac)
-// }
-// ClippingPlane::Bottom => {
-//     let ay_clipped = a.y - a.w;
-
-//     let ab = ay_clipped - (b.y - b.w);
-//     let ac = ay_clipped - (c.y - c.w);
-
-//     (ay_clipped, ab, ac)
-// }

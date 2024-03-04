@@ -117,13 +117,15 @@ impl Gpu {
     ) -> Triangle<P> {
         let clip_to_screen = |clip_space_vertex: Vec4| {
             // Move to cartesian coordinates
+            // Sace the recip of W for perspective correction later
+            let w_recip = clip_space_vertex.w.recip();
             let clip_space_vertex = clip_space_vertex / clip_space_vertex.w;
 
             // Convert NDC coordinates to screen space
             let screen_x = (clip_space_vertex.x + 1.0) * (self.screen_width as f32 / 2.0);
-            let screen_y = (clip_space_vertex.y + 1.0) * (self.screen_height as f32 / 2.0);
+            let screen_y = (1.0 - clip_space_vertex.y) * (self.screen_height as f32 / 2.0);
 
-            Vec4::new(screen_x, screen_y, clip_space_vertex.z, clip_space_vertex.w)
+            Vec4::new(screen_x, screen_y, clip_space_vertex.z, w_recip)
         };
 
         clip_space_triangle.positions[0] = clip_to_screen(clip_space_triangle.positions[0]);
