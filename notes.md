@@ -1,7 +1,9 @@
 In Progress
 - Tiled Rendering
 
+
 Todo:
+- Trivially depth reject tiles
 - Consider Deferred Rendering
 - Skinned Animation
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components

@@ -1,3 +1,4 @@
+use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use glam::{Mat3, Vec4, Vec4Swizzles};
 
 use crate::{
@@ -6,8 +7,12 @@ use crate::{
 };
 
 use super::{
-    clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
-    tile_manager::TileManager, z_buffer::ZBuffer, Triangle, Uniforms,
+    clipping::ClipResult,
+    frame_buffer::FrameBuffer,
+    rasterizer::{RenderTriangle, X_STEP_SIZE},
+    tile_manager::TileManager,
+    z_buffer::ZBuffer,
+    Triangle, Uniforms,
 };
 
 pub(super) const TRIANGLES_PER_BIN: usize = 8;
@@ -15,8 +20,7 @@ pub(super) const TRIANGLES_PER_BIN: usize = 8;
 pub struct Gpu {
     pub(super) screen_width: usize,
     pub(super) screen_height: usize,
-    pub(super) z_buffer: ZBuffer,
-    pub frame_buffer: FrameBuffer,
+    frame_buffer: FrameBuffer,
     pub uniforms: Uniforms,
     pub(super) render_tiles: TileManager<32, 18>,
 }
@@ -26,19 +30,14 @@ impl Gpu {
         Self {
             screen_height,
             screen_width,
-            z_buffer: ZBuffer::new(screen_width, screen_height),
             frame_buffer: FrameBuffer::new(screen_width, screen_height),
             uniforms: Uniforms::default(),
             render_tiles: TileManager::new(screen_width, screen_height),
         }
     }
 
-    pub fn clear_z_buffer(&mut self) {
-        self.z_buffer.clear();
-    }
-
-    pub fn clear_frame_buffer(&mut self) {
-        self.frame_buffer.clear();
+    pub fn reset_frame(&mut self) {
+        self.render_tiles.reset_frame();
     }
 
     // Adds the triangles fr
@@ -88,8 +87,8 @@ impl Gpu {
                     let triangle = self.tri_clip_to_screen_space(triangle);
                     let triangle = RenderTriangle::setup(triangle);
 
-                    //self.bin_triangle(triangle);
-                    self.rasterize_triangle(triangle, ps);
+                    self.bin_triangle(triangle, ps);
+                    //self.rasterize_triangle(triangle, ps);
                 }
                 ClipResult::Two((first, second)) => {
                     let first = self.tri_clip_to_screen_space(first);
@@ -98,11 +97,11 @@ impl Gpu {
                     let first = RenderTriangle::setup(first);
                     let second = RenderTriangle::setup(second);
 
-                    //self.bin_triangle(first);
-                    //self.bin_triangle(second);
+                    self.bin_triangle(first, ps);
+                    self.bin_triangle(second, ps);
 
-                    self.rasterize_triangle(first, ps);
-                    self.rasterize_triangle(second, ps);
+                    //self.rasterize_triangle(first, ps);
+                    //self.rasterize_triangle(second, ps);
                 }
             }
         }
@@ -133,6 +132,31 @@ impl Gpu {
         clip_space_triangle.positions[2] = clip_to_screen(clip_space_triangle.positions[2]);
 
         clip_space_triangle
+    }
+
+    pub fn generate_frame_buffer(&mut self) -> &[GraphicsParameters] {
+        let frame_width = self.screen_width;
+        let tile_width = self.render_tiles.w();
+        let tile_height = self.render_tiles.h();
+
+        for (index, tile) in self.render_tiles.tiles.iter().enumerate() {
+            let tile_row = index / (frame_width / tile_width);
+            let tile_col = index % (frame_width / tile_width);
+
+            let tile_offset_x = tile_col * tile_width;
+            let tile_offset_y = tile_row * tile_height;
+
+            for y in 0..tile_height {
+                let frame_index = (tile_offset_y + y) * frame_width + tile_offset_x;
+                self.frame_buffer.frame_buffer[frame_index..frame_index + tile_width]
+                    .copy_from_slice(
+                        &tile.frame_buffer.frame_buffer
+                            [(y * tile_width)..(y * tile_width) + tile_width],
+                    );
+            }
+        }
+
+        &self.frame_buffer.frame_buffer
     }
 }
 

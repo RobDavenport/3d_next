@@ -58,4 +58,11 @@ impl<const W: usize, const H: usize> TileManager<W, H> {
     pub const fn h(&self) -> usize {
         H
     }
+
+    pub fn reset_frame(&mut self) {
+        self.tiles.iter_mut().for_each(|tile| {
+            tile.frame_buffer.clear();
+            tile.z_buffer.clear();
+        });
+    }
 }

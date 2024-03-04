@@ -1,9 +1,13 @@
+use gamercade_rs::api::{graphics_parameters::GraphicsParameters, text::console_log};
 use glam::{Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
-use crate::shaders::{PixelShader, VertexParameters, VertexParametersSimd};
+use crate::{
+    shaders::{PixelShader, VertexParameters, VertexParametersSimd},
+    types::Color,
+};
 
-use super::{Gpu, Triangle};
+use super::{render_tile::RenderTile, Gpu, Triangle, Uniforms};
 
 // TODO: Consider using a 2x2 tiled approach
 pub(super) const X_STEP_SIZE: usize = 4;
@@ -106,7 +110,7 @@ impl EdgeStepperCombined {
         self.wc_row += self.c_edge.step_y;
     }
 
-    pub fn point_inside_triangle_mask(&self) -> f32x4 {
+    pub fn points_inside_triangle_mask(&self) -> f32x4 {
         // If the pixel is inside the triangle (barycentric coordinates are non-negative)
         let wa_mask = self.wa.cmp_gt(f32x4::ZERO);
         let wb_mask = self.wb.cmp_gt(f32x4::ZERO);
@@ -115,20 +119,64 @@ impl EdgeStepperCombined {
     }
 }
 
-impl Gpu {
-    // TODO: Consider a better traversal algorithm (Zig Zag)
-    pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
+impl<const W: usize, const H: usize> RenderTile<W, H> {
+    pub(super) fn trivial_rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
+        uniforms: &Uniforms,
         mut triangle: RenderTriangle<PSIN>,
         ps: PS,
     ) where
         PS: PixelShader<PSIN>,
     {
-        // Determine the bounding box of the triangle in screen space
-        let min_x = triangle.min_x.max(0.0) as usize;
-        let min_y = triangle.min_y.max(0.0) as usize;
-        let max_x = triangle.max_x.min((self.screen_width - 1) as f32) as usize;
-        let max_y = triangle.max_y.min((self.screen_height - 1) as f32) as usize;
+        // Triangle Setup
+        let top_left = Vec2::new(self.x as f32, self.y as f32);
+        let mut stepper = EdgeStepperCombined::new(
+            &triangle,
+            top_left,
+            &X_STAMP_OFFSETS,
+            &Y_STAMP_OFFSETS,
+            X_STEP_SIZE as i32,
+            Y_STEP_SIZE as i32,
+        );
+
+        // Iterate over each pixel in the bounding box
+        for y in (0..H).step_by(Y_STEP_SIZE) {
+            // Reset to start of row.
+            stepper.reset_row();
+            for x in (0..W).step_by(X_STEP_SIZE) {
+                // Normalize the weights
+                triangle.b_sub_a.weight = stepper.wb * stepper.one_over_triangle_2a;
+                triangle.c_sub_a.weight = stepper.wc * stepper.one_over_triangle_2a;
+
+                // See if any pixels extend out of the bb
+                // and update mask accordingly
+                let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_STAMP_OFFSETS);
+                let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(W as i32));
+                let mask = bytemuck::cast::<_, f32x4>(bb_valid_mask);
+
+                self.render_pixels(ps, uniforms, x, y, &triangle, mask);
+
+                // One step right
+                stepper.step_x();
+            }
+            // One step down
+            stepper.step_y();
+        }
+    }
+
+    pub(super) fn rasterize_triangle<PS, const PSIN: usize>(
+        &mut self,
+        uniforms: &Uniforms,
+        mut triangle: RenderTriangle<PSIN>,
+        ps: PS,
+    ) where
+        PS: PixelShader<PSIN>,
+    {
+        // Determine the bounding box of the triangle in tile space
+        let min_x = triangle.min_x.max(self.x as f32) as usize;
+        let min_y = triangle.min_y.max(self.y as f32) as usize;
+        let max_x = triangle.max_x.min((self.x + W - 1) as f32) as usize;
+        let max_y = triangle.max_y.min((self.y + H - 1) as f32) as usize;
 
         // Triangle Setup
         let top_left = Vec2::new(min_x as f32, min_y as f32);
@@ -146,7 +194,7 @@ impl Gpu {
             stepper.reset_row();
             for x in (min_x..=max_x).step_by(X_STEP_SIZE) {
                 // If the pixel is inside the triangle (barycentric coordinates are non-negative)
-                let mask = stepper.point_inside_triangle_mask();
+                let mask = stepper.points_inside_triangle_mask();
 
                 if mask.any() {
                     // Normalize the weights
@@ -160,7 +208,7 @@ impl Gpu {
                     let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(max_x as i32 + 1));
                     let mask = mask & bytemuck::cast::<_, f32x4>(bb_valid_mask);
 
-                    self.render_pixels(ps, x, y, &triangle, mask);
+                    self.render_pixels(ps, uniforms, x - self.x, y - self.y, &triangle, mask);
                 }
 
                 // One step right
@@ -176,6 +224,7 @@ impl Gpu {
     fn render_pixels<PS, const PSIN: usize>(
         &mut self,
         _ps: PS,
+        uniforms: &Uniforms,
         x: usize,
         y: usize,
         triangle: &RenderTriangle<PSIN>,
@@ -196,7 +245,7 @@ impl Gpu {
             (a.z) + (b_sub_a.z * b_sub_a.weight) + (c_sub_a.z * c_sub_a.weight);
 
         // Calculate the pixel's index
-        let pixel_index = y * self.screen_width + x;
+        let pixel_index = (y * W) + x;
 
         // Perform depth testing
         let mask = self
@@ -218,10 +267,10 @@ impl Gpu {
 
                     // Pun the pixel shader
                     let params = ps_params.extract(bit);
-                    let fragment_color = PS::run(&self.uniforms, params);
+                    let fragment_color = PS::run(uniforms, params);
 
                     // Write the fragment color to the frame buffer
-                    self.frame_buffer[x as usize + (y as usize * self.screen_width)] =
+                    self.frame_buffer[x as usize + (y as usize * W)] =
                         fragment_color.to_graphics_params();
                 }
             }
@@ -229,6 +278,7 @@ impl Gpu {
     }
 }
 
+#[derive(Clone)]
 pub(crate) struct RenderTriangle<const P: usize> {
     a: Vec3,
     b: Vec2,
@@ -273,6 +323,7 @@ impl<const P: usize> RenderTriangle<P> {
     }
 }
 
+#[derive(Clone)]
 struct RenderVertex<const P: usize> {
     z: f32,
     weight: f32x4,

@@ -34,13 +34,13 @@ pub unsafe extern "C" fn init() {
     let screen_height = gc::height();
 
     let scenes: Vec<Box<dyn Scene>> = vec![
-        (Box::new(HelmetModelScene::new())),
-        (Box::new(HelmetModelSimpleScene::new())),
-        (Box::new(CubeModelScene::new())),
-        (Box::new(FoxModelScene::new())),
-        (Box::new(DuckModelScene::new())),
-        (Box::new(CubeScene::new())),
-        (Box::new(CubesScene::new())),
+        // (Box::new(HelmetModelScene::new())),
+        // (Box::new(HelmetModelSimpleScene::new())),
+        // (Box::new(CubeModelScene::new())),
+        // (Box::new(FoxModelScene::new())),
+        // (Box::new(DuckModelScene::new())),
+        // (Box::new(CubeScene::new())),
+        // (Box::new(CubesScene::new())),
         (Box::new(PlaneScene::new())),
         (Box::new(TriangleScene::new())),
     ];
@@ -86,8 +86,7 @@ pub unsafe extern "C" fn draw() {
     let game_state = GAME_STATE.assume_init_ref();
 
     // Clear all of the buffers
-    gpu.clear_z_buffer();
-    gpu.clear_frame_buffer();
+    gpu.reset_frame();
 
     // For Calculating MVP Later
     let camera = CAMERA.assume_init_ref();
@@ -100,5 +99,5 @@ pub unsafe extern "C" fn draw() {
 
     game_state.scenes[game_state.scene_index].draw(gpu);
 
-    gc::write_pixel_buffer(0, &gpu.frame_buffer.frame_buffer);
+    gc::write_pixel_buffer(0, gpu.generate_frame_buffer());
 }
