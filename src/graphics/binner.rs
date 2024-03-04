@@ -1,6 +1,7 @@
+use gamercade_rs::api::text::console_log;
 use glam::Vec2;
 
-use crate::{shaders::PixelShader};
+use crate::shaders::PixelShader;
 
 use super::{
     rasterizer::{EdgeStepperCombined, RenderTriangle},
@@ -17,22 +18,35 @@ impl Gpu {
         let horizontal_count = self.render_tiles.tile_count_horizontal;
         let vertical_count = self.render_tiles.tile_count_vertical;
 
+        let min_tile_x = (triangle.min_x / width as f32).floor() as usize;
+        let min_tile_y = (triangle.min_y / height as f32).floor() as usize;
+        let max_tile_x = (triangle.max_x / width as f32).ceil() as usize;
+        let max_tile_y = (triangle.max_y / height as f32).ceil() as usize;
+
+        let min_tile_x = min_tile_x.clamp(0, horizontal_count);
+        let min_tile_y = min_tile_y.clamp(0, vertical_count);
+
+        let max_tile_x = max_tile_x.clamp(0, horizontal_count);
+        let max_tile_y = max_tile_y.clamp(0, vertical_count);
+
         // Top Left, Top Right, Bottom Left, Bottom Right
         let y_stamp = [0, 0, height as i32, height as i32];
         let x_stamp = [0, width as i32, 0, width as i32];
 
+        let top_left = Vec2::new((min_tile_x * width) as f32, (min_tile_y * height) as f32);
+
         let mut stepper = EdgeStepperCombined::new(
             &triangle,
-            Vec2::ZERO,
+            top_left,
             &x_stamp,
             &y_stamp,
             width as i32,
             height as i32,
         );
 
-        for y in 0..vertical_count {
+        for y in min_tile_y..max_tile_y {
             stepper.reset_row();
-            for x in 0..horizontal_count {
+            for x in min_tile_x..max_tile_x {
                 let tile_index = (y * horizontal_count) + x;
                 let tile = &mut self.render_tiles[tile_index];
 

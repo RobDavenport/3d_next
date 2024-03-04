@@ -8,11 +8,6 @@
 
 use super::{rasterizer::RenderTriangle, FrameBuffer, ZBuffer};
 
-struct BinnedTriangleWrapper {
-    pointer: *const u8,
-    param_count: u32,
-}
-
 // W and H represent the width and height of the tile
 pub(super) struct RenderTile<const W: usize, const H: usize> {
     pub(super) x: usize, // Left point
@@ -39,9 +34,7 @@ impl<const W: usize, const H: usize> RenderTile<W, H> {
 
         min_x <= triangle.max_x
             && max_x >= triangle.min_x
-            && min_y <= triangle.max_y && max_y >= triangle.min_y
-    }
-
-    pub(super) fn bin_triangle<const P: usize>(&mut self, _trivial: bool, _triangle: RenderTriangle<P>) {
+            && min_y <= triangle.max_y
+            && max_y >= triangle.min_y
     }
 }

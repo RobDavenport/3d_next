@@ -7,11 +7,8 @@ use crate::{
 };
 
 use super::{
-    clipping::ClipResult,
-    frame_buffer::FrameBuffer,
-    rasterizer::{RenderTriangle},
-    tile_manager::TileManager,
-    Triangle, Uniforms,
+    clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
+    tile_manager::TileManager, Triangle, Uniforms,
 };
 
 pub(super) const TRIANGLES_PER_BIN: usize = 8;
@@ -87,7 +84,6 @@ impl Gpu {
                     let triangle = RenderTriangle::setup(triangle);
 
                     self.bin_triangle(triangle, ps);
-                    //self.rasterize_triangle(triangle, ps);
                 }
                 ClipResult::Two((first, second)) => {
                     let first = self.tri_clip_to_screen_space(first);
@@ -98,9 +94,6 @@ impl Gpu {
 
                     self.bin_triangle(first, ps);
                     self.bin_triangle(second, ps);
-
-                    //self.rasterize_triangle(first, ps);
-                    //self.rasterize_triangle(second, ps);
                 }
             }
         }
