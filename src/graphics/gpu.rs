@@ -9,9 +9,8 @@ use crate::{
 use super::{
     clipping::ClipResult,
     frame_buffer::FrameBuffer,
-    rasterizer::{RenderTriangle, X_STEP_SIZE},
+    rasterizer::{RenderTriangle},
     tile_manager::TileManager,
-    z_buffer::ZBuffer,
     Triangle, Uniforms,
 };
 

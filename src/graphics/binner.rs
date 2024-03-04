@@ -1,6 +1,6 @@
 use glam::Vec2;
 
-use crate::{shaders::PixelShader, types::Color};
+use crate::{shaders::PixelShader};
 
 use super::{
     rasterizer::{EdgeStepperCombined, RenderTriangle},

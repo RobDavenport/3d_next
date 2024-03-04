@@ -1,13 +1,12 @@
-use gamercade_rs::api::{graphics_parameters::GraphicsParameters, text::console_log};
+
 use glam::{Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
 use crate::{
     shaders::{PixelShader, VertexParameters, VertexParametersSimd},
-    types::Color,
 };
 
-use super::{render_tile::RenderTile, Gpu, Triangle, Uniforms};
+use super::{render_tile::RenderTile, Triangle, Uniforms};
 
 // TODO: Consider using a 2x2 tiled approach
 pub(super) const X_STEP_SIZE: usize = 4;
