@@ -1,13 +1,12 @@
-In Progress
-- Tiled Rendering
-
+TODO:
+- Skinned Animation
 
 Todo:
 - Trivially depth reject tiles
 - Consider Deferred Rendering
-- Skinned Animation
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
+- Reconsider tiled rendering (last attempt was too slow)
 
 ---
 Helmet Model Textures
