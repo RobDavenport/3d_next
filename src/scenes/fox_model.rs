@@ -3,6 +3,7 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     assets::meshes,
+    graphics::Skin,
     shaders::{BaseVertexShader, TexturedLit},
 };
 
@@ -10,6 +11,7 @@ use super::Scene;
 
 pub struct FoxModelScene {
     fox: Actor<5>,
+    skin: Skin<24>,
 }
 
 impl FoxModelScene {
@@ -20,6 +22,7 @@ impl FoxModelScene {
                 transform: Mat4::from_scale(Vec3::splat(0.015)),
                 delta: 0.0,
             },
+            skin: meshes::FOX_S.as_skin(),
         }
     }
 }

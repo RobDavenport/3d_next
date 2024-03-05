@@ -76,6 +76,10 @@ pub struct Skin<const B: usize> {
     pub weights: WeightsList<B>,
 }
 
+pub struct Skeleton {
+    pub inverse_bind_matrices: &'static [Mat4],
+}
+
 #[derive(Clone, Copy)]
 pub struct BonesList<const B: usize>(pub &'static [[u32; B]]);
 #[derive(Clone, Copy)]

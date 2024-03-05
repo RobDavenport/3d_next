@@ -4,7 +4,10 @@ pub use generated::*;
 use glam::{UVec3, Vec3};
 
 use crate::{
-    graphics::{BonesList, IndexList, Skin, StaticMesh, VertexList, VertexParametersList, WeightsList},
+    graphics::{
+        BonesList, IndexList, Skeleton, Skin, StaticMesh, VertexList, VertexParametersList,
+        WeightsList,
+    },
     types::Color,
 };
 
@@ -80,5 +83,17 @@ impl<const B: usize> SkinData<B> {
         let weights = WeightsList(cast_slice(self.weights));
 
         Skin { bones, weights }
+    }
+}
+
+pub struct SkeletonData {
+    pub inverse_bind_matrices: &'static [u8],
+}
+
+impl SkeletonData {
+    pub fn as_skeleteon(&self) -> Skeleton {
+        Skeleton {
+            inverse_bind_matrices: cast_slice(&self.inverse_bind_matrices),
+        }
     }
 }

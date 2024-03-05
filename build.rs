@@ -26,6 +26,9 @@ const VERTICES_EXTENSION: &str = "V";
 const INDICES_EXTENSION: &str = "I";
 const PARAMETERS_EXTENSION: &str = "P";
 
+const ANIMATION_EXTENSION: &str = "A";
+const SKELETON_EXTENSION: &str = "SK";
+const IBM_EXTENSION: &str = "IBM";
 const SKIN_EXTENSION: &str = "S";
 const WEIGHTS_EXTENSION: &str = "W";
 const BONES_EXTENSION: &str = "B";
@@ -75,9 +78,33 @@ struct StaticMeshOutput {
     attribute_count: usize,
 }
 
-struct Skeleton {
+struct SkeletonOutput {
     name: String,
     inverse_bind_matrices: Vec<Mat4>,
+}
+
+impl SkeletonOutput {
+    fn to_output(self) -> String {
+        let inverse_bind_matrices = format!("{}_{IBM_EXTENSION}", self.name);
+
+        write_file(
+            &inverse_bind_matrices,
+            cast_slice(&self.inverse_bind_matrices),
+        );
+        let name = format!("{}_{SKELETON_EXTENSION}", self.name.to_uppercase());
+
+        format!(
+            "
+        pub static {name}: &SkeletonData = &SkeletonData {{
+
+        }}
+            "
+        )
+    }
+}
+
+struct AnimationOutput {
+    name: String,
 }
 
 struct SkinOutput {
