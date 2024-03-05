@@ -4,7 +4,7 @@ pub use generated::*;
 use glam::{UVec3, Vec3};
 
 use crate::{
-    graphics::{IndexList, Mesh, VertexList, VertexParametersList},
+    graphics::{BonesList, IndexList, Skin, StaticMesh, VertexList, VertexParametersList, WeightsList},
     types::Color,
 };
 
@@ -49,22 +49,36 @@ impl Texture {
     }
 }
 
-pub struct StaticMesh<const P: usize> {
+pub struct StaticMeshData<const P: usize> {
     pub vertices: &'static [u8],
     pub indices: &'static [u8],
     pub parameters: &'static [u8],
 }
 
-impl<const P: usize> StaticMesh<P> {
-    pub fn as_mesh(&self) -> Mesh<P> {
+impl<const P: usize> StaticMeshData<P> {
+    pub fn as_mesh(&self) -> StaticMesh<P> {
         let vertices = VertexList(cast_slice(self.vertices));
         let indices = IndexList(cast_slice(self.indices));
         let parameters = VertexParametersList(cast_slice(self.parameters));
 
-        Mesh {
+        StaticMesh {
             vertices,
             indices,
             parameters,
         }
+    }
+}
+
+pub struct SkinData<const B: usize> {
+    pub bones: &'static [u8],
+    pub weights: &'static [u8],
+}
+
+impl<const B: usize> SkinData<B> {
+    pub fn as_skin(&self) -> Skin<B> {
+        let bones = BonesList(cast_slice(self.bones));
+        let weights = WeightsList(cast_slice(self.weights));
+
+        Skin { bones, weights }
     }
 }

@@ -3,13 +3,13 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     assets::meshes,
-    shaders::{BaseVertexShader, Textured},
+    shaders::{BaseVertexShader, TexturedLit},
 };
 
 use super::Scene;
 
 pub struct FoxModelScene {
-    fox: Actor<2>,
+    fox: Actor<5>,
 }
 
 impl FoxModelScene {
@@ -28,7 +28,7 @@ impl Scene for FoxModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.fox.transform;
         gpu.uniforms.diffuse = crate::assets::meshes::FOX_0_T;
-        gpu.render_actor(&self.fox, BaseVertexShader, Textured);
+        gpu.render_actor(&self.fox, BaseVertexShader, TexturedLit);
     }
 
     fn update(&mut self) {

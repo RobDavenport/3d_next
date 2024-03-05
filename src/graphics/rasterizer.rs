@@ -275,17 +275,17 @@ impl<const W: usize, const H: usize> RenderTile<W, H> {
 }
 
 #[derive(Clone)]
-pub(crate) struct RenderTriangle<const P: usize> {
-    a: Vec3,
-    b: Vec2,
-    c: Vec2,
+pub(super) struct RenderTriangle<const P: usize> {
+    pub(super) a: Vec3,
+    pub(super) b: Vec2,
+    pub(super) c: Vec2,
     a_params: VertexParametersSimd<P>,
     b_sub_a: RenderVertex<P>,
     c_sub_a: RenderVertex<P>,
-    pub(crate) min_x: f32,
-    pub(crate) max_x: f32,
-    pub(crate) min_y: f32,
-    pub(crate) max_y: f32,
+    pub(super) min_x: f32,
+    pub(super) max_x: f32,
+    pub(super) min_y: f32,
+    pub(super) max_y: f32,
 }
 
 impl<const P: usize> RenderTriangle<P> {

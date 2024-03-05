@@ -3,7 +3,7 @@ use glam::Mat4;
 use super::Scene;
 use crate::{
     actor::Actor,
-    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
+    graphics::{Gpu, IndexList, StaticMesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, TexturedNormalMapLit},
     shapes::{self},
 };
@@ -16,7 +16,7 @@ impl CubeScene {
     pub fn new() -> Self {
         Self {
             cube: Actor {
-                mesh: Mesh {
+                mesh: StaticMesh {
                     vertices: VertexList(shapes::CUBE),
                     indices: IndexList(shapes::CUBE_INDICES),
                     parameters: VertexParametersList(shapes::CUBE_PARAMETERS),

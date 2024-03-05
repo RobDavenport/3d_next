@@ -30,6 +30,7 @@ impl Scene for HelmetModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.helmet.transform;
         gpu.uniforms.diffuse = meshes::DAMAGEDHELMET_0_T;
+        gpu.uniforms.normal = meshes::DAMAGEDHELMET_4_T;
         gpu.render_actor(&self.helmet, BaseVertexShader, HelmetShader);
     }
 

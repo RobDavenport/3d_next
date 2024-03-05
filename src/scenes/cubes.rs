@@ -5,7 +5,7 @@ use glam::{Mat4, Vec3};
 use super::Scene;
 use crate::{
     actor::Actor,
-    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
+    graphics::{Gpu, IndexList, StaticMesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, TexturedNormalMapLit},
     shapes,
 };
@@ -22,7 +22,7 @@ impl CubesScene {
             Vec3::new(-2.5, 2.5, 0.0),
         ];
 
-        let mesh = Mesh {
+        let mesh = StaticMesh {
             vertices: VertexList(shapes::CUBE),
             indices: IndexList(shapes::CUBE_INDICES),
             parameters: VertexParametersList(shapes::CUBE_PARAMETERS),

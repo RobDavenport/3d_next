@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
+    graphics::{Gpu, IndexList, StaticMesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, Textured},
     shapes,
 };
@@ -28,7 +28,7 @@ impl PlaneScene {
     pub fn new() -> Self {
         Self {
             plane: Actor {
-                mesh: Mesh {
+                mesh: StaticMesh {
                     vertices: VertexList(shapes::PLANE),
                     indices: IndexList(shapes::PLANE_INDICES),
                     parameters: VertexParametersList(shapes::PLANE_UVS),

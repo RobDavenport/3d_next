@@ -64,11 +64,22 @@ pub struct VertexParametersList<const P: usize>(pub &'static [VertexParameters<P
 
 // A mesh which is ready to be used
 #[derive(Clone, Copy)]
-pub struct Mesh<const P: usize> {
+pub struct StaticMesh<const P: usize> {
     pub vertices: VertexList,
     pub indices: IndexList,
     pub parameters: VertexParametersList<P>,
 }
+
+#[derive(Clone, Copy)]
+pub struct Skin<const B: usize> {
+    pub bones: BonesList<B>,
+    pub weights: WeightsList<B>,
+}
+
+#[derive(Clone, Copy)]
+pub struct BonesList<const B: usize>(pub &'static [[u32; B]]);
+#[derive(Clone, Copy)]
+pub struct WeightsList<const B: usize>(pub &'static [[f32; B]]);
 
 #[derive(Clone, Copy, Pod, Zeroable)]
 #[repr(C)]

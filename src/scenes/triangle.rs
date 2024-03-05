@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    graphics::{Gpu, IndexList, Mesh, VertexList, VertexParametersList},
+    graphics::{Gpu, IndexList, StaticMesh, VertexList, VertexParametersList},
     shaders::{BaseVertexShader, Textured},
     shapes::{self},
 };
@@ -29,7 +29,7 @@ impl TriangleScene {
     pub fn new() -> Self {
         Self {
             triangle: Actor {
-                mesh: Mesh {
+                mesh: StaticMesh {
                     vertices: VertexList(shapes::TRIANGLE),
                     indices: IndexList(shapes::TRI_INDICES),
                     parameters: VertexParametersList(shapes::PLANE_UVS),
