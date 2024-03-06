@@ -70,21 +70,6 @@ pub struct StaticMesh<const P: usize> {
     pub parameters: VertexParametersList<P>,
 }
 
-#[derive(Clone, Copy)]
-pub struct Skin<const B: usize> {
-    pub bones: BonesList<B>,
-    pub weights: WeightsList<B>,
-}
-
-pub struct Skeleton {
-    pub inverse_bind_matrices: &'static [Mat4],
-}
-
-#[derive(Clone, Copy)]
-pub struct BonesList<const B: usize>(pub &'static [[u32; B]]);
-#[derive(Clone, Copy)]
-pub struct WeightsList<const B: usize>(pub &'static [[f32; B]]);
-
 #[derive(Clone, Copy, Pod, Zeroable)]
 #[repr(C)]
 pub struct TriangleIndices(pub u32, pub u32, pub u32);

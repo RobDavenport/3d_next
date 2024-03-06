@@ -8,6 +8,7 @@ use graphics::Gpu;
 use scenes::*;
 
 mod actor;
+mod animation;
 mod assets;
 mod camera;
 mod graphics;
