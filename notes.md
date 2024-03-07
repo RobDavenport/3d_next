@@ -1,5 +1,8 @@
 In Progress:
 - Skinned Animation
+  - Import/export the animations themselves
+  - Implement animator struct which handles all of the matrix math for bones
+  - Plug ^ into vertex shaders
 
 Todo:
 - Trivially depth reject tiles

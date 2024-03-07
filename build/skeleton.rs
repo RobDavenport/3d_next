@@ -31,8 +31,8 @@ impl BoneOutput {
 
 impl SkeletonOutput {
     pub fn to_output(self) -> String {
-        let bone_count = self.bones.len();
         let bones = format!("{}_{SKELETON_EXTENSION}", self.name);
+        let bone_count = self.bones.len();
         let children = format!("{}_{CHILDREN_EXTENSION}", self.name);
         let max_children = self
             .bones
@@ -60,7 +60,7 @@ impl SkeletonOutput {
 
         format!(
             "
-    pub static {name}: &SkeletonData<{bone_count},{max_children}> = &SkeletonData {{
+    pub static {name}: &SkeletonData<{bone_count}, {max_children}> = &SkeletonData {{
         matrices: include_bytes_aligned!(4, \"generated/{bones}\"),
         children: include_bytes_aligned!(4, \"generated/{children}\")
     }};"

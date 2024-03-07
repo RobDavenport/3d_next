@@ -1,6 +1,7 @@
 use glam::Vec3;
 
 use crate::{
+    animations::generate_animation,
     skeleton::{generate_skeleton, SkinEntryOutput, SkinOutput},
     textures::TextureOutput,
     *,
@@ -73,8 +74,7 @@ pub fn generate_meshes() -> String {
         println!("## Animations ##");
 
         for animation in document.animations() {
-            let name = animation.name().unwrap_or("Unnamed");
-            println!("Found animation: {name}");
+            generate_animation(&animation, blob);
         }
 
         println!("## End Animations ##");
