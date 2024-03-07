@@ -70,22 +70,24 @@ impl<const P: usize> StaticMeshData<P> {
     }
 }
 
-pub struct SkinData<const B: usize> {
-    skin_entries: &'static [u8],
+pub struct SkeletonData<const BONE_COUNT: usize, const MAX_CHILDREN: usize> {
+    pub children: &'static [u8],
+    pub matrices: &'static [u8],
 }
 
-impl<const B: usize> SkinData<B> {
-    pub fn as_skin(&self) -> Skin<B> {
-        Skin(cast_slice(self.skin_entries))
+impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize> SkeletonData<BONE_COUNT, MAX_CHILDREN> {
+    pub fn as_skeleton(&self) -> Skeleton<BONE_COUNT, MAX_CHILDREN> {
+        Skeleton {
+            matrices: cast_slice(self.matrices),
+            children: cast_slice(self.children),
+        }
     }
 }
 
-pub struct SkeletonData<const C: usize> {
-    bones: &'static [u8],
-}
+pub struct SkinData<const MAX_BONE_COUNT: usize>(pub &'static [u8]);
 
-impl<const C: usize> SkeletonData<C> {
-    pub fn as_skeleton(&self) -> Skeleton<C> {
-        Skeleton(cast_slice(self.bones))
+impl<const MAX_BONE_COUNT: usize> SkinData<MAX_BONE_COUNT> {
+    pub fn as_skin(&self) -> Skin<MAX_BONE_COUNT> {
+        Skin(cast_slice(self.0))
     }
 }

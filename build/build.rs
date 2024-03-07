@@ -28,17 +28,16 @@ mod skeleton;
 mod textures;
 
 // For output files
-pub const TEXTURES_EXTENSION: &str = "T";
-pub const VERTICES_EXTENSION: &str = "V";
-pub const INDICES_EXTENSION: &str = "I";
-pub const PARAMETERS_EXTENSION: &str = "P";
+pub const TEXTURES_EXTENSION: &str = "TEX";
+pub const VERTICES_EXTENSION: &str = "VER";
+pub const INDICES_EXTENSION: &str = "IND";
+pub const PARAMETERS_EXTENSION: &str = "PAR";
 
-pub const ANIMATION_EXTENSION: &str = "A";
-pub const SKELETON_EXTENSION: &str = "SK";
-pub const IBM_EXTENSION: &str = "IBM";
-pub const SKIN_EXTENSION: &str = "S";
-pub const WEIGHTS_EXTENSION: &str = "W";
-pub const BONES_EXTENSION: &str = "B";
+pub const ANIMATION_EXTENSION: &str = "ANI";
+
+pub const SKELETON_EXTENSION: &str = "SKL";
+pub const CHILDREN_EXTENSION: &str = "CHI";
+pub const SKIN_EXTENSION: &str = "SKN";
 
 // Writes the bytes of the file
 pub fn write_file(filename: &str, data: &[u8]) {
@@ -64,7 +63,7 @@ fn main() {
 /// To regenrate this file, delete it.
 /// You shouldn't be editing this file.
 use include_bytes_aligned::include_bytes_aligned;
-use crate::assets::{SkinData, StaticMeshData, Texture};\n\n",
+use crate::assets::{SkinData, StaticMeshData, Texture, SkeletonData};\n\n",
     );
 
     output.push_str(&generate_textures());

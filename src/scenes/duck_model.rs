@@ -27,7 +27,7 @@ impl DuckModelScene {
 impl Scene for DuckModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.duck.transform;
-        gpu.uniforms.diffuse = meshes::DUCK_0_T;
+        gpu.uniforms.diffuse = meshes::DUCK_0_TEX;
         gpu.render_actor(&self.duck, BaseVertexShader, TexturedLit);
     }
 

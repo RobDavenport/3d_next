@@ -53,8 +53,8 @@ impl Scene for CubesScene {
     fn draw(&self, gpu: &mut Gpu) {
         self.cubes.iter().for_each(|cube| {
             gpu.uniforms.model = cube.transform;
-            gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_T;
-            gpu.uniforms.normal = crate::assets::textures::BRICKWALL_NORMAL_T;
+            gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_TEX;
+            gpu.uniforms.normal = crate::assets::textures::BRICKWALL_NORMAL_TEX;
             gpu.render_actor(cube, BaseVertexShader, TexturedNormalMapLit);
         })
     }

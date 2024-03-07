@@ -33,7 +33,7 @@ impl Scene for CubeScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.cube.transform;
-        gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_T;
+        gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_TEX;
         gpu.render_actor(&self.cube, BaseVertexShader, TexturedNormalMapLit);
     }
 }

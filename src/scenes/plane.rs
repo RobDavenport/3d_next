@@ -19,7 +19,7 @@ impl Scene for PlaneScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.plane.transform;
-        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE_T;
+        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE_TEX;
         gpu.render_actor(&self.plane, BaseVertexShader, Textured);
     }
 }
