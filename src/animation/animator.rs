@@ -42,8 +42,8 @@ impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize> Skeleton<BONE_COUNT, MA
             }
         }
 
-        for index in 0..BONE_COUNT {
-            out[index] *= self.matrices[index].inverse_bind_matrix
+        for (out_mat, ibms) in out.iter_mut().zip(self.matrices.iter()) {
+            *out_mat *= ibms.inverse_bind_matrix
         }
 
         out

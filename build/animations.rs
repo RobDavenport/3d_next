@@ -1,5 +1,3 @@
-use std::{collections::HashMap, sync::mpsc::channel};
-
 use glam::{Quat, Vec4};
 use gltf::{
     animation::{Interpolation, Property},
@@ -55,7 +53,7 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
         let input = &blob[start..end];
         let input: &[f32] = cast_slice(input);
 
-        let keyframes = input.iter().cloned().collect::<Vec<f32>>();
+        let keyframes = input.to_vec();
         let keyframe_count = keyframes.len();
 
         // Get outputs
@@ -65,7 +63,7 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
         let end = start + output_accessor.count() * output_accessor.size();
         let output = &blob[start..end];
 
-        let data_type = output_accessor.data_type();
+        //let data_type = output_accessor.data_type();
         let dimensions = output_accessor.dimensions();
         let property = target.property();
 
@@ -78,7 +76,7 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
             Interpolation::CubicSpline => AnimationInterprolationType::CubicSpline,
         };
 
-        let channel_type = match target.property() {
+        let channel_type = match property {
             Property::Translation => AnimationChannelType::Translation,
             Property::Rotation => AnimationChannelType::Rotation,
             Property::Scale => AnimationChannelType::Scale,
@@ -86,7 +84,7 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
         };
 
         output.into_iter().for_each(|chunk| {
-            let matrix = match target.property() {
+            let matrix = match property {
                 Property::Translation => Mat4::from_translation(Vec3::from_slice(chunk)),
                 Property::Rotation => Mat4::from_quat(Quat::from_vec4(Vec4::from_slice(chunk))),
                 Property::Scale => Mat4::from_scale(Vec3::from_slice(chunk)),

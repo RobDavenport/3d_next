@@ -61,7 +61,7 @@ pub fn generate_meshes() -> String {
         let primitive = mesh.primitives().next().unwrap();
 
         println!("## Skeleton ##");
-        let skeleton_result = generate_skeleton(filename, &blob, &document);
+        let skeleton_result = generate_skeleton(filename, blob, &document);
         let total_bone_count = match skeleton_result {
             Some((total_bone_count, text)) => {
                 out.push_str(&text);
@@ -286,8 +286,8 @@ pub fn generate_meshes() -> String {
             for vertex in 0..vertex_count {
                 let start = vertex * max_bone_influences;
                 let end = start + max_bone_influences;
-                let weights = weights[start..end].iter().cloned().collect();
-                let bone_indices = bones[start..end].iter().cloned().collect();
+                let weights = weights[start..end].to_vec();
+                let bone_indices = bones[start..end].to_vec();
 
                 entries.push(SkinEntryOutput {
                     bone_indices,

@@ -10,6 +10,7 @@ pub struct SkeletonOutput {
     pub bones: Vec<BoneOutput>,
 }
 
+#[derive(Clone)]
 pub struct BoneOutput {
     pub children: Vec<u32>,
     pub local_matrix: Mat4,
@@ -30,7 +31,7 @@ impl BoneOutput {
 }
 
 impl SkeletonOutput {
-    pub fn to_output(self) -> String {
+    pub fn to_output(&self) -> String {
         let bones = format!("{}_{SKELETON_EXTENSION}", self.name);
         let bone_count = self.bones.len();
         let children = format!("{}_{CHILDREN_EXTENSION}", self.name);
@@ -49,8 +50,8 @@ impl SkeletonOutput {
 
         let bones_bytes = self
             .bones
-            .into_iter()
-            .flat_map(|bone| bone.into_bytes(max_children))
+            .iter()
+            .flat_map(|bone| bone.clone().into_bytes(max_children))
             .collect::<Vec<_>>();
 
         write_file(&bones, &bones_bytes);
@@ -96,7 +97,7 @@ pub fn generate_skeleton(
             let bone = BoneOutput {
                 children,
                 local_matrix: Mat4::from_cols_array_2d(&bone.transform().matrix()),
-                inverse_bind_matrix: ibms[index].clone(),
+                inverse_bind_matrix: *ibms[index],
             };
             bones.push(bone);
         }
@@ -129,6 +130,7 @@ pub struct SkinOutput {
     pub entries: Vec<SkinEntryOutput>,
 }
 
+#[derive(Clone)]
 pub struct SkinEntryOutput {
     pub bone_indices: Vec<u32>,
     pub weights: Vec<f32>,
@@ -146,15 +148,15 @@ impl SkinEntryOutput {
 }
 
 impl SkinOutput {
-    pub fn to_output(self) -> String {
+    pub fn to_output(&self) -> String {
         let skin = format!("{}_{SKIN_EXTENSION}", self.name);
 
         let max_weight_count = self.entries.iter().map(|e| e.weights.len()).max().unwrap();
 
         let skin_bytes = self
             .entries
-            .into_iter()
-            .flat_map(|bone| bone.into_bytes(max_weight_count))
+            .iter()
+            .flat_map(|bone| bone.clone().into_bytes(max_weight_count))
             .collect::<Vec<_>>();
 
         write_file(&skin, &skin_bytes);
