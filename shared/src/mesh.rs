@@ -6,7 +6,7 @@ use crate::{vertex_parameters::VertexParametersList, IndexList, VertexList};
 pub struct MeshRaw {
     pub vertices: VertexList,
     pub indices: IndexList,
-    pub parameters: Vec<f32>,
+    pub parameters: Box<[f32]>,
 }
 
 #[derive(Serialize, Deserialize, Archive)]
@@ -16,7 +16,6 @@ pub struct Mesh<const P: usize> {
     pub parameters: VertexParametersList<P>,
 }
 
-#[derive(Clone, Copy)]
 pub struct MeshRawBytes<const P: usize>(pub &'static [u8]);
 
 impl<const P: usize> MeshRawBytes<P> {

@@ -9,8 +9,8 @@ use scenes::*;
 
 mod actor;
 mod animation;
-mod generated;
 mod camera;
+mod generated;
 mod graphics;
 mod math;
 mod scenes;
@@ -36,7 +36,7 @@ pub unsafe extern "C" fn init() {
         (Box::new(HelmetModelScene::new())),
         (Box::new(HelmetModelSimpleScene::new())),
         (Box::new(CubeModelScene::new())),
-        //(Box::new(FoxModelScene::new())),
+        (Box::new(FoxModelScene::new())),
         (Box::new(DuckModelScene::new())),
         (Box::new(CubeScene::new())),
         (Box::new(CubesScene::new())),

@@ -1,8 +1,4 @@
-use crate::{
-    mesh::{ArchivedMesh, Mesh},
-    vertex_parameters::{VertexParameters, VertexParametersList},
-    IndexList, TriangleIndices, VertexList,
-};
+use crate::{vertex_parameters::VertexParameters, TriangleIndices};
 use glam::Vec3;
 
 // RH Coordinate System

@@ -1,15 +1,10 @@
 use bytemuck::{cast_slice, from_bytes};
 use glam::Vec3;
-use shared::{
-    mesh::MeshRaw,
-    IndexList, TriangleIndices, VertexList,
-};
+use shared::{mesh::MeshRaw, skin::SkinEntryRaw, IndexList, TriangleIndices, VertexList};
 
 use crate::{
-    animations::generate_animation,
-    skeleton::{generate_skeleton, SkinEntryOutput, SkinOutput},
-    textures::TextureOutput,
-    *,
+    animations::generate_animation, skeleton::generate_skeleton, skin::SkinOutput,
+    textures::TextureOutput, *,
 };
 
 pub struct MeshOutput {
@@ -25,9 +20,9 @@ impl MeshOutput {
         let filename = format!("{}_{MESH_EXTENSION}", self.name);
 
         let out = MeshRaw {
-            vertices: VertexList(self.vertices.clone()),
-            indices: IndexList(self.indices.clone()),
-            parameters: self.parameters.clone(),
+            vertices: VertexList(self.vertices.clone().into_boxed_slice()),
+            indices: IndexList(self.indices.clone().into_boxed_slice()),
+            parameters: self.parameters.clone().into_boxed_slice(),
         };
 
         let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
@@ -297,11 +292,14 @@ pub fn generate_meshes() -> String {
                 let start = vertex * max_bone_influences;
                 let end = start + max_bone_influences;
                 let weights = weights[start..end].to_vec();
-                let bone_indices = bones[start..end].to_vec();
+                let bone_indices = bones[start..end]
+                    .iter()
+                    .map(|x| *x as u8)
+                    .collect::<Vec<_>>();
 
-                entries.push(SkinEntryOutput {
-                    bone_indices,
-                    weights,
+                entries.push(SkinEntryRaw {
+                    bone_indices: bone_indices.into(),
+                    weights: weights.into(),
                 })
             }
 

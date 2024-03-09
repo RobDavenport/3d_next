@@ -3,7 +3,7 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     animation::Animator,
-    generated::{meshes},
+    generated::meshes,
     shaders::{BaseVertexShader, TexturedLit},
 };
 
@@ -11,7 +11,7 @@ use super::Scene;
 
 pub struct FoxModelScene {
     fox: Actor<5>,
-    // animator: Animator<24, 4, 4>,
+    animator: Animator<24, 4, 4>,
 }
 
 impl FoxModelScene {
@@ -22,10 +22,11 @@ impl FoxModelScene {
                 transform: Mat4::from_scale(Vec3::splat(0.015)),
                 delta: 0.0,
             },
-            // animator: Animator {
-            //     skeleton: meshes::FOX_SKL.as_skeleton(),
-            //     skin: meshes::FOX_SKN.as_skin(),
-            // },
+            animator: Animator {
+                skeleton: meshes::FOX_SKL.as_skeleton(),
+                skin: meshes::FOX_SKN.as_skin(),
+                time: 0.0
+            },
         }
     }
 }
@@ -34,10 +35,12 @@ impl Scene for FoxModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.fox.transform;
         gpu.uniforms.diffuse = meshes::FOX_0_TEX.as_texture();
+
         gpu.render_actor(&self.fox, BaseVertexShader, TexturedLit);
     }
 
     fn update(&mut self) {
         // do nothing
+        self.animator.time += 0.005;
     }
 }

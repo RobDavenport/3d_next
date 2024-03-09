@@ -1,40 +1,22 @@
-use bytemuck::{bytes_of, cast_slice, from_bytes};
+use bytemuck::{cast_slice, from_bytes};
 use glam::Mat4;
 use gltf::Document;
+use shared::skeleton::{BoneRaw, SkeletonRaw};
 
 use crate::*;
 
 //A collection of bones
 pub struct SkeletonOutput {
     pub name: String,
-    pub bones: Vec<BoneOutput>,
-}
-
-#[derive(Clone)]
-pub struct BoneOutput {
-    pub children: Vec<u32>,
-    pub local_matrix: Mat4,
-    pub inverse_bind_matrix: Mat4,
-}
-
-impl BoneOutput {
-    fn into_bytes(mut self, max_children: usize) -> Vec<u8> {
-        let len_difference = max_children - self.children.len();
-        self.children.extend((0..len_difference).map(|_| 0));
-
-        let mut output = cast_slice(&self.children).to_vec();
-        output.extend(bytes_of(&self.local_matrix));
-        output.extend(bytes_of(&self.inverse_bind_matrix));
-
-        output
-    }
+    pub bones: Vec<BoneRaw>,
 }
 
 impl SkeletonOutput {
     pub fn to_output(&self) -> String {
-        let bones = format!("{}_{SKELETON_EXTENSION}", self.name);
+        let filename = format!("{}_{SKELETON_EXTENSION}", self.name);
         let bone_count = self.bones.len();
-        let children = format!("{}_{CHILDREN_EXTENSION}", self.name);
+
+        // Get the max number of children
         let max_children = self
             .bones
             .iter()
@@ -42,29 +24,38 @@ impl SkeletonOutput {
             .max()
             .unwrap();
 
-        let chidren_vec = self
+        // Pad any vecs which have less than max children
+        let bones = self
             .bones
             .iter()
-            .flat_map(|bone| bone.children.clone())
-            .collect::<Vec<_>>();
+            .map(|bone| {
+                // let len_difference = max_children - bone.children.len();
+                // bone.children.extend((0..len_difference).map(|_| 0));
+                let mut out = vec![0; max_children];
 
-        let bones_bytes = self
-            .bones
-            .iter()
-            .flat_map(|bone| bone.clone().into_bytes(max_children))
-            .collect::<Vec<_>>();
+                bone.children
+                    .iter()
+                    .enumerate()
+                    .for_each(|(index, bone)| out[index] = *bone);
+                let children = out.into_boxed_slice();
 
-        write_file(&bones, &bones_bytes);
-        write_file(&children, cast_slice(chidren_vec.as_slice()));
+                BoneRaw {
+                    children,
+                    local_matrix: bone.local_matrix,
+                    inverse_bind_matrix: bone.inverse_bind_matrix,
+                }
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice();
 
-        let name = format!("{}_{SKELETON_EXTENSION}", self.name.to_uppercase());
+        let out = SkeletonRaw(bones);
+
+        let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
+        write_file(&filename, &archive);
+        let name = filename.to_uppercase();
 
         format!(
-            "
-    pub static {name}: &SkeletonData<{bone_count}, {max_children}> = &SkeletonData {{
-        matrices: include_bytes_aligned!(4, \"generated/{bones}\"),
-        children: include_bytes_aligned!(4, \"generated/{children}\")
-    }};"
+            "pub static {name}: &SkeletonRawBytes<{bone_count}, {max_children}> = &SkeletonRawBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }
@@ -91,11 +82,11 @@ pub fn generate_skeleton(
         for (index, bone) in skin.joints().enumerate() {
             let mut children = Vec::new();
             for child in bone.children() {
-                children.push(child.index() as u32);
+                children.push(child.index() as u8);
             }
 
-            let bone = BoneOutput {
-                children,
+            let bone = BoneRaw {
+                children: children.into(),
                 local_matrix: Mat4::from_cols_array_2d(&bone.transform().matrix()),
                 inverse_bind_matrix: *ibms[index],
             };
@@ -121,50 +112,5 @@ pub fn generate_skeleton(
         Some((len, skeleton.to_output()))
     } else {
         None
-    }
-}
-
-// A collection of bone indices & weights
-pub struct SkinOutput {
-    pub name: String,
-    pub entries: Vec<SkinEntryOutput>,
-}
-
-#[derive(Clone)]
-pub struct SkinEntryOutput {
-    pub bone_indices: Vec<u32>,
-    pub weights: Vec<f32>,
-}
-
-impl SkinEntryOutput {
-    fn into_bytes(mut self, max_weight_count: usize) -> Vec<u8> {
-        let len_difference = max_weight_count - self.bone_indices.len();
-        self.bone_indices.extend((0..len_difference).map(|_| 0));
-
-        let mut output = cast_slice(&self.bone_indices).to_vec();
-        output.extend(cast_slice(&self.weights));
-        output
-    }
-}
-
-impl SkinOutput {
-    pub fn to_output(&self) -> String {
-        let skin = format!("{}_{SKIN_EXTENSION}", self.name);
-
-        let max_weight_count = self.entries.iter().map(|e| e.weights.len()).max().unwrap();
-
-        let skin_bytes = self
-            .entries
-            .iter()
-            .flat_map(|bone| bone.clone().into_bytes(max_weight_count))
-            .collect::<Vec<_>>();
-
-        write_file(&skin, &skin_bytes);
-        let name = format!("{}_{SKIN_EXTENSION}", self.name.to_uppercase());
-
-        format!(
-            "
-    pub static {name}: &SkinData<{max_weight_count}> = &SkinData(include_bytes_aligned!(4, \"generated/{skin}\"));\n"
-        )
     }
 }

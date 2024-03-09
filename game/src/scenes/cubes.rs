@@ -5,7 +5,7 @@ use glam::{Mat4, Vec3};
 use super::Scene;
 use crate::{
     actor::Actor,
-    generated::{textures, meshes},
+    generated::{meshes, textures},
     graphics::Gpu,
     shaders::{BaseVertexShader, TexturedNormalMapLit},
 };

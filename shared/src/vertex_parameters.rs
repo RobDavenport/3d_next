@@ -9,7 +9,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 pub struct VertexParameters<const P: usize>(pub [f32; P]);
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
-pub struct VertexParametersList<const P: usize>(pub Vec<VertexParameters<P>>);
+pub struct VertexParametersList<const P: usize>(pub Box<[VertexParameters<P>]>);
 
 impl<const P: usize> VertexParameters<P> {
     pub fn lerp(self, rhs: Self, s: f32) -> Self {
