@@ -35,7 +35,7 @@ impl Gpu {
     pub fn render_mesh<VS, const VSIN: usize, PS, const PSIN: usize>(
         &mut self,
         mesh: &ArchivedMesh<VSIN>,
-        _vs: VS,
+        vs: VS,
         ps: PS,
     ) where
         VS: VertexShader<VSIN, PSIN>,
@@ -53,9 +53,9 @@ impl Gpu {
 
             // Run Vertex shader on every vertexs
             // This should output them into clip space
-            let a_clip = VS::run(&self.uniforms, a, params.0[triangle_indices.0 as usize].0);
-            let b_clip = VS::run(&self.uniforms, b, params.0[triangle_indices.1 as usize].0);
-            let c_clip = VS::run(&self.uniforms, c, params.0[triangle_indices.2 as usize].0);
+            let a_clip = vs.run(triangle_indices.0 as usize, &self.uniforms, a, params.0[triangle_indices.0 as usize].0);
+            let b_clip = vs.run(triangle_indices.1 as usize, &self.uniforms, b, params.0[triangle_indices.1 as usize].0);
+            let c_clip = vs.run(triangle_indices.2 as usize, &self.uniforms, c, params.0[triangle_indices.2 as usize].0);
 
             // Culling Stage
             if is_backfacing(a_clip.position, b_clip.position, c_clip.position) {
@@ -71,7 +71,6 @@ impl Gpu {
             let clip_result = self.clip_stage(triangle);
 
             // Triangle Setup -> Pass to binner
-            // TODO: Complete Binning
             match clip_result {
                 ClipResult::Culled => continue,
                 ClipResult::One(triangle) => {
@@ -92,8 +91,6 @@ impl Gpu {
                 }
             }
         }
-
-        // TODO: Run any remaining tiles
     }
 
     // Converts a triangle from clip space into screen space

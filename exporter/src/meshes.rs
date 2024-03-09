@@ -1,6 +1,6 @@
 use bytemuck::{cast_slice, from_bytes};
 use glam::Vec3;
-use shared::{mesh::MeshRaw, skin::SkinEntryRaw, IndexList, TriangleIndices, VertexList};
+use shared::{mesh::MeshRaw, skin::SkinEntry, IndexList, TriangleIndices, VertexList};
 
 use crate::{
     animations::generate_animation, skeleton::generate_skeleton, skin::SkinOutput,
@@ -297,10 +297,14 @@ pub fn generate_meshes() -> String {
                     .map(|x| *x as u8)
                     .collect::<Vec<_>>();
 
-                entries.push(SkinEntryRaw {
-                    bone_indices: bone_indices.into(),
+                let entry = SkinEntry {
+                    bones_indices: bone_indices.into(),
                     weights: weights.into(),
-                })
+                };
+
+                println!("Bone indices: {:?}, weights: {:?}", entry.bones_indices, entry.weights);
+
+                entries.push(entry)
             }
 
             let skin = SkinOutput {

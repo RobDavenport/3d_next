@@ -4,26 +4,39 @@ use glam::{Mat4, Vec4};
 use shared::{skeleton::ArchivedSkeleton, skin::ArchivedSkin};
 
 #[derive(Clone, Copy)]
-pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
+pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize>
 {
     pub skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>,
-    pub skin: &'static ArchivedSkin<MAX_INFLUENCES>,
+    pub skin: &'static ArchivedSkin,
     pub time: f32,
+    pub current_pose: [Mat4; BONE_COUNT],
 }
 
-impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
-    Animator<BONE_COUNT, MAX_CHILDREN, MAX_INFLUENCES>
+impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize>
+    Animator<BONE_COUNT, MAX_CHILDREN>
 {
-    pub fn skin_vertices(&self, vertices: &mut [Vec4], in_pose: &[Mat4; BONE_COUNT]) {
-        let pose = self.calculate_animation_pose(in_pose);
+    pub fn new(skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>, skin: &'static ArchivedSkin) -> Self {
+        let mut out  =Self {
+            skeleton,
+            skin,
+            time: 0.0,
+            current_pose: array::from_fn(|_| Mat4::IDENTITY)
+        };
 
-        for (vertex, skin) in vertices.iter_mut().zip(self.skin.0.iter()) {
-            for (index, weight) in skin.bones_indices.into_iter().zip(skin.weights.into_iter()) {
-                let matrix = pose[index as usize];
-                *vertex = matrix.mul_scalar(weight) * *vertex;
-            }
-        }
+        out.current_pose = out.calculate_animation_pose(&out.current_pose);
+        out
     }
+
+    // pub fn skin_vertices(&self, vertices: &mut [Vec4], in_pose: &[Mat4; BONE_COUNT]) {
+    //     let pose = self.calculate_animation_pose(in_pose);
+
+    //     for (vertex, skin) in vertices.iter_mut().zip(self.skin.0.iter()) {
+    //         for (index, weight) in skin.bones_indices.into_iter().zip(skin.weights.into_iter()) {
+    //             let matrix = pose[*index as usize];
+    //             *vertex = matrix.mul_scalar(weight) * *vertex;
+    //         }
+    //     }
+    // }
 
     fn calculate_animation_pose(&self, in_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
         let mut out = array::from_fn(|index| self.skeleton.0[index].local_matrix * in_pose[index]);

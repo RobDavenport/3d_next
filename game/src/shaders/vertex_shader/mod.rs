@@ -4,6 +4,10 @@ mod base;
 pub use base::*;
 use shared::vertex_parameters::VertexParameters;
 
+mod animated;
+pub use animated::*;
+
+
 use crate::graphics::Uniforms;
 
 pub struct VertexShaderOutput<const OUT: usize> {
@@ -12,7 +16,7 @@ pub struct VertexShaderOutput<const OUT: usize> {
 }
 
 pub trait VertexShader<const IN: usize, const OUT: usize> {
-    fn run(uniforms: &Uniforms, position: Vec3, input: [f32; IN]) -> VertexShaderOutput<OUT>;
+    fn run(&self, vertex_index: usize, uniforms: &Uniforms, position: Vec3, input: [f32; IN]) -> VertexShaderOutput<OUT>;
 }
 
 fn transform_point_to_clip_space(position: &Vec3, mvp: &Mat4) -> Vec4 {
