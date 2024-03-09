@@ -1,33 +1,8 @@
-[package]
-name = "example_3d_next"
-version = "0.1.0"
-edition = "2021"
-build = "build/build.rs"
+[workspace]
+resolver = "2"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-glam = { version = "0.25.0", features = ["bytemuck"] }
-bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics"] }
-wide = "0.7.15"
-bumpalo = "3.15.3"
-gamercade_rs = { path = "../gc_console/gamercade_rs" }
-include_bytes_aligned = "0.1.3"
-
-[build-dependencies]
-image = "0.24.9"
-gltf = "1.4.0"
-glam = { version = "0.25.0", features = ["bytemuck"] }
-bytemuck = {version = "1.14.3", features = ["derive", "min_const_generics"] }
-
-[lib]
-crate-type = ['cdylib']
-
-# Codegen Units:
-# 1: Slowest, Best Performance
-# 16: Default Release
-# 256: Default Debug
-[profile.release]
-opt-level = 3
-lto = true
-codegen-units = 16
+members = [
+    "exporter",
+    "game",
+    "shared",
+]

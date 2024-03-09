@@ -1,0 +1,13 @@
+[package]
+name = "exporter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../shared" }
+
+image = "0.24.9"
+gltf = "1.4.0"
+glam = { version = "0.25.0", features = ["bytemuck"] }
+bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics"] }
+rkyv = { version = "0.7.44", default-features = false, features = ["size_32"]}
