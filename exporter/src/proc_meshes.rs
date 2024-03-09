@@ -1,4 +1,4 @@
-use shared::{shapes, vertex_parameters::VertexParametersList, IndexList, VertexList};
+use shared::shapes;
 
 use crate::meshes::MeshOutput;
 

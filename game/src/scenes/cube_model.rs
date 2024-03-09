@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    assets::meshes,
+    generated::meshes,
     shaders::{BaseVertexShader, ColorBlendLit},
 };
 

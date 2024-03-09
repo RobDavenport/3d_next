@@ -3,7 +3,7 @@ use glam::Mat4;
 use super::Scene;
 use crate::{
     actor::Actor,
-    assets::{meshes, textures},
+    generated::{meshes, textures},
     graphics::Gpu,
     shaders::{BaseVertexShader, TexturedNormalMapLit},
 };

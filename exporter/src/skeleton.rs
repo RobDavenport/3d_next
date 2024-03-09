@@ -1,4 +1,4 @@
-use bytemuck::bytes_of;
+use bytemuck::{bytes_of, cast_slice, from_bytes};
 use glam::Mat4;
 use gltf::Document;
 

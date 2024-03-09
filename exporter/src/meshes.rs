@@ -1,6 +1,7 @@
+use bytemuck::{cast_slice, from_bytes};
 use glam::Vec3;
 use shared::{
-    mesh::{Mesh, MeshRaw},
+    mesh::MeshRaw,
     IndexList, TriangleIndices, VertexList,
 };
 
@@ -35,7 +36,7 @@ impl MeshOutput {
         let name = self.name.to_uppercase();
         let p = self.attribute_count;
 
-        format!("pub static {name}: &MeshRawBytes<{p}> = &MeshRawBytes(include_bytes!(\"generated/{filename}\"));\n"
+        format!("pub static {name}: &MeshRawBytes<{p}> = &MeshRawBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }

@@ -82,20 +82,6 @@ name = "bytemuck"
 version = "1.14.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2ef034f05691a48569bd920a96c81b9d91bbad1ab5ac7c4616c1f6ef36cb79f"
-dependencies = [
- "bytemuck_derive",
-]
-
-[[package]]
-name = "bytemuck_derive"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "965ab7eb5f8f97d2a083c799f3a1b994fc397b2fe2da5d1da1626ce15a39f2b1"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.52",
-]
 
 [[package]]
 name = "byteorder"
@@ -236,7 +222,6 @@ dependencies = [
  "bytemuck",
  "gamercade_rs",
  "glam",
- "include_bytes_aligned",
  "rkyv",
  "shared",
  "wide",
@@ -355,12 +340,6 @@ dependencies = [
  "qoi",
  "tiff",
 ]
-
-[[package]]
-name = "include_bytes_aligned"
-version = "0.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e04cb7c34f1605722a91ca2ddf1fd071a9ce4fe1ac82d57fe36437331c87ec3b"
 
 [[package]]
 name = "inflections"
@@ -628,7 +607,6 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
- "bytemuck",
  "gamercade_rs",
  "glam",
  "rkyv",

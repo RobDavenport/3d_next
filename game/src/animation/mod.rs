@@ -1,4 +1,3 @@
-use bytemuck::{Pod, Zeroable};
 use glam::Mat4;
 
 mod animator;
@@ -7,8 +6,7 @@ pub use animator::*;
 // A skin is a collection of bone indices and weights
 pub struct Skin<const MAX_BONES: usize>(pub &'static [SkinEntry<MAX_BONES>]);
 
-#[derive(Clone, Copy, Pod, Zeroable)]
-#[repr(C, packed)]
+#[derive(Clone, Copy)]
 pub struct SkinEntry<const MAX_BONES: usize> {
     pub bones_indices: [u32; MAX_BONES],
     pub weights: [f32; MAX_BONES],
@@ -20,12 +18,10 @@ pub struct Skeleton<const BONE_COUNT: usize, const MAX_CHILDREN: usize> {
     pub children: &'static [BoneChildren<MAX_CHILDREN>],
 }
 
-#[derive(Clone, Copy, Pod, Zeroable)]
-#[repr(transparent)]
+#[derive(Clone, Copy)]
 pub struct BoneChildren<const MAX_CHILDREN: usize>(pub [u32; 4]);
 
-#[derive(Clone, Copy, Pod, Zeroable)]
-#[repr(C)]
+#[derive(Clone, Copy)]
 pub struct BoneMatrices {
     pub local_matrix: Mat4,
     pub inverse_bind_matrix: Mat4,

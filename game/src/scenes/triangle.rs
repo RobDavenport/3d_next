@@ -2,7 +2,7 @@ use glam::Mat4;
 
 use crate::{
     actor::Actor,
-    assets::{meshes, textures},
+    generated::{meshes, textures},
     graphics::Gpu,
     shaders::{BaseVertexShader, Textured},
 };
@@ -20,7 +20,7 @@ impl Scene for TriangleScene {
 
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.triangle.transform;
-        gpu.uniforms.diffuse = crate::assets::textures::GAMERCADE_TEX.as_texture();
+        gpu.uniforms.diffuse = textures::GAMERCADE_TEX.as_texture();
         gpu.render_actor(&self.triangle, BaseVertexShader, Textured);
     }
 }

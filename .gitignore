@@ -1,3 +1,6 @@
 /target
-/game/src/assets/generated
-/game/src/assets/generated.rs
+*_TEX
+*_MESH
+*_SKL
+*_SKN
+*_ANI

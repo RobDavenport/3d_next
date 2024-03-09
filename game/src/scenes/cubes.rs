@@ -5,7 +5,7 @@ use glam::{Mat4, Vec3};
 use super::Scene;
 use crate::{
     actor::Actor,
-    assets::meshes,
+    generated::{textures, meshes},
     graphics::Gpu,
     shaders::{BaseVertexShader, TexturedNormalMapLit},
 };
@@ -48,8 +48,8 @@ impl Scene for CubesScene {
     fn draw(&self, gpu: &mut Gpu) {
         self.cubes.iter().for_each(|cube| {
             gpu.uniforms.model = cube.transform;
-            gpu.uniforms.diffuse = crate::assets::textures::BRICKWALL_TEX.as_texture();
-            gpu.uniforms.normal = crate::assets::textures::BRICKWALL_NORMAL_TEX.as_texture();
+            gpu.uniforms.diffuse = textures::BRICKWALL_TEX.as_texture();
+            gpu.uniforms.normal = textures::BRICKWALL_NORMAL_TEX.as_texture();
             gpu.render_actor(cube, BaseVertexShader, TexturedNormalMapLit);
         })
     }

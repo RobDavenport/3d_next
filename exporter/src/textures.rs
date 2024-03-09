@@ -26,7 +26,7 @@ impl TextureOutput {
         let name = filename.to_uppercase();
 
         format!(
-            "pub static {name}: &TextureBytes = &TextureBytes(include_bytes!(\"generated/{filename}\"));\n"
+            "pub static {name}: &TextureBytes = &TextureBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }

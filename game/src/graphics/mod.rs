@@ -14,7 +14,7 @@ pub use z_buffer::ZBuffer;
 
 use glam::{Mat4, Vec3, Vec4};
 
-use crate::assets::{meshes, textures};
+use crate::generated::{meshes, textures};
 
 #[derive(Clone)]
 pub(crate) struct Triangle<const P: usize> {

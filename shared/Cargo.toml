@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 gamercade_rs = { path = "../../gc_console/gamercade_rs" }
 
-bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics"] }
+# bytemuck = { version = "1.14.3", features = ["derive", "min_const_generics"] }
 rkyv = { version = "0.7.44", default-features = false, features = ["size_32", "std"]}
 glam = { version = "0.25.0", features = ["bytemuck", "rkyv"] }

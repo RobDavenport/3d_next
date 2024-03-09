@@ -1,3 +1,4 @@
+use bytemuck::cast_slice;
 use glam::{Quat, Vec4};
 use gltf::{
     animation::{Interpolation, Property},

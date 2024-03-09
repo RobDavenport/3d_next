@@ -3,7 +3,7 @@ use glam::{Mat4, Vec3};
 use crate::{
     actor::Actor,
     animation::Animator,
-    assets::meshes,
+    generated::{meshes},
     shaders::{BaseVertexShader, TexturedLit},
 };
 
@@ -33,7 +33,7 @@ impl FoxModelScene {
 impl Scene for FoxModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.fox.transform;
-        gpu.uniforms.diffuse = crate::assets::meshes::FOX_0_TEX.as_texture();
+        gpu.uniforms.diffuse = meshes::FOX_0_TEX.as_texture();
         gpu.render_actor(&self.fox, BaseVertexShader, TexturedLit);
     }
 

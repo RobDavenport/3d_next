@@ -3,11 +3,9 @@ use std::{
     ops::{Add, Mul, MulAssign, Sub},
 };
 
-use bytemuck::{Pod, Zeroable};
 use rkyv::{Archive, Deserialize, Serialize};
 
-#[derive(Clone, Copy, Pod, Zeroable, Archive, Serialize, Deserialize)]
-#[repr(transparent)]
+#[derive(Clone, Copy, Archive, Serialize, Deserialize)]
 pub struct VertexParameters<const P: usize>(pub [f32; P]);
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
