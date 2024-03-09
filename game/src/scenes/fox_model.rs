@@ -25,7 +25,7 @@ impl FoxModelScene {
             animator: Animator {
                 skeleton: meshes::FOX_SKL.as_skeleton(),
                 skin: meshes::FOX_SKN.as_skin(),
-                time: 0.0
+                time: 0.0,
             },
         }
     }
@@ -36,7 +36,7 @@ impl Scene for FoxModelScene {
         gpu.uniforms.model = self.fox.transform;
         gpu.uniforms.diffuse = meshes::FOX_0_TEX.as_texture();
 
-        gpu.render_actor(&self.fox, BaseVertexShader, TexturedLit);
+        gpu.render_mesh(&self.fox.mesh, BaseVertexShader, TexturedLit);
     }
 
     fn update(&mut self) {

@@ -9,7 +9,7 @@ mod z_buffer;
 
 pub use frame_buffer::FrameBuffer;
 pub use gpu::Gpu;
-use shared::{texture::ArchivedTexture, vertex_parameters::VertexParameters, TriangleIndices};
+use shared::{texture::ArchivedTexture, vertex_parameters::VertexParameters};
 pub use z_buffer::ZBuffer;
 
 use glam::{Mat4, Vec3, Vec4};

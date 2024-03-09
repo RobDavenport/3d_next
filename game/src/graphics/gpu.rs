@@ -1,10 +1,8 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use glam::{Mat3, Vec4, Vec4Swizzles};
+use shared::mesh::ArchivedMesh;
 
-use crate::{
-    actor::Actor,
-    shaders::{PixelShader, VertexShader},
-};
+use crate::shaders::{PixelShader, VertexShader};
 
 use super::{
     clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
@@ -34,25 +32,24 @@ impl Gpu {
         self.render_tiles.reset_frame();
     }
 
-    // Adds the triangles fr
-    pub fn render_actor<VS, const VSIN: usize, PS, const PSIN: usize>(
+    pub fn render_mesh<VS, const VSIN: usize, PS, const PSIN: usize>(
         &mut self,
-        actor: &Actor<VSIN>,
+        mesh: &ArchivedMesh<VSIN>,
         _vs: VS,
         ps: PS,
     ) where
         VS: VertexShader<VSIN, PSIN>,
         PS: PixelShader<PSIN>,
     {
-        let vertex_list = &actor.mesh.vertices.0;
-        let indices = &actor.mesh.indices.0;
+        let vertex_list = &mesh.vertices.0;
+        let indices = &mesh.indices.0;
 
         // Iterate each triangle of the mesh
         for triangle_indices in indices.iter() {
             let a = vertex_list[triangle_indices.0 as usize];
             let b = vertex_list[triangle_indices.1 as usize];
             let c = vertex_list[triangle_indices.2 as usize];
-            let params = &actor.mesh.parameters;
+            let params = &mesh.parameters;
 
             // Run Vertex shader on every vertexs
             // This should output them into clip space

@@ -1,4 +1,4 @@
-use bytemuck::{cast_slice, from_bytes};
+use bytemuck::from_bytes;
 use glam::Mat4;
 use gltf::Document;
 use shared::skeleton::{BoneRaw, SkeletonRaw};

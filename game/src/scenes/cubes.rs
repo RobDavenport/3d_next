@@ -50,7 +50,7 @@ impl Scene for CubesScene {
             gpu.uniforms.model = cube.transform;
             gpu.uniforms.diffuse = textures::BRICKWALL_TEX.as_texture();
             gpu.uniforms.normal = textures::BRICKWALL_NORMAL_TEX.as_texture();
-            gpu.render_actor(cube, BaseVertexShader, TexturedNormalMapLit);
+            gpu.render_mesh(cube.mesh, BaseVertexShader, TexturedNormalMapLit);
         })
     }
 }

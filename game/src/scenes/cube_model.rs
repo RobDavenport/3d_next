@@ -27,7 +27,7 @@ impl CubeModelScene {
 impl Scene for CubeModelScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.cube.transform;
-        gpu.render_actor(&self.cube, BaseVertexShader, ColorBlendLit);
+        gpu.render_mesh(&self.cube.mesh, BaseVertexShader, ColorBlendLit);
     }
 
     fn update(&mut self) {
