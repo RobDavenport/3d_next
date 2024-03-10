@@ -22,17 +22,15 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
         skin: &'static ArchivedSkin<MAX_INFLUENCES>,
         animation: &'static ArchivedAnimation,
     ) -> Self {
-        let mut out = Self {
+        let current_pose = array::from_fn(|index| skeleton.0[index].local_matrix);
+
+        Self {
             skeleton,
             skin,
             time: 0.0,
-            current_pose: array::from_fn(|_| Mat4::IDENTITY),
+            current_pose,
             animation,
-        };
-
-        out.current_pose = out.calculate_animation_pose(&out.current_pose);
-
-        out
+        }
     }
 
     pub fn update_time(&mut self, delta: f32) {
