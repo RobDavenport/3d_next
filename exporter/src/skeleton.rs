@@ -9,11 +9,17 @@ use seq_macro::seq;
 use shared::skeleton::{Bone, Skeleton};
 use shared::{SKELETON_MAX_BONES, SKELETON_MAX_CHILDREN};
 
+use crate::skin::get_bone_name_index_map;
 use crate::*;
 pub struct BoneVec {
     pub children: Vec<u8>,
     pub local_matrix: Mat4,
     pub inverse_bind_matrix: Mat4,
+}
+
+pub struct SkeletonMetaData {
+    pub bone_count: u8,
+    pub named_bones: HashMap<String, u8>,
 }
 
 impl BoneVec {
@@ -92,18 +98,14 @@ pub fn generate_skeleton(
     filename: &str,
     buffer: &[u8],
     document: &Document,
-) -> Option<(usize, String)> {
+) -> Option<(SkeletonMetaData, String)> {
     if let Some(skin) = document.skins().next() {
         let mut ibms = Vec::new();
         let mut bones = Vec::new();
 
         let ibm = skin.inverse_bind_matrices().unwrap();
 
-        let mut joints = HashMap::<String, u8>::new();
-        for (index, bone) in skin.joints().enumerate() {
-            let name = bone.name().unwrap().to_string();
-            joints.insert(name, index as u8);
-        }
+        let joints = get_bone_name_index_map(&skin);
 
         let view = ibm.view().unwrap();
         let data = &buffer[view.offset()..view.offset() + view.length()];
@@ -148,7 +150,12 @@ pub fn generate_skeleton(
             name: filename.to_string(),
             bones,
         };
-        Some((len, skeleton.to_output()))
+
+        let metadata = SkeletonMetaData {
+            bone_count: len as u8,
+            named_bones: joints,
+        };
+        Some((metadata, skeleton.to_output()))
     } else {
         None
     }

@@ -106,19 +106,22 @@ pub fn generate_meshes() -> String {
 
         println!("## Skeleton ##");
         let skeleton_result = generate_skeleton(filename, blob, &document);
-        let total_bone_count = match skeleton_result {
-            Some((total_bone_count, text)) => {
-                out.push_str(&text);
-                total_bone_count
-            }
-            None => 0,
+        let mut total_bone_count = 0;
+        let skeleton = if let Some((metadata, text)) = skeleton_result {
+            out.push_str(&text);
+            total_bone_count = metadata.bone_count;
+            Some(metadata)
+        } else {
+            None
         };
 
         println!("## End Skeleton ##");
         println!("## Animations ##");
 
-        for animation in document.animations() {
-            generate_animation(&animation, blob);
+        if let Some(metadata) = skeleton {
+            for animation in document.animations() {
+                out.push_str(&generate_animation(&animation, blob, &metadata, filename));
+            }
         }
 
         println!("## End Animations ##");
@@ -193,7 +196,7 @@ pub fn generate_meshes() -> String {
                 gltf::Semantic::Weights(_) => {
                     let view: &[f32] = cast_slice(view);
 
-                    for w in view.chunks_exact(total_bone_count) {
+                    for w in view.chunks_exact(total_bone_count as usize) {
                         weights.extend(w)
                     }
                     println!("Weights found: {}", weights.len());

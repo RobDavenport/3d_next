@@ -1,49 +1,52 @@
 use bytemuck::cast_slice;
 use glam::{Quat, Vec4};
-use gltf::{
-    animation::{Interpolation, Property},
-    Animation,
+use gltf::animation::{Interpolation, Property};
+use shared::animation::{
+    Animation, AnimationChannel, AnimationChannelType, AnimationInterprolationType,
 };
 
+use self::skeleton::SkeletonMetaData;
 use crate::*;
 
-pub struct AnimationOutput {
+pub struct AnimationOutputVec {
     pub name: String,
     channels: Vec<AnimationChannel>,
 }
 
-enum AnimationChannelType {
-    Translation,
-    Rotation,
-    Scale,
+impl AnimationOutputVec {
+    fn to_output(&self) -> String {
+        let filename = format!("{}_{ANIMATION_EXTENSION}", self.name);
+
+        let out = Animation(self.channels.clone().into_boxed_slice());
+        let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
+        write_file(&filename, &archive);
+
+        let name = filename.to_uppercase();
+        format!(
+            "pub static {name}: &AnimationBytes = &AnimationBytes(include_bytes!(\"{filename}\"));\n"
+        )
+    }
 }
 
-enum AnimationInterprolationType {
-    Linear,
-    Step,
-    CubicSpline,
-}
-
-pub struct AnimationChannel {
-    channel_type: AnimationChannelType,
-    interpolation_type: AnimationInterprolationType,
-    target_bone: u32,
-    keyframes: usize,
-    timestamps: Vec<f32>,
-    values: Vec<Mat4>,
-}
-
-pub fn generate_animation(animation: &Animation, blob: &[u8]) {
+pub fn generate_animation(
+    animation: &gltf::Animation,
+    blob: &[u8],
+    metadata: &SkeletonMetaData,
+    filename: &str,
+) -> String {
     let name = animation.name().unwrap_or("Unnamed");
+    let name = format!("{filename}_{name}");
     println!("Animation found: {name}.");
 
     // Bone Index -> List of Transforms
     let mut animation_channels = Vec::new();
 
+    let named_bones = &metadata.named_bones;
+
     for channel in animation.channels() {
         let mut modifiers = Vec::new();
         let target = channel.target();
-        let target_index = target.node().index();
+        let target_index = *named_bones.get(target.node().name().unwrap()).unwrap();
         let sampler = channel.sampler();
 
         // Get Input Keyframes
@@ -55,7 +58,6 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
         let input: &[f32] = cast_slice(input);
 
         let keyframes = input.to_vec();
-        let keyframe_count = keyframes.len();
 
         // Get outputs
         let output_accessor = sampler.output();
@@ -98,8 +100,7 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
         let out = AnimationChannel {
             channel_type,
             interpolation_type: interpolate,
-            target_bone: target_index as u32,
-            keyframes: keyframe_count,
+            target_bone: target_index,
             timestamps: keyframes,
             values: modifiers,
         };
@@ -108,4 +109,10 @@ pub fn generate_animation(animation: &Animation, blob: &[u8]) {
     }
 
     println!("channel_count: {}", animation.channels().count());
+
+    AnimationOutputVec {
+        name: name.to_owned(),
+        channels: animation_channels,
+    }
+    .to_output()
 }

@@ -1,7 +1,7 @@
 use std::array;
 
 use glam::Mat4;
-use shared::{skeleton::ArchivedSkeleton, skin::ArchivedSkin};
+use shared::{animation::ArchivedAnimation, skeleton::ArchivedSkeleton, skin::ArchivedSkin};
 
 #[derive(Clone, Copy)]
 pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
@@ -10,6 +10,7 @@ pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MA
     pub skin: &'static ArchivedSkin<MAX_INFLUENCES>,
     pub time: f32,
     pub current_pose: [Mat4; BONE_COUNT],
+    pub animation: &'static ArchivedAnimation,
 }
 
 impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
@@ -18,12 +19,14 @@ impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: u
     pub fn new(
         skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>,
         skin: &'static ArchivedSkin<MAX_INFLUENCES>,
+        animation: &'static ArchivedAnimation,
     ) -> Self {
         let mut out = Self {
             skeleton,
             skin,
             time: 0.0,
-            current_pose: array::from_fn(|_| Mat4::IDENTITY),
+            current_pose: array::from_fn(|_| Mat4::ZERO),
+            animation,
         };
 
         out.current_pose = out.calculate_animation_pose(&out.current_pose);
@@ -31,36 +34,32 @@ impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: u
         out
     }
 
-    // pub fn skin_vertices(&self, vertices: &mut [Vec4], in_pose: &[Mat4; BONE_COUNT]) {
-    //     let pose = self.calculate_animation_pose(in_pose);
-
-    //     for (vertex, skin) in vertices.iter_mut().zip(self.skin.0.iter()) {
-    //         for (index, weight) in skin.bones_indices.into_iter().zip(skin.weights.into_iter()) {
-    //             let matrix = pose[*index as usize];
-    //             *vertex = matrix.mul_scalar(weight) * *vertex;
-    //         }
-    //     }
-    // }
+    pub fn update_time(&mut self, delta: f32) {
+        self.time += delta;
+    }
 
     fn calculate_animation_pose(&self, in_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-        let mut out = array::from_fn(|index| self.skeleton.0[index].local_matrix * in_pose[index]);
+        let mut out = [Mat4::IDENTITY; BONE_COUNT];
 
-        for index in 0..BONE_COUNT {
-            let children = self.skeleton.0[index].children;
-            let parent = self.skeleton.0[index].local_matrix;
+        for (index, bone) in self.skeleton.0.iter().enumerate() {
+            let mut bone_matrix = bone.local_matrix;
 
-            for child_index in children.into_iter() {
-                // Root node can't be a child, so it's an unused index
+            // Apply the animation transformation
+            bone_matrix *= in_pose[index];
+
+            // Apply transformations for children bones
+            for &child_index in bone.children.iter() {
                 if child_index == 0 {
-                    continue;
+                    continue; // Skip root node
                 }
-
-                out[child_index as usize] *= parent;
+                bone_matrix *= out[child_index as usize];
             }
-        }
 
-        for (out_mat, bone) in out.iter_mut().zip(self.skeleton.0.iter()) {
-            *out_mat *= bone.inverse_bind_matrix
+            // Apply the inverse bind matrix
+            bone_matrix *= bone.inverse_bind_matrix;
+
+            // Store the final bone transformation
+            out[index] = bone_matrix;
         }
 
         out

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use rkyv::AlignedVec;
 use shared::{
     skin::{Skin, SkinEntry},
@@ -67,4 +69,13 @@ impl SkinOutput {
             "pub static {name}: &SkinBytes<{max_influences}> = &SkinBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
+}
+
+pub fn get_bone_name_index_map(skin: &gltf::Skin) -> HashMap<String, u8> {
+    let mut output = HashMap::<String, u8>::new();
+    for (index, bone) in skin.joints().enumerate() {
+        let name = bone.name().unwrap().to_string();
+        output.insert(name, index as u8);
+    }
+    output
 }

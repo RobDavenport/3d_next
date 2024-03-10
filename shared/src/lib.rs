@@ -2,6 +2,7 @@ use glam::Vec3;
 use rkyv::{Archive, Deserialize, Serialize};
 use types::Color;
 
+pub mod animation;
 pub mod mesh;
 pub mod shapes;
 pub mod skeleton;

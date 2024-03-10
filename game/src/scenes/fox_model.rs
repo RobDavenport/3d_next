@@ -17,7 +17,11 @@ pub struct FoxModelScene {
 impl FoxModelScene {
     pub fn new() -> Self {
         let shader = Animated {
-            animator: Animator::new(meshes::FOX_SKL.as_skeleton(), meshes::FOX_SKN.as_skin()),
+            animator: Animator::new(
+                meshes::FOX_SKL.as_skeleton(),
+                meshes::FOX_SKN.as_skin(),
+                meshes::FOX_SURVEY_ANM.as_anim(),
+            ),
         };
 
         Self {
@@ -41,6 +45,6 @@ impl Scene for FoxModelScene {
 
     fn update(&mut self) {
         // do nothing
-        self.shader.animator.time += 0.005;
+        self.shader.animator.update_time(0.005);
     }
 }
