@@ -1,10 +1,17 @@
 use bytemuck::{cast_slice, from_bytes};
 use glam::Vec3;
-use shared::{mesh::MeshRaw, skin::SkinEntry, IndexList, TriangleIndices, VertexList};
+use rkyv::AlignedVec;
+use shared::{
+    mesh::Mesh, vertex_parameters::VertexParametersList, IndexList, TriangleIndices, VertexList,
+    VERTEX_MAX_PARAMETERS,
+};
 
 use crate::{
-    animations::generate_animation, skeleton::generate_skeleton, skin::SkinOutput,
-    textures::TextureOutput, *,
+    animations::generate_animation,
+    skeleton::generate_skeleton,
+    skin::{SkinEntryVec, SkinOutput},
+    textures::TextureOutput,
+    *,
 };
 
 pub struct MeshOutput {
@@ -16,22 +23,54 @@ pub struct MeshOutput {
 }
 
 impl MeshOutput {
+    pub fn to_archive(&self) -> AlignedVec {
+        match self.attribute_count {
+            // This could be a seq! macro, but compile times are already quite long
+            p if p > VERTEX_MAX_PARAMETERS => {
+                panic!("Unhandled Attribute Count: {p}, max is {VERTEX_MAX_PARAMETERS}")
+            }
+            0 => self.extract_params::<0>(),
+            1 => self.extract_params::<1>(),
+            2 => self.extract_params::<2>(),
+            3 => self.extract_params::<3>(),
+            4 => self.extract_params::<4>(),
+            5 => self.extract_params::<5>(),
+            6 => self.extract_params::<6>(),
+            7 => self.extract_params::<7>(),
+            8 => self.extract_params::<8>(),
+            9 => self.extract_params::<9>(),
+            10 => self.extract_params::<10>(),
+            11 => self.extract_params::<11>(),
+            12 => self.extract_params::<12>(),
+            13 => self.extract_params::<13>(),
+            14 => self.extract_params::<14>(),
+            15 => self.extract_params::<15>(),
+            16 => self.extract_params::<16>(),
+            _ => unreachable!(),
+        }
+    }
+
+    fn extract_params<const P: usize>(&self) -> AlignedVec {
+        let mesh: Mesh<P> = Mesh {
+            vertices: VertexList(self.vertices.clone().into_boxed_slice()),
+            indices: IndexList(self.indices.clone().into_boxed_slice()),
+            parameters: VertexParametersList::from_flat_slice(&self.parameters),
+        };
+
+        rkyv::to_bytes::<_, 256>(&mesh).unwrap()
+    }
+
     pub fn to_output(&self) -> String {
         let filename = format!("{}_{MESH_EXTENSION}", self.name);
 
-        let out = MeshRaw {
-            vertices: VertexList(self.vertices.clone().into_boxed_slice()),
-            indices: IndexList(self.indices.clone().into_boxed_slice()),
-            parameters: self.parameters.clone().into_boxed_slice(),
-        };
-
-        let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
+        let archive = self.to_archive();
         write_file(&filename, &archive);
 
         let name = self.name.to_uppercase();
         let p = self.attribute_count;
 
-        format!("pub static {name}: &MeshRawBytes<{p}> = &MeshRawBytes(include_bytes!(\"{filename}\"));\n"
+        format!(
+            "pub static {name}: &MeshBytes<{p}> = &MeshBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }
@@ -297,12 +336,15 @@ pub fn generate_meshes() -> String {
                     .map(|x| *x as u8)
                     .collect::<Vec<_>>();
 
-                let entry = SkinEntry {
-                    bones_indices: bone_indices.into(),
-                    weights: weights.into(),
+                let entry = SkinEntryVec {
+                    bones_indices: bone_indices,
+                    weights: weights,
                 };
 
-                println!("Bone indices: {:?}, weights: {:?}", entry.bones_indices, entry.weights);
+                println!(
+                    "Bone indices: {:?}, weights: {:?}",
+                    entry.bones_indices, entry.weights
+                );
 
                 entries.push(entry)
             }

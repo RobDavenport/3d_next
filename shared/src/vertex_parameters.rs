@@ -11,6 +11,16 @@ pub struct VertexParameters<const P: usize>(pub [f32; P]);
 #[derive(Clone, Archive, Serialize, Deserialize)]
 pub struct VertexParametersList<const P: usize>(pub Box<[VertexParameters<P>]>);
 
+impl<const P: usize> VertexParametersList<P> {
+    pub fn from_flat_slice(slice: &[f32]) -> Self {
+        let data: Vec<VertexParameters<P>> = slice
+            .chunks_exact(P)
+            .map(|chunk| VertexParameters(array::from_fn(|i| chunk[i])))
+            .collect();
+        Self(data.into_boxed_slice())
+    }
+}
+
 impl<const P: usize> VertexParameters<P> {
     pub fn lerp(self, rhs: Self, s: f32) -> Self {
         self + ((rhs - self) * s)

@@ -53,9 +53,24 @@ impl Gpu {
 
             // Run Vertex shader on every vertexs
             // This should output them into clip space
-            let a_clip = vs.run(triangle_indices.0 as usize, &self.uniforms, a, params.0[triangle_indices.0 as usize].0);
-            let b_clip = vs.run(triangle_indices.1 as usize, &self.uniforms, b, params.0[triangle_indices.1 as usize].0);
-            let c_clip = vs.run(triangle_indices.2 as usize, &self.uniforms, c, params.0[triangle_indices.2 as usize].0);
+            let a_clip = vs.run(
+                triangle_indices.0 as usize,
+                &self.uniforms,
+                a,
+                params.0[triangle_indices.0 as usize].0,
+            );
+            let b_clip = vs.run(
+                triangle_indices.1 as usize,
+                &self.uniforms,
+                b,
+                params.0[triangle_indices.1 as usize].0,
+            );
+            let c_clip = vs.run(
+                triangle_indices.2 as usize,
+                &self.uniforms,
+                c,
+                params.0[triangle_indices.2 as usize].0,
+            );
 
             // Culling Stage
             if is_backfacing(a_clip.position, b_clip.position, c_clip.position) {

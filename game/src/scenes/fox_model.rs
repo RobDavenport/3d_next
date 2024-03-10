@@ -1,4 +1,3 @@
-use gamercade_rs::api::text::console_log;
 use glam::{Mat4, Vec3};
 
 use crate::{
@@ -12,24 +11,14 @@ use super::Scene;
 
 pub struct FoxModelScene {
     fox: Actor<5>,
-    shader: Animated<24, 4>,
+    shader: Animated<24, 4, 4>,
 }
 
 impl FoxModelScene {
     pub fn new() -> Self {
         let shader = Animated {
-            animator: Animator::new(
-            meshes::FOX_SKL.as_skeleton(),
-            meshes::FOX_SKN.as_skin(),
-        )};
-
-        shader.animator.skeleton.0.iter().for_each(|bone| {
-            console_log(&format!("children: {:?}", bone.children.to_vec()))
-        });
-
-        shader.animator.skin.0.iter().for_each(|entry| {
-            console_log(&format!("indices: {:?}, weights: {:?}", entry.bones_indices.to_vec(), entry.weights.to_vec()))
-        });
+            animator: Animator::new(meshes::FOX_SKL.as_skeleton(), meshes::FOX_SKN.as_skin()),
+        };
 
         Self {
             fox: Actor {

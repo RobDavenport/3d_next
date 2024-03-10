@@ -1,29 +1,33 @@
 use std::array;
 
-use glam::{Mat4, Vec4};
+use glam::Mat4;
 use shared::{skeleton::ArchivedSkeleton, skin::ArchivedSkin};
 
 #[derive(Clone, Copy)]
-pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize>
+pub struct Animator<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
 {
     pub skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>,
-    pub skin: &'static ArchivedSkin,
+    pub skin: &'static ArchivedSkin<MAX_INFLUENCES>,
     pub time: f32,
     pub current_pose: [Mat4; BONE_COUNT],
 }
 
-impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize>
-    Animator<BONE_COUNT, MAX_CHILDREN>
+impl<const BONE_COUNT: usize, const MAX_CHILDREN: usize, const MAX_INFLUENCES: usize>
+    Animator<BONE_COUNT, MAX_CHILDREN, MAX_INFLUENCES>
 {
-    pub fn new(skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>, skin: &'static ArchivedSkin) -> Self {
-        let mut out  =Self {
+    pub fn new(
+        skeleton: &'static ArchivedSkeleton<BONE_COUNT, MAX_CHILDREN>,
+        skin: &'static ArchivedSkin<MAX_INFLUENCES>,
+    ) -> Self {
+        let mut out = Self {
             skeleton,
             skin,
             time: 0.0,
-            current_pose: array::from_fn(|_| Mat4::IDENTITY)
+            current_pose: array::from_fn(|_| Mat4::IDENTITY),
         };
 
         out.current_pose = out.calculate_animation_pose(&out.current_pose);
+
         out
     }
 
