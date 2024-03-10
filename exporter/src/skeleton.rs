@@ -1,7 +1,6 @@
 use std::array;
 use std::collections::HashMap;
 
-use bytemuck::from_bytes;
 use glam::{Mat4, Quat, Vec4};
 use gltf::Document;
 use rkyv::AlignedVec;
@@ -60,7 +59,6 @@ pub fn generate_skeleton(
     document: &Document,
 ) -> Option<(SkeletonMetaData, String)> {
     if let Some(skin) = document.skins().next() {
-
         let mut bones = Vec::new();
 
         let joints = get_bone_name_index_map(&skin);
@@ -98,7 +96,7 @@ pub fn generate_skeleton(
             local_matrix: Mat4,
             inverse_bind_matrix: Mat4,
         }
-        
+
         // Set the Children
         bones.iter().for_each(|bone| {
             inverted_bones.push(WorkingBone {
@@ -119,15 +117,16 @@ pub fn generate_skeleton(
                 inverted_bones[*child as usize].parent = parent_index as u8
             });
         });
-        
+
         // Populate the output
-        let bones = inverted_bones.into_iter().map(|bone| {
-            Bone {
+        let bones = inverted_bones
+            .into_iter()
+            .map(|bone| Bone {
                 parent_index: bone.parent,
                 local_matrix: bone.local_matrix,
                 inverse_bind_matrix: bone.inverse_bind_matrix,
-            }
-        }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
 
         let skeleton = SkeletonOutput {
             name: filename.to_string(),

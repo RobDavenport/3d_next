@@ -1,12 +1,11 @@
-use std::{array};
+use std::array;
 
 use gamercade_rs::api::text::console_log;
 use glam::Mat4;
-use shared::{animation::{ArchivedAnimation, ArchivedAnimationChannelType}, skeleton::{ArchivedBone, ArchivedSkeleton, Bone}, skin::ArchivedSkin};
+use shared::{animation::ArchivedAnimation, skeleton::ArchivedSkeleton, skin::ArchivedSkin};
 
 #[derive(Clone, Copy)]
-pub struct Animator<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
-{
+pub struct Animator<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> {
     pub skeleton: &'static ArchivedSkeleton<BONE_COUNT>,
     pub skin: &'static ArchivedSkin<MAX_INFLUENCES>,
     pub time: f32,
@@ -14,9 +13,7 @@ pub struct Animator<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
     pub animation: &'static ArchivedAnimation,
 }
 
-impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
-    Animator<BONE_COUNT, MAX_INFLUENCES>
-{
+impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, MAX_INFLUENCES> {
     pub fn new(
         skeleton: &'static ArchivedSkeleton<BONE_COUNT>,
         skin: &'static ArchivedSkin<MAX_INFLUENCES>,
@@ -58,11 +55,10 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
 
         self.current_pose = self.calculate_animation_pose(&new_pose);
     }
-    
 
     fn calculate_animation_pose(&self, in_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
         let mut model_transform: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
-    
+
         // Calculate model transforms for each bone
         model_transform[0] = self.skeleton.0[0].local_matrix;
 
@@ -71,14 +67,15 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize>
             let parent_index = bone.parent_index as usize;
             model_transform[index] = model_transform[parent_index] * local_transform;
         }
-    
+
         // Apply inverse bind matrices to model transforms
         let mut animation_pose: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
         for index in 0..BONE_COUNT {
             // Multiply each model transform by its corresponding inverse bind matrix
-            animation_pose[index] = model_transform[index] * self.skeleton.0[index].inverse_bind_matrix;
+            animation_pose[index] =
+                model_transform[index] * self.skeleton.0[index].inverse_bind_matrix;
         }
-    
+
         animation_pose
     }
 }

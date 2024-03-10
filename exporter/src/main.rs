@@ -1,4 +1,4 @@
-use std::{fs, io::Write, mem::size_of};
+use std::{fs, io::Write};
 
 use glam::{Mat4, Vec2, Vec3};
 use image::GenericImageView;
@@ -20,8 +20,8 @@ const MESHES: &[[&str; 2]] = &[
     ["Fox", "glb"],
     ["Duck", "glb"],
     ["DamagedHelmet", "glb"],
-    ["RiggedSimple","glb"],
-    ["RiggedFigure","glb"]
+    ["RiggedSimple", "glb"],
+    ["RiggedFigure", "glb"],
 ];
 
 mod animations;

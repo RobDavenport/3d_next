@@ -9,9 +9,7 @@ pub struct Bone {
 }
 
 #[derive(Archive, Serialize, Deserialize)]
-pub struct Skeleton<const BONE_COUNT: usize>(
-    pub [Bone; BONE_COUNT],
-);
+pub struct Skeleton<const BONE_COUNT: usize>(pub [Bone; BONE_COUNT]);
 
 pub struct SkeletonBytes<const BONE_COUNT: usize>(pub &'static [u8]);
 
