@@ -108,8 +108,6 @@ pub fn generate_animation(
         animation_channels.push(out);
     }
 
-    println!("channel_count: {}", animation.channels().count());
-
     AnimationOutputVec {
         name: name.to_owned(),
         channels: animation_channels,

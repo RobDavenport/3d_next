@@ -20,6 +20,8 @@ const MESHES: &[[&str; 2]] = &[
     ["Fox", "glb"],
     ["Duck", "glb"],
     ["DamagedHelmet", "glb"],
+    ["RiggedSimple","glb"],
+    ["RiggedFigure","glb"]
 ];
 
 mod animations;

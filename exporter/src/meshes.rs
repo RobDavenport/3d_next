@@ -105,7 +105,7 @@ pub fn generate_meshes() -> String {
         let primitive = mesh.primitives().next().unwrap();
 
         println!("## Skeleton ##");
-        let skeleton_result = generate_skeleton(filename, blob, &document);
+        let skeleton_result = generate_skeleton(filename, &document);
         let mut total_bone_count = 0;
         let skeleton = if let Some((metadata, text)) = skeleton_result {
             out.push_str(&text);
@@ -343,11 +343,6 @@ pub fn generate_meshes() -> String {
                     bones_indices: bone_indices,
                     weights: weights,
                 };
-
-                println!(
-                    "Bone indices: {:?}, weights: {:?}",
-                    entry.bones_indices, entry.weights
-                );
 
                 entries.push(entry)
             }

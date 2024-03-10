@@ -11,7 +11,7 @@ use super::Scene;
 
 pub struct FoxModelScene {
     fox: Actor<5>,
-    shader: Animated<24, 4, 4>,
+    shader: Animated<24, 4>,
 }
 
 impl FoxModelScene {
@@ -27,7 +27,7 @@ impl FoxModelScene {
         Self {
             fox: Actor {
                 mesh: meshes::FOX.as_mesh(),
-                transform: Mat4::from_scale(Vec3::splat(0.015)),
+                transform: Mat4::from_scale(Vec3::splat(0.03)),
                 delta: 0.0,
             },
             shader,
@@ -44,7 +44,6 @@ impl Scene for FoxModelScene {
     }
 
     fn update(&mut self) {
-        // do nothing
-        self.shader.animator.update_time(0.005);
+        self.shader.animator.update_time(0.016);
     }
 }

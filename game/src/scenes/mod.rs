@@ -27,6 +27,12 @@ pub use helmet_model::HelmetModelScene;
 mod helmet_model_simple;
 pub use helmet_model_simple::HelmetModelSimpleScene;
 
+mod rigged_figure;
+pub use rigged_figure::RiggedFigureScene;
+
+mod rigged_simple;
+pub use rigged_simple::RiggedSimpleScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);
