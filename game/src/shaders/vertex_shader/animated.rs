@@ -21,24 +21,24 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<3, 3>
         input: [f32; 3],
     ) -> VertexShaderOutput<3> {
         let [r, g, b] = input;
-    
+
         let mut position = position.extend(1.0); // Convert position to homogeneous coordinates
         let mut skeletal_mat = Mat4::ZERO;
-    
+
         let skin = &self.animator.skin.0[vertex_index];
         for (&bone_index, &bone_weight) in skin.bones_indices.iter().zip(skin.weights.iter()) {
             let bone_transform = self.animator.current_pose[bone_index as usize];
             let weighted_transform = bone_transform * bone_weight;
             skeletal_mat += weighted_transform; // Accumulate the weighted bone transformation
         }
-    
+
         // Apply the accumulated skeletal transformation to the vertex position
         position = skeletal_mat * position;
-    
+
         // Apply MVP transformation to bring position to clip space
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let position = transform_point_to_clip_space(&position.xyz(), &mvp);
-    
+
         VertexShaderOutput {
             position,
             parameters: VertexParameters([0.0 + r, 0.25 + g, 0.15 + b]),
@@ -66,7 +66,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<5, 8>
         for (&bone_index, &bone_weight) in skin.bones_indices.iter().zip(skin.weights.iter()) {
             let bone_transform = self.animator.current_pose[bone_index as usize];
             let weighted_transform = bone_transform * bone_weight;
-            skeletal_mat += weighted_transform; 
+            skeletal_mat += weighted_transform;
         }
 
         position = skeletal_mat * position;

@@ -38,7 +38,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         self.animation.0.iter().for_each(|channel| {
             let mut current_keyframe = 0;
 
-            // TODO: binary search 
+            // TODO: binary search
             for timestamp in channel.timestamps.iter() {
                 current_keyframe += 1;
                 if self.time < *timestamp {
@@ -57,6 +57,26 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         self.current_pose = self.calculate_animation_pose(&new_pose);
     }
 
+    // fn calculate_animation_pose(&self, skeleton_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
+    //     let mut model_transforms = [Mat4::IDENTITY; BONE_COUNT];
+
+    //     // Calculate model transforms for each bone
+    //     for (index, bone) in self.skeleton.0.iter().enumerate() {
+    //         let local_transform = skeleton_pose[index];
+    //         let parent_index = bone.parent_index;
+
+    //         if parent_index.is_positive() {
+    //             let transformed_local = local_transform * bone.inverse_bind_matrix;
+    //             model_transforms[index] =
+    //                 model_transforms[parent_index as usize] * transformed_local;
+    //         } else {
+    //             model_transforms[index] = local_transform;
+    //         }
+    //     }
+
+    //     model_transforms
+    // }
+
     fn calculate_animation_pose(&self, skeleton_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
         let mut model_transforms = [Mat4::IDENTITY; BONE_COUNT];
 
@@ -65,15 +85,14 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
             let local_transform = skeleton_pose[index];
             let parent_index = bone.parent_index;
 
-            if parent_index.is_positive() {
-                let transformed_local = local_transform * bone.inverse_bind_matrix;
-                model_transforms[index] =
-                    model_transforms[parent_index as usize] * transformed_local;
-            } else {
+            // Handle root or unparented nodes
+            if parent_index.is_negative() {
                 model_transforms[index] = local_transform;
+            } else {
+                model_transforms[index] = model_transforms[parent_index as usize] * local_transform;
             }
         }
 
-        model_transforms
+        array::from_fn(|i| model_transforms[i] * self.skeleton.0[i].inverse_bind_matrix)
     }
 }

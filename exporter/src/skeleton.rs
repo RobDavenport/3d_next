@@ -1,9 +1,8 @@
 use std::array;
 use std::collections::HashMap;
-use std::slice::ChunksExact;
 
 use bytemuck::cast_slice;
-use glam::{Mat4, Quat, Vec4};
+use glam::Mat4;
 use gltf::Document;
 use rkyv::AlignedVec;
 use seq_macro::seq;
@@ -22,7 +21,7 @@ pub struct BoneVec {
 pub struct SkeletonMetaData {
     pub bone_count: u8,
     pub named_bones: HashMap<String, i8>,
-    pub node_to_index: HashMap<usize, i8>
+    pub node_to_index: HashMap<usize, i8>,
 }
 
 // A collection of bones
@@ -105,7 +104,7 @@ pub fn generate_skeleton(
         }
 
         let len = bones.len();
-        
+
         if len != ibms.len() {
             panic!("ibm.len() != len")
         };
