@@ -1,10 +1,12 @@
+use std::f32::consts::FRAC_PI_2;
+
 use glam::{Mat4, Vec3};
 
 use crate::{
     actor::Actor,
     animation::Animator,
     generated::meshes,
-    shaders::{Animated, ColorBlend, TexturedLit},
+    shaders::{Animated, BaseVertexShader, ColorBlend, TexturedLit},
 };
 
 use super::Scene;
@@ -27,7 +29,7 @@ impl RiggedFigureScene {
         Self {
             mesh: Actor {
                 mesh: meshes::RIGGEDFIGURE.as_mesh(),
-                transform: Mat4::IDENTITY,
+                transform: Mat4::from_scale(Vec3::splat(3.0)) * Mat4::from_rotation_x(-FRAC_PI_2),
                 delta: 0.0,
             },
             shader,
@@ -44,6 +46,6 @@ impl Scene for RiggedFigureScene {
     }
 
     fn update(&mut self) {
-        self.shader.animator.update_time(0.016);
+        //self.shader.animator.update_time(0.016);
     }
 }

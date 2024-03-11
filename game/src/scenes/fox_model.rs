@@ -46,6 +46,6 @@ impl Scene for FoxModelScene {
     }
 
     fn update(&mut self) {
-        self.shader.animator.update_time(0.016);
+        //self.shader.animator.update_time(0.0);
     }
 }

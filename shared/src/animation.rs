@@ -8,7 +8,7 @@ pub struct Animation(pub Box<[AnimationChannel]>);
 pub struct AnimationChannel {
     pub channel_type: AnimationChannelType,
     pub interpolation_type: AnimationInterprolationType,
-    pub target_bone: u8,
+    pub target_bone: i8,
     pub timestamps: Vec<f32>,
     pub values: Vec<Mat4>,
 }

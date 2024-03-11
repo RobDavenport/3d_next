@@ -19,7 +19,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         skin: &'static ArchivedSkin<MAX_INFLUENCES>,
         animation: &'static ArchivedAnimation,
     ) -> Self {
-        let current_pose = array::from_fn(|index| skeleton.0[index].local_matrix);
+        let current_pose = array::from_fn(|_| Mat4::IDENTITY);
 
         Self {
             skeleton,
@@ -56,12 +56,12 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         self.current_pose = self.calculate_animation_pose(&new_pose);
     }
 
-    fn calculate_animation_pose(&self, in_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-        let mut model_transforms: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
+    fn calculate_animation_pose(&self, skeleton_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
+        let mut model_transforms = [Mat4::IDENTITY; BONE_COUNT];
 
         // Calculate model transforms for each bone
         for (index, bone) in self.skeleton.0.iter().enumerate() {
-            let local_transform = in_pose[index];
+            let local_transform = skeleton_pose[index];
             let parent_index = bone.parent_index;
 
             if parent_index.is_positive() {

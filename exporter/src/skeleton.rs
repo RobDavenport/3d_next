@@ -19,10 +19,10 @@ pub struct BoneVec {
 
 pub struct SkeletonMetaData {
     pub bone_count: u8,
-    pub named_bones: HashMap<String, u8>,
+    pub named_bones: HashMap<String, i8>,
 }
 
-//A collection of bones
+// A collection of bones
 pub struct SkeletonOutput {
     pub name: String,
     pub bones: Vec<Bone>,
@@ -99,7 +99,6 @@ pub fn generate_skeleton(
             inverse_bind_matrix: Mat4,
         }
 
-        // Set the Children
         bones.iter().for_each(|bone| {
             inverted_bones.push(WorkingBone {
                 parent: -1,
