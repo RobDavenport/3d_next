@@ -57,25 +57,22 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
     }
 
     fn calculate_animation_pose(&self, in_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-        let mut model_transform: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
+        let mut model_transforms: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
 
         // Calculate model transforms for each bone
-        model_transform[0] = self.skeleton.0[0].local_matrix;
+        for (index, bone) in self.skeleton.0.iter().enumerate() {
+            let local_transform = in_pose[index];
+            let parent_index = bone.parent_index;
 
-        for (index, bone) in self.skeleton.0.iter().enumerate().skip(1) {
-            let local_transform = bone.local_matrix * in_pose[index];
-            let parent_index = bone.parent_index as usize;
-            model_transform[index] = model_transform[parent_index] * local_transform;
+            if parent_index.is_positive() {
+                let transformed_local = bone.inverse_bind_matrix * local_transform;
+                model_transforms[index] =
+                    model_transforms[parent_index as usize] * transformed_local;
+            } else {
+                model_transforms[index] = local_transform;
+            }
         }
 
-        // Apply inverse bind matrices to model transforms
-        let mut animation_pose: [Mat4; BONE_COUNT] = [Mat4::IDENTITY; BONE_COUNT];
-        for index in 0..BONE_COUNT {
-            // Multiply each model transform by its corresponding inverse bind matrix
-            animation_pose[index] =
-                model_transform[index] * self.skeleton.0[index].inverse_bind_matrix;
-        }
-
-        animation_pose
+        model_transforms
     }
 }

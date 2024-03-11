@@ -10,7 +10,7 @@ use crate::{write_file, SKIN_EXTENSION};
 
 // Each of these is guarenteed to have the same length
 pub struct SkinEntryVec {
-    pub bones_indices: Vec<u8>,
+    pub bones_indices: Vec<i8>,
     pub weights: Vec<f32>,
 }
 

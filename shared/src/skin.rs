@@ -6,7 +6,7 @@ pub struct Skin<const MAX_INFLUENCES: usize>(pub Box<[SkinEntry<MAX_INFLUENCES>]
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
 pub struct SkinEntry<const MAX_INFLUENCES: usize> {
-    pub bones_indices: [u8; MAX_INFLUENCES],
+    pub bones_indices: [i8; MAX_INFLUENCES],
     pub weights: [f32; MAX_INFLUENCES],
 }
 

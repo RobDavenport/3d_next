@@ -3,7 +3,7 @@ use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
 pub struct Bone {
-    pub parent_index: u8,
+    pub parent_index: i8,
     pub local_matrix: Mat4,
     pub inverse_bind_matrix: Mat4,
 }

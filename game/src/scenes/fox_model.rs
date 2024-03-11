@@ -41,6 +41,8 @@ impl Scene for FoxModelScene {
         gpu.uniforms.diffuse = meshes::FOX_0_TEX.as_texture();
 
         gpu.render_mesh(&self.fox.mesh, self.shader, TexturedLit);
+
+        //gpu.render_animator(&self.shader.animator);
     }
 
     fn update(&mut self) {

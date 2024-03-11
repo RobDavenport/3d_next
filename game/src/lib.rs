@@ -2,7 +2,7 @@ use std::mem::MaybeUninit;
 
 use camera::Camera;
 
-use gamercade_rs::prelude as gc;
+use gamercade_rs::{api::graphics_parameters::GraphicsParameters, prelude as gc};
 use glam::Vec3;
 use graphics::Gpu;
 use scenes::*;
@@ -88,6 +88,7 @@ pub unsafe extern "C" fn draw() {
 
     // Clear all of the buffers
     gpu.reset_frame();
+    //gc::clear_screen(GraphicsParameters::default());
 
     // For Calculating MVP Later
     let camera = CAMERA.assume_init_ref();

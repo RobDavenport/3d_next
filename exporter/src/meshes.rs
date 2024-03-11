@@ -336,7 +336,7 @@ pub fn generate_meshes() -> String {
                 let weights = weights[start..end].to_vec();
                 let bone_indices = bones[start..end]
                     .iter()
-                    .map(|x| *x as u8)
+                    .map(|x| *x as i8)
                     .collect::<Vec<_>>();
 
                 let entry = SkinEntryVec {

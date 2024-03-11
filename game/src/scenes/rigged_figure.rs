@@ -38,9 +38,9 @@ impl RiggedFigureScene {
 impl Scene for RiggedFigureScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.mesh.transform;
-        gpu.uniforms.diffuse = meshes::FOX_0_TEX.as_texture();
 
         gpu.render_mesh(&self.mesh.mesh, self.shader, ColorBlend);
+        //gpu.render_animator(&self.shader.animator);
     }
 
     fn update(&mut self) {

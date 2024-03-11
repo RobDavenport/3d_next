@@ -1,8 +1,12 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use glam::{Mat3, Vec4, Vec4Swizzles};
-use shared::mesh::ArchivedMesh;
+use shared::{mesh::ArchivedMesh, skeleton::ArchivedSkeleton, types::Color};
 
-use crate::shaders::{PixelShader, VertexShader};
+use crate::{
+    animation::Animator,
+    math::Math,
+    shaders::{PixelShader, VertexShader},
+};
 
 use super::{
     clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
@@ -108,27 +112,60 @@ impl Gpu {
         }
     }
 
+    pub fn render_skeleton<const B: usize>(&self, skeleton: &ArchivedSkeleton<B>) {
+        let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
+
+        skeleton.0.iter().for_each(|bone| {
+            let local = bone.local_matrix;
+            let forward = local.forward_vector();
+            let local_pos = local.w_axis;
+            let forward_pos = forward + local_pos.xyz();
+            let local_world = mvp * local_pos;
+            let forward_world = mvp * forward_pos.extend(1.0);
+
+            let local_world = self.clip_to_screen(local_world);
+            let forward_world = self.clip_to_screen(forward_world);
+            gamercade_rs::prelude::line(
+                Color::new(0, 255, 0).to_graphics_params(),
+                local_world.x as i32,
+                local_world.y as i32,
+                forward_world.x as i32,
+                forward_world.y as i32,
+            )
+        })
+    }
+
+    pub fn render_animator<const B: usize, const I: usize>(&self, animator: &Animator<B, I>) {
+        let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
+
+        animator.current_pose.iter().for_each(|bone| {
+            let local = bone;
+            let forward = local.forward_vector();
+            let local_pos = local.w_axis;
+            let forward_pos = forward + local_pos.xyz();
+            let local_world = mvp * local_pos;
+            let forward_world = mvp * forward_pos.extend(1.0);
+
+            let local_world = self.clip_to_screen(local_world);
+            let forward_world = self.clip_to_screen(forward_world);
+            gamercade_rs::prelude::line(
+                Color::new(0, 255, 0).to_graphics_params(),
+                local_world.x as i32,
+                local_world.y as i32,
+                forward_world.x as i32,
+                forward_world.y as i32,
+            )
+        })
+    }
+
     // Converts a triangle from clip space into screen space
     fn tri_clip_to_screen_space<const P: usize>(
         &self,
         mut clip_space_triangle: Triangle<P>,
     ) -> Triangle<P> {
-        let clip_to_screen = |clip_space_vertex: Vec4| {
-            // Move to cartesian coordinates
-            // Sace the recip of W for perspective correction later
-            let w_recip = clip_space_vertex.w.recip();
-            let clip_space_vertex = clip_space_vertex / clip_space_vertex.w;
-
-            // Convert NDC coordinates to screen space
-            let screen_x = (clip_space_vertex.x + 1.0) * (self.screen_width as f32 / 2.0);
-            let screen_y = (1.0 - clip_space_vertex.y) * (self.screen_height as f32 / 2.0);
-
-            Vec4::new(screen_x, screen_y, clip_space_vertex.z, w_recip)
-        };
-
-        clip_space_triangle.positions[0] = clip_to_screen(clip_space_triangle.positions[0]);
-        clip_space_triangle.positions[1] = clip_to_screen(clip_space_triangle.positions[1]);
-        clip_space_triangle.positions[2] = clip_to_screen(clip_space_triangle.positions[2]);
+        clip_space_triangle.positions[0] = self.clip_to_screen(clip_space_triangle.positions[0]);
+        clip_space_triangle.positions[1] = self.clip_to_screen(clip_space_triangle.positions[1]);
+        clip_space_triangle.positions[2] = self.clip_to_screen(clip_space_triangle.positions[2]);
 
         clip_space_triangle
     }
@@ -156,6 +193,19 @@ impl Gpu {
         }
 
         &self.frame_buffer.frame_buffer
+    }
+
+    fn clip_to_screen(&self, clip_space_vertex: Vec4) -> Vec4 {
+        // Move to cartesian coordinates
+        // Sace the recip of W for perspective correction later
+        let w_recip = clip_space_vertex.w.recip();
+        let clip_space_vertex = clip_space_vertex / clip_space_vertex.w;
+
+        // Convert NDC coordinates to screen space
+        let screen_x = (clip_space_vertex.x + 1.0) * (self.screen_width as f32 / 2.0);
+        let screen_y = (1.0 - clip_space_vertex.y) * (self.screen_height as f32 / 2.0);
+
+        Vec4::new(screen_x, screen_y, clip_space_vertex.z, w_recip)
     }
 }
 

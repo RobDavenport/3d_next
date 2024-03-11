@@ -12,7 +12,7 @@ use crate::skin::get_bone_name_index_map;
 use crate::*;
 
 pub struct BoneVec {
-    pub children: Vec<u8>,
+    pub children: Vec<i8>,
     pub local_matrix: Mat4,
     pub inverse_bind_matrix: Mat4,
 }
@@ -65,8 +65,10 @@ pub fn generate_skeleton(
         for bone in skin.joints() {
             let mut children = Vec::new();
             for child in bone.children() {
-                let child_index = joints.get(child.name().unwrap()).unwrap();
-                children.push(*child_index);
+                let child_index = joints
+                    .get(child.name().unwrap())
+                    .expect("Bone name not found");
+                children.push(*child_index as i8);
             }
 
             let (translation, rotation, scale) = bone.transform().decomposed();
@@ -92,7 +94,7 @@ pub fn generate_skeleton(
         let mut inverted_bones = Vec::new();
 
         struct WorkingBone {
-            parent: u8,
+            parent: i8,
             local_matrix: Mat4,
             inverse_bind_matrix: Mat4,
         }
@@ -100,7 +102,7 @@ pub fn generate_skeleton(
         // Set the Children
         bones.iter().for_each(|bone| {
             inverted_bones.push(WorkingBone {
-                parent: 0,
+                parent: -1,
                 local_matrix: bone.local_matrix,
                 inverse_bind_matrix: bone.inverse_bind_matrix,
             })
@@ -108,13 +110,14 @@ pub fn generate_skeleton(
 
         // Set the Parents
         bones.iter().enumerate().for_each(|(parent_index, bone)| {
+            let parent_index = parent_index as i8;
             bone.children.iter().for_each(|child| {
                 // Check if the bone already has a parent:
                 let prev_parent = inverted_bones[*child as usize].parent;
-                if prev_parent != 0 && prev_parent as usize != parent_index {
+                if prev_parent.is_positive() && prev_parent != parent_index {
                     panic!("Bone has multiple parents, which isn't supported");
                 }
-                inverted_bones[*child as usize].parent = parent_index as u8
+                inverted_bones[*child as usize].parent = parent_index as i8
             });
         });
 
