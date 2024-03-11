@@ -1,6 +1,8 @@
 use std::array;
 use std::collections::HashMap;
+use std::slice::ChunksExact;
 
+use bytemuck::cast_slice;
 use glam::{Mat4, Quat, Vec4};
 use gltf::Document;
 use rkyv::AlignedVec;
@@ -8,7 +10,7 @@ use seq_macro::seq;
 use shared::skeleton::{Bone, Skeleton};
 use shared::SKELETON_MAX_BONES;
 
-use crate::skin::get_bone_name_index_map;
+use crate::skin::get_bone_name_index_maps;
 use crate::*;
 
 pub struct BoneVec {
@@ -20,6 +22,7 @@ pub struct BoneVec {
 pub struct SkeletonMetaData {
     pub bone_count: u8,
     pub named_bones: HashMap<String, i8>,
+    pub node_to_index: HashMap<usize, i8>
 }
 
 // A collection of bones
@@ -57,36 +60,55 @@ impl SkeletonOutput {
 pub fn generate_skeleton(
     filename: &str,
     document: &Document,
+    blob: &[u8],
 ) -> Option<(SkeletonMetaData, String)> {
     if let Some(skin) = document.skins().next() {
         let mut bones = Vec::new();
 
-        let joints = get_bone_name_index_map(&skin);
-        for bone in skin.joints() {
+        let (named_joints, indexed_joints) = get_bone_name_index_maps(&skin);
+
+        let ibm_accessor = skin.inverse_bind_matrices().unwrap();
+        let ibm_view = ibm_accessor.view().unwrap();
+
+        let ibm_start = ibm_accessor.offset() + ibm_view.offset();
+        let ibm_end = ibm_start + (ibm_accessor.count() * ibm_accessor.size());
+
+        let bytes = &blob[ibm_start..ibm_end];
+        let bytes: &[f32] = cast_slice(bytes);
+
+        let mut ibms = Vec::new();
+
+        for mat in bytes.chunks_exact(16) {
+            ibms.push(Mat4::from_cols_slice(mat))
+        }
+
+        for (index, bone) in skin.joints().enumerate() {
             let mut children = Vec::new();
             for child in bone.children() {
-                let child_index = joints
+                let child_index = named_joints
                     .get(child.name().unwrap())
                     .expect("Bone name not found");
                 children.push(*child_index as i8);
             }
 
-            let (translation, rotation, scale) = bone.transform().decomposed();
-            let translation = Vec3::from_slice(&translation);
-            let rotation = Quat::from_vec4(Vec4::from_slice(&rotation));
-            let scale = Vec3::from_slice(&scale);
+            let local_matrix = bone.transform().matrix();
+            let local_matrix = Mat4::from_cols_array_2d(&local_matrix);
 
-            let local_matrix = Mat4::from_scale_rotation_translation(scale, rotation, translation);
+            let inverse_bind_matrix = ibms[index];
 
             let bone = BoneVec {
                 children: children.into(),
                 local_matrix,
-                inverse_bind_matrix: local_matrix.inverse(),
+                inverse_bind_matrix,
             };
             bones.push(bone);
         }
 
         let len = bones.len();
+        
+        if len != ibms.len() {
+            panic!("ibm.len() != len")
+        };
 
         println!("Found a skeleton with {len} bones.");
 
@@ -137,7 +159,8 @@ pub fn generate_skeleton(
 
         let metadata = SkeletonMetaData {
             bone_count: len as u8,
-            named_bones: joints,
+            named_bones: named_joints,
+            node_to_index: indexed_joints,
         };
         Some((metadata, skeleton.to_output()))
     } else {

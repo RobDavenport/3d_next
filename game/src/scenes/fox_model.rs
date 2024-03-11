@@ -20,7 +20,7 @@ impl FoxModelScene {
             animator: Animator::new(
                 meshes::FOX_SKL.as_skeleton(),
                 meshes::FOX_SKN.as_skin(),
-                meshes::FOX_SURVEY_ANM.as_anim(),
+                meshes::FOX_WALK_ANM.as_anim(),
             ),
         };
 
@@ -44,6 +44,6 @@ impl Scene for FoxModelScene {
     }
 
     fn update(&mut self) {
-        self.shader.animator.update_time(0.01);
+        self.shader.animator.update_time(0.008);
     }
 }

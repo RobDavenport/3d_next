@@ -72,11 +72,13 @@ impl SkinOutput {
 }
 
 // Maps bone names -> Indices
-pub fn get_bone_name_index_map(skin: &gltf::Skin) -> HashMap<String, i8> {
-    let mut output = HashMap::<String, i8>::new();
-    for (index, bone) in skin.joints().enumerate() {
-        let name = bone.name().unwrap().to_string();
-        output.insert(name, index as i8);
+pub fn get_bone_name_index_maps(skin: &gltf::Skin) -> (HashMap<String, i8>, HashMap<usize, i8>) {
+    let mut names = HashMap::<String, i8>::new();
+    let mut indices = HashMap::<usize, i8>::new();
+    for (bone_index, node) in skin.joints().enumerate() {
+        let name = node.name().unwrap().to_string();
+        names.insert(name, bone_index as i8);
+        indices.insert(node.index(), bone_index as i8);
     }
-    output
+    (names, indices)
 }

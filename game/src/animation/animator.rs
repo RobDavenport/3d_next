@@ -38,6 +38,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         self.animation.0.iter().for_each(|channel| {
             let mut current_keyframe = 0;
 
+            // TODO: binary search 
             for timestamp in channel.timestamps.iter() {
                 current_keyframe += 1;
                 if self.time < *timestamp {
@@ -47,7 +48,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
 
             if current_keyframe >= channel.timestamps.len() {
                 self.time = 0.0;
-                current_keyframe = 0;
+                current_keyframe = channel.timestamps.len() - 1;
             }
 
             new_pose[channel.target_bone as usize] *= channel.values[current_keyframe]
@@ -65,7 +66,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
             let parent_index = bone.parent_index;
 
             if parent_index.is_positive() {
-                let transformed_local = bone.inverse_bind_matrix * local_transform;
+                let transformed_local = local_transform * bone.inverse_bind_matrix;
                 model_transforms[index] =
                     model_transforms[parent_index as usize] * transformed_local;
             } else {

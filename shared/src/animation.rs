@@ -13,14 +13,14 @@ pub struct AnimationChannel {
     pub values: Vec<Mat4>,
 }
 
-#[derive(Clone, Copy, Archive, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Archive, Serialize, Deserialize)]
 pub enum AnimationChannelType {
     Translation,
     Rotation,
     Scale,
 }
 
-#[derive(Clone, Copy, Archive, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Archive, Serialize, Deserialize)]
 pub enum AnimationInterprolationType {
     Linear,
     Step,

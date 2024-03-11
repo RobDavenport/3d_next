@@ -105,7 +105,7 @@ pub fn generate_meshes() -> String {
         let primitive = mesh.primitives().next().unwrap();
 
         println!("## Skeleton ##");
-        let skeleton_result = generate_skeleton(filename, &document);
+        let skeleton_result = generate_skeleton(filename, &document, blob);
         let mut total_bone_count = 0;
         let skeleton = if let Some((metadata, text)) = skeleton_result {
             out.push_str(&text);
