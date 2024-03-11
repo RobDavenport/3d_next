@@ -37,5 +37,5 @@ pub static RIGGEDSIMPLE_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("RiggedSi
 pub static RIGGEDFIGURE_SKL: &SkeletonBytes<19> = &SkeletonBytes(include_bytes!("RiggedFigure_SKL"));
 pub static RIGGEDFIGURE_UNNAMED_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("RiggedFigure_Unnamed_ANM"));
 pub static RIGGEDFIGURE: &MeshBytes<3> = &MeshBytes(include_bytes!("RiggedFigure_MESH"));
-pub static RIGGEDFIGURE_SKN: &SkinBytes<3> = &SkinBytes(include_bytes!("RiggedFigure_SKN"));
+pub static RIGGEDFIGURE_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("RiggedFigure_SKN"));
 }

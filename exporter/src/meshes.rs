@@ -136,6 +136,9 @@ pub fn generate_meshes() -> String {
         let mut weights = Vec::<f32>::new();
         let mut attribute_count = 0;
 
+        let mut weights_length = 0;
+        let mut joints_length = 0;
+
         for (kind, attribute) in primitive.attributes() {
             if attribute.view().unwrap().buffer().index() != 0 {
                 panic!("wrong buffer index");
@@ -195,14 +198,16 @@ pub fn generate_meshes() -> String {
                 }
                 gltf::Semantic::Weights(_) => {
                     let view: &[f32] = cast_slice(view);
+                    weights_length = attribute.dimensions().multiplicity();
 
-                    for w in view.chunks_exact(total_bone_count as usize) {
+                    for w in view.chunks_exact(weights_length) {
                         weights.extend(w)
                     }
                     println!("Weights found: {}", weights.len());
                 }
                 gltf::Semantic::Joints(_) => {
                     let size = attribute.data_type().size();
+                    joints_length = attribute.dimensions().multiplicity();
                     for index in view.chunks_exact(size) {
                         match size {
                             1 => {
@@ -328,13 +333,14 @@ pub fn generate_meshes() -> String {
         if total_bone_count > 0 {
             let mut entries = Vec::new();
 
-            let max_bone_influences = weights.len() / vertex_count;
-
             for vertex in 0..vertex_count {
-                let start = vertex * max_bone_influences;
-                let end = start + max_bone_influences;
-                let weights = weights[start..end].to_vec();
-                let bone_indices = bones[start..end]
+                let start_weights = vertex * weights_length;
+                let end_weights = start_weights + weights_length;
+                let weights = weights[start_weights..end_weights].to_vec();
+
+                let bone_start = vertex * joints_length;
+                let bone_end = bone_start + joints_length;
+                let bone_indices = bones[bone_start..bone_end]
                     .iter()
                     .map(|x| *x as i8)
                     .collect::<Vec<_>>();

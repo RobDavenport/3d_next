@@ -13,7 +13,7 @@ use super::Scene;
 
 pub struct RiggedFigureScene {
     mesh: Actor<3>,
-    shader: Animated<19, 3>,
+    shader: Animated<19, 4>,
 }
 
 impl RiggedFigureScene {
