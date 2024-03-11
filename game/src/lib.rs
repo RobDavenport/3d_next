@@ -2,7 +2,7 @@ use std::mem::MaybeUninit;
 
 use camera::Camera;
 
-use gamercade_rs::{api::graphics_parameters::GraphicsParameters, prelude as gc};
+use gamercade_rs::prelude as gc;
 use glam::Vec3;
 use graphics::Gpu;
 use scenes::*;
@@ -88,7 +88,6 @@ pub unsafe extern "C" fn draw() {
 
     // Clear all of the buffers
     gpu.reset_frame();
-    //gc::clear_screen(GraphicsParameters::default());
 
     // For Calculating MVP Later
     let camera = CAMERA.assume_init_ref();
@@ -96,8 +95,8 @@ pub unsafe extern "C" fn draw() {
     gpu.uniforms.view = camera.view;
 
     gpu.uniforms.light_position = camera.position;
-    gpu.uniforms.light_intensity = 1.15;
-    gpu.uniforms.ambient_light = 0.05;
+    gpu.uniforms.light_intensity = 1.05;
+    gpu.uniforms.ambient_light = 0.25;
 
     game_state.scenes[game_state.scene_index].draw(gpu);
 

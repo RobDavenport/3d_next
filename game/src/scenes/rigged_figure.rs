@@ -6,7 +6,7 @@ use crate::{
     actor::Actor,
     animation::Animator,
     generated::meshes,
-    shaders::{Animated, BaseVertexShader, ColorBlend, TexturedLit},
+    shaders::{Animated, ColorBlend},
 };
 
 use super::Scene;
@@ -42,10 +42,9 @@ impl Scene for RiggedFigureScene {
         gpu.uniforms.model = self.mesh.transform;
 
         gpu.render_mesh(&self.mesh.mesh, self.shader, ColorBlend);
-        //gpu.render_animator(&self.shader.animator);
     }
 
     fn update(&mut self) {
-        //self.shader.animator.update_time(0.016);
+        self.shader.animator.update_time(0.01);
     }
 }

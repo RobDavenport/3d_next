@@ -1,12 +1,12 @@
 use std::f32::consts::FRAC_PI_2;
 
-use glam::{Mat4, Vec3};
+use glam::Mat4;
 
 use crate::{
     actor::Actor,
     animation::Animator,
     generated::meshes,
-    shaders::{Animated, ColorBlend, TexturedLit},
+    shaders::{Animated, ColorBlend},
 };
 
 use super::Scene;
@@ -47,6 +47,6 @@ impl Scene for RiggedSimpleScene {
     }
 
     fn update(&mut self) {
-        //self.shader.animator.update_time(0.008);
+        self.shader.animator.update_time(0.01);
     }
 }
