@@ -18,7 +18,7 @@ impl VertexShader<3, 3> for BaseVertexShader {
         input: [f32; 3],
     ) -> VertexShaderOutput<3> {
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
+        let position = transform_point_to_clip_space(&position.extend(1.0), &mvp);
 
         VertexShaderOutput {
             position,
@@ -37,7 +37,7 @@ impl VertexShader<2, 2> for BaseVertexShader {
         input: [f32; 2],
     ) -> VertexShaderOutput<2> {
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
-        let position = transform_point_to_clip_space(&position, &mvp);
+        let position = transform_point_to_clip_space(&position.extend(1.0), &mvp);
 
         VertexShaderOutput {
             position,
@@ -56,7 +56,8 @@ impl VertexShader<6, 9> for BaseVertexShader {
         input: [f32; 6],
     ) -> VertexShaderOutput<9> {
         let [r, g, b, norm_x, norm_y, norm_z] = input;
-        let frag_position = (uniforms.model * position.extend(1.0)).xyz();
+        let position = position.extend(1.0);
+        let frag_position = (uniforms.model * position).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let position = transform_point_to_clip_space(&position, &mvp);
@@ -88,7 +89,8 @@ impl VertexShader<5, 8> for BaseVertexShader {
         input: [f32; 5],
     ) -> VertexShaderOutput<8> {
         let [u, v, norm_x, norm_y, norm_z] = input;
-        let frag_position = (uniforms.model * position.extend(1.0)).xyz();
+        let position = position.extend(1.0);
+        let frag_position = (uniforms.model * position).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let normal = (uniforms.model * Vec3::new(norm_x, norm_y, norm_z).extend(0.0)).normalize();
@@ -120,7 +122,9 @@ impl VertexShader<8, 8> for BaseVertexShader {
         input: [f32; 8],
     ) -> VertexShaderOutput<8> {
         let [u, v, nx, ny, nz, tx, ty, tz] = input;
-        let frag_position = (uniforms.model * position.extend(1.0)).xyz();
+
+        let position = position.extend(1.0);
+        let frag_position = (uniforms.model * position).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let position = transform_point_to_clip_space(&position, &mvp);

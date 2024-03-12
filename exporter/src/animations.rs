@@ -33,6 +33,7 @@ pub fn generate_animation(
     blob: &[u8],
     metadata: &SkeletonMetaData,
     filename: &str,
+    root_transform: Mat4,
 ) -> String {
     let name = animation.name().unwrap_or("Unnamed");
     let name = format!("{filename}_{name}");
@@ -57,6 +58,10 @@ pub fn generate_animation(
         let input = &blob[start..end];
         let input: &[f32] = cast_slice(input);
 
+        if let Some(stride) = input_view.stride() {
+            panic!("ANIMATION INPUT HAS STRIDE: {stride}");
+        };
+
         let keyframes = input.to_vec();
 
         // Get outputs
@@ -65,6 +70,10 @@ pub fn generate_animation(
         let start = output_view.offset() + output_accessor.offset();
         let end = start + output_accessor.count() * output_accessor.size();
         let output = &blob[start..end];
+
+        if let Some(stride) = output_view.stride() {
+            panic!("ANIMATION OUTPUT HAS STRIDE: {stride}");
+        };
 
         //let data_type = output_accessor.data_type();
         let dimensions = output_accessor.dimensions();
@@ -89,7 +98,7 @@ pub fn generate_animation(
         output.into_iter().for_each(|chunk| {
             let matrix = match property {
                 Property::Translation => Mat4::from_translation(Vec3::from_slice(chunk)),
-                Property::Rotation => Mat4::from_quat(Quat::from_vec4(Vec4::from_slice(chunk))),
+                Property::Rotation => Mat4::from_quat(Quat::from_vec4(Vec4::from_slice(chunk).normalize())),
                 Property::Scale => Mat4::from_scale(Vec3::from_slice(chunk)),
                 Property::MorphTargetWeights => panic!("Morph target weights not implemented"),
             };

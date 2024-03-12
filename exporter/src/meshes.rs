@@ -102,25 +102,43 @@ pub fn generate_meshes() -> String {
         let blob = &buffers[0].0;
         let mesh = document.meshes().next().unwrap();
 
-        let primitive = mesh.primitives().next().unwrap();
-
-        println!("## Skeleton ##");
-        let skeleton_result = generate_skeleton(filename, &document, blob);
         let mut total_bone_count = 0;
-        let skeleton = if let Some((metadata, text)) = skeleton_result {
-            out.push_str(&text);
-            total_bone_count = metadata.bone_count;
-            Some(metadata)
-        } else {
-            None
-        };
 
-        println!("## End Skeleton ##");
-        println!("## Animations ##");
+        if document.animations().next().is_some() || document.skins().next().is_some() {
+            let mesh_node = document.nodes().find(|x| x.mesh().is_some()).unwrap();
+            let mesh_node_transform = Mat4::from_cols_array_2d(&mesh_node.transform().matrix());
+            println!("Mesh ntx: {mesh_node_transform:?}");
+    
+            let root_transform = Mat4::from_cols_array_2d(&document.nodes().next().unwrap().transform().matrix());
+            let root_inverse = root_transform.inverse();
+            println!("Root ntx: {root_transform:?}");
 
-        if let Some(metadata) = skeleton {
-            for animation in document.animations() {
-                out.push_str(&generate_animation(&animation, blob, &metadata, filename));
+            println!("## Skeleton ##");
+            let skeleton_result = generate_skeleton(filename, &document, blob, root_transform);
+            let skeleton = if let Some((metadata, text)) = skeleton_result {
+                out.push_str(&text);
+                total_bone_count = metadata.bone_count;
+                Some(metadata)
+            } else {
+                None
+            };
+
+            for node in document.nodes() {
+                let parent_name = node.name().unwrap();
+                println!("Parent Node: {parent_name}");
+                for child in node.children() {
+                    let child_name = child.name().unwrap();
+                    println!("Parent {parent_name} <--- Child {child_name}");
+                }
+            }
+    
+            println!("## End Skeleton ##");
+            println!("## Animations ##");
+    
+            if let Some(metadata) = skeleton {
+                for animation in document.animations() {
+                    out.push_str(&generate_animation(&animation, blob, &metadata, filename, root_transform));
+                }
             }
         }
 
@@ -139,16 +157,16 @@ pub fn generate_meshes() -> String {
         let mut weights_length = 0;
         let mut joints_length = 0;
 
+        let primitive = mesh.primitives().next().unwrap();
+
         for (kind, attribute) in primitive.attributes() {
             if attribute.view().unwrap().buffer().index() != 0 {
                 panic!("wrong buffer index");
             }
-            println!("Found {kind:?}: {:?}", attribute.data_type());
+            println!("Found {kind:?}: {:?} x {:?}", attribute.data_type(), attribute.dimensions());
             let view = attribute.view().unwrap();
             let start = attribute.offset() + view.offset();
-            //let count = attribute.count();
             let end = start + (attribute.count() * attribute.size());
-            // println!("View: ({start}..{end}), {count} items.");
             let view = &blob[start..end];
 
             match kind {
@@ -158,7 +176,6 @@ pub fn generate_meshes() -> String {
                     for p in view.chunks_exact(3) {
                         positions.push(Vec3::from_slice(p));
                     }
-                    println!("Positions found: {}", positions.len());
                 }
                 gltf::Semantic::Normals => {
                     let view: &[f32] = cast_slice(view);
@@ -167,7 +184,6 @@ pub fn generate_meshes() -> String {
                         normals.push(Vec3::from_slice(n))
                     }
                     attribute_count += 3;
-                    println!("Normals found: {}", normals.len());
                 }
                 gltf::Semantic::TexCoords(_) => {
                     let view: &[f32] = cast_slice(view);
@@ -176,7 +192,6 @@ pub fn generate_meshes() -> String {
                         uvs.push(Vec2::from_slice(uv));
                     }
                     attribute_count += 2;
-                    println!("UVs found: {}", uvs.len());
                 }
                 gltf::Semantic::Colors(_) => {
                     let view: &[f32] = cast_slice(view);
@@ -185,7 +200,6 @@ pub fn generate_meshes() -> String {
                         colors.push(Vec3::from_slice(c));
                     }
                     attribute_count += 3;
-                    println!("Colors found: {}", colors.len());
                 }
                 gltf::Semantic::Tangents => {
                     let view: &[f32] = cast_slice(view);
@@ -194,18 +208,22 @@ pub fn generate_meshes() -> String {
                         tangents.push(Vec3::from_slice(t))
                     }
                     attribute_count += 3;
-                    println!("Tangents found: {}", tangents.len());
                 }
-                gltf::Semantic::Weights(_) => {
+                gltf::Semantic::Weights(w) => {
+                    if w != 0 {
+                        panic!("Unhandled weight {w}");
+                    }
                     let view: &[f32] = cast_slice(view);
                     weights_length = attribute.dimensions().multiplicity();
 
                     for w in view.chunks_exact(weights_length) {
                         weights.extend(w)
                     }
-                    println!("Weights found: {}", weights.len());
                 }
-                gltf::Semantic::Joints(_) => {
+                gltf::Semantic::Joints(j) => {
+                    if j != 0 {
+                        panic!("Unhandled joint {j}");
+                    }
                     let size = attribute.data_type().size();
                     joints_length = attribute.dimensions().multiplicity();
                     for index in view.chunks_exact(size) {
@@ -222,7 +240,6 @@ pub fn generate_meshes() -> String {
                             e => panic!("unhandled bone size: {e}"),
                         }
                     }
-                    println!("Joint influences found: {}", bones.len());
                 }
             }
         }

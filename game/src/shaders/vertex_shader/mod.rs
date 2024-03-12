@@ -24,9 +24,9 @@ pub trait VertexShader<const IN: usize, const OUT: usize> {
     ) -> VertexShaderOutput<OUT>;
 }
 
-fn transform_point_to_clip_space(position: &Vec3, mvp: &Mat4) -> Vec4 {
+fn transform_point_to_clip_space(position: &Vec4, mvp: &Mat4) -> Vec4 {
     // Convert vertex position to homogeneous coordinates (4D)
-    let mut position_homogeneous = position.extend(1.0);
+    let mut position_homogeneous = *position;
 
     // Apply projection transformation
     position_homogeneous = *mvp * position_homogeneous;

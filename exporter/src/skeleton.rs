@@ -22,6 +22,7 @@ pub struct SkeletonMetaData {
     pub bone_count: u8,
     pub named_bones: HashMap<String, i8>,
     pub node_to_index: HashMap<usize, i8>,
+    pub root_transform: Mat4,
 }
 
 // A collection of bones
@@ -60,9 +61,21 @@ pub fn generate_skeleton(
     filename: &str,
     document: &Document,
     blob: &[u8],
+    root_transform: Mat4,
 ) -> Option<(SkeletonMetaData, String)> {
     if let Some(skin) = document.skins().next() {
+
+        for node in document.nodes() {
+            let name = node.name().unwrap_or("Unnamed");
+            let transform = node.transform();
+
+            println!("Node {name}, tx: {transform:?}");
+        }
+
         let mut bones = Vec::new();
+
+        let skel_root = skin.joints().next().unwrap();
+        println!("skel root: {}, tx: {:?}", skel_root.name().unwrap_or("Unnamed"), skel_root.transform());
 
         let (named_joints, indexed_joints) = get_bone_name_index_maps(&skin);
 
@@ -77,7 +90,7 @@ pub fn generate_skeleton(
 
         let mut ibms = Vec::new();
 
-        for mat in bytes.chunks_exact(16) {
+        for mat in bytes.chunks_exact(ibm_accessor.dimensions().multiplicity()) {
             ibms.push(Mat4::from_cols_slice(mat))
         }
 
@@ -92,6 +105,9 @@ pub fn generate_skeleton(
 
             let local_matrix = bone.transform().matrix();
             let local_matrix = Mat4::from_cols_array_2d(&local_matrix);
+            let bone_name = bone.name().unwrap();
+
+            println!("{bone_name}: tx: {local_matrix}");
 
             let inverse_bind_matrix = ibms[index];
 
@@ -104,7 +120,7 @@ pub fn generate_skeleton(
         }
 
         let len = bones.len();
-
+        
         if len != ibms.len() {
             panic!("ibm.len() != len")
         };
@@ -134,11 +150,18 @@ pub fn generate_skeleton(
             bone.children.iter().for_each(|child| {
                 // Check if the bone already has a parent:
                 let prev_parent = inverted_bones[*child as usize].parent;
+                
                 if prev_parent.is_positive() && prev_parent != parent_index {
                     panic!("Bone has multiple parents, which isn't supported");
                 }
                 inverted_bones[*child as usize].parent = parent_index as i8
             });
+        });
+
+        inverted_bones.iter().enumerate().for_each(|(bone_index, bone)| {
+            if bone.parent > bone_index as i8 {
+                panic!("Bone parent > bone index!")
+            }
         });
 
         // Populate the output
@@ -160,6 +183,7 @@ pub fn generate_skeleton(
             bone_count: len as u8,
             named_bones: named_joints,
             node_to_index: indexed_joints,
+            root_transform: Mat4::IDENTITY,
         };
         Some((metadata, skeleton.to_output()))
     } else {

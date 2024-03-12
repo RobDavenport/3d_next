@@ -37,7 +37,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<3, 3>
 
         // Apply MVP transformation to bring position to clip space
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
-        let position = transform_point_to_clip_space(&position.xyz(), &mvp);
+        let position = transform_point_to_clip_space(&position, &mvp);
 
         VertexShaderOutput {
             position,
@@ -76,7 +76,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<5, 8>
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
         let normal = (uniforms.model * normal).normalize();
-        let position = transform_point_to_clip_space(&position.xyz(), &mvp);
+        let position = transform_point_to_clip_space(&position, &mvp);
 
         VertexShaderOutput {
             position,

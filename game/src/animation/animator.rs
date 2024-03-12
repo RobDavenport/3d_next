@@ -1,6 +1,6 @@
 use std::array;
 
-use gamercade_rs::api::text::console_log;
+use gamercade_rs::{api::text::console_log, prelude as gc};
 use glam::Mat4;
 use shared::{animation::ArchivedAnimation, skeleton::ArchivedSkeleton, skin::ArchivedSkin};
 
@@ -57,32 +57,11 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
         self.current_pose = self.calculate_animation_pose(&new_pose);
     }
 
-    // fn calculate_animation_pose(&self, skeleton_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-    //     let mut model_transforms = [Mat4::IDENTITY; BONE_COUNT];
+    fn calculate_animation_pose(&self, animation_frame: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
+        let mut model_transforms = [Mat4::ZERO; BONE_COUNT];
 
-    //     // Calculate model transforms for each bone
-    //     for (index, bone) in self.skeleton.0.iter().enumerate() {
-    //         let local_transform = skeleton_pose[index];
-    //         let parent_index = bone.parent_index;
-
-    //         if parent_index.is_positive() {
-    //             let transformed_local = local_transform * bone.inverse_bind_matrix;
-    //             model_transforms[index] =
-    //                 model_transforms[parent_index as usize] * transformed_local;
-    //         } else {
-    //             model_transforms[index] = local_transform;
-    //         }
-    //     }
-
-    //     model_transforms
-    // }
-
-    fn calculate_animation_pose(&self, skeleton_pose: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-        let mut model_transforms = [Mat4::IDENTITY; BONE_COUNT];
-
-        // Calculate model transforms for each bone
         for (index, bone) in self.skeleton.0.iter().enumerate() {
-            let local_transform = skeleton_pose[index];
+            let local_transform = bone.local_matrix * animation_frame[index];
             let parent_index = bone.parent_index;
 
             // Handle root or unparented nodes

@@ -1,3 +1,4 @@
+use gamercade_rs::prelude as gc;
 use glam::{Mat4, Vec3};
 
 use crate::{
@@ -16,11 +17,13 @@ pub struct FoxModelScene {
 
 impl FoxModelScene {
     pub fn new() -> Self {
+        gc::console_log("Initialize FOX SCENE:");
+
         let shader = Animated {
             animator: Animator::new(
                 meshes::FOX_SKL.as_skeleton(),
                 meshes::FOX_SKN.as_skin(),
-                meshes::FOX_WALK_ANM.as_anim(),
+                meshes::FOX_RUN_ANM.as_anim(),
             ),
         };
 
