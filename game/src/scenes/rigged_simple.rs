@@ -41,6 +41,7 @@ impl Scene for RiggedSimpleScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.mesh.transform;
 
+        //gpu.render_animator(&self.shader.animator);
         gpu.render_mesh(&self.mesh.mesh, self.shader, ColorBlend);
     }
 

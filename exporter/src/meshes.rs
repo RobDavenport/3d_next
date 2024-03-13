@@ -105,16 +105,8 @@ pub fn generate_meshes() -> String {
         let mut total_bone_count = 0;
 
         if document.animations().next().is_some() || document.skins().next().is_some() {
-            let mesh_node = document.nodes().find(|x| x.mesh().is_some()).unwrap();
-            let mesh_node_transform = Mat4::from_cols_array_2d(&mesh_node.transform().matrix());
-            println!("Mesh ntx: {mesh_node_transform:?}");
-    
-            let root_transform = Mat4::from_cols_array_2d(&document.nodes().next().unwrap().transform().matrix());
-            let root_inverse = root_transform.inverse();
-            println!("Root ntx: {root_transform:?}");
-
             println!("## Skeleton ##");
-            let skeleton_result = generate_skeleton(filename, &document, blob, root_transform);
+            let skeleton_result = generate_skeleton(filename, &document, blob);
             let skeleton = if let Some((metadata, text)) = skeleton_result {
                 out.push_str(&text);
                 total_bone_count = metadata.bone_count;
@@ -122,22 +114,13 @@ pub fn generate_meshes() -> String {
             } else {
                 None
             };
-
-            for node in document.nodes() {
-                let parent_name = node.name().unwrap();
-                println!("Parent Node: {parent_name}");
-                for child in node.children() {
-                    let child_name = child.name().unwrap();
-                    println!("Parent {parent_name} <--- Child {child_name}");
-                }
-            }
     
             println!("## End Skeleton ##");
             println!("## Animations ##");
     
             if let Some(metadata) = skeleton {
                 for animation in document.animations() {
-                    out.push_str(&generate_animation(&animation, blob, &metadata, filename, root_transform));
+                    out.push_str(&generate_animation(&animation, blob, &metadata, filename));
                 }
             }
         }

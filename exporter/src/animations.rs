@@ -33,7 +33,6 @@ pub fn generate_animation(
     blob: &[u8],
     metadata: &SkeletonMetaData,
     filename: &str,
-    root_transform: Mat4,
 ) -> String {
     let name = animation.name().unwrap_or("Unnamed");
     let name = format!("{filename}_{name}");
@@ -45,7 +44,6 @@ pub fn generate_animation(
     let named_bones = &metadata.named_bones;
 
     for channel in animation.channels() {
-        let mut modifiers = Vec::new();
         let target = channel.target();
         let target_index = *named_bones.get(target.node().name().unwrap()).unwrap();
         let sampler = channel.sampler();
@@ -70,6 +68,9 @@ pub fn generate_animation(
         let start = output_view.offset() + output_accessor.offset();
         let end = start + output_accessor.count() * output_accessor.size();
         let output = &blob[start..end];
+        if sampler.output().sparse().is_some() {
+            panic!("Sparse animation not handled")
+        };
 
         if let Some(stride) = output_view.stride() {
             panic!("ANIMATION OUTPUT HAS STRIDE: {stride}");
@@ -80,7 +81,7 @@ pub fn generate_animation(
         let property = target.property();
 
         let output: &[f32] = cast_slice(output);
-        let output = output.chunks_exact(dimensions.multiplicity());
+        let values = output.to_vec();
 
         let interpolate = match sampler.interpolation() {
             Interpolation::Linear => AnimationInterprolationType::Linear,
@@ -95,23 +96,12 @@ pub fn generate_animation(
             Property::MorphTargetWeights => panic!("Morph target weights not implemented"),
         };
 
-        output.into_iter().for_each(|chunk| {
-            let matrix = match property {
-                Property::Translation => Mat4::from_translation(Vec3::from_slice(chunk)),
-                Property::Rotation => Mat4::from_quat(Quat::from_vec4(Vec4::from_slice(chunk).normalize())),
-                Property::Scale => Mat4::from_scale(Vec3::from_slice(chunk)),
-                Property::MorphTargetWeights => panic!("Morph target weights not implemented"),
-            };
-
-            modifiers.push(matrix)
-        });
-
         let out = AnimationChannel {
             channel_type,
             interpolation_type: interpolate,
             target_bone: target_index,
             timestamps: keyframes,
-            values: modifiers,
+            values,
         };
 
         animation_channels.push(out);

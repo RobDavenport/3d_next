@@ -1,8 +1,8 @@
 use std::array;
 
 use gamercade_rs::{api::text::console_log, prelude as gc};
-use glam::Mat4;
-use shared::{animation::ArchivedAnimation, skeleton::ArchivedSkeleton, skin::ArchivedSkin};
+use glam::{Mat4, Vec3, Vec4};
+use shared::{animation::{ArchivedAnimation, ArchivedAnimationChannelType}, skeleton::{ArchivedBoneTrs, ArchivedSkeleton, BoneTrs}, skin::ArchivedSkin};
 
 #[derive(Clone, Copy)]
 pub struct Animator<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> {
@@ -33,10 +33,15 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
     pub fn update_time(&mut self, delta: f32) {
         self.time += delta;
 
-        let mut new_pose = [Mat4::IDENTITY; BONE_COUNT];
+        // Set default values
+        let mut new_pose: [ArchivedBoneTrs; BONE_COUNT] = array::from_fn(|i| {
+            self.skeleton.0[i].local_matrix.clone()
+        });
 
+        //Find the animation channel, and combine the outputs
         self.animation.0.iter().for_each(|channel| {
             let mut current_keyframe = 0;
+            let target_bone = channel.target_bone as usize;
 
             // TODO: binary search
             for timestamp in channel.timestamps.iter() {
@@ -51,27 +56,37 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
                 current_keyframe = channel.timestamps.len() - 1;
             }
 
-            new_pose[channel.target_bone as usize] *= channel.values[current_keyframe]
+            // Accumulte the individual channel transforms
+            // TODO: Lerp this
+            let target = &mut new_pose[target_bone];
+
+            match channel.channel_type {
+                ArchivedAnimationChannelType::Translation => {
+                    target.translation = Vec3::from_slice(&channel.values[current_keyframe * 3..]);
+                },
+                ArchivedAnimationChannelType::Rotation => {
+                    target.rotation = Vec4::from_slice(&channel.values[current_keyframe * 4..])
+                },
+                ArchivedAnimationChannelType::Scale => {
+                    target.scale = Vec3::from_slice(&channel.values[current_keyframe * 3..])
+                },
+            }
         });
 
-        self.current_pose = self.calculate_animation_pose(&new_pose);
-    }
-
-    fn calculate_animation_pose(&self, animation_frame: &[Mat4; BONE_COUNT]) -> [Mat4; BONE_COUNT] {
-        let mut model_transforms = [Mat4::ZERO; BONE_COUNT];
-
-        for (index, bone) in self.skeleton.0.iter().enumerate() {
-            let local_transform = bone.local_matrix * animation_frame[index];
-            let parent_index = bone.parent_index;
-
-            // Handle root or unparented nodes
-            if parent_index.is_negative() {
-                model_transforms[index] = local_transform;
+        // Combine the animations for parent/child relationship
+        for i in 0..BONE_COUNT {
+            let local_matrix = new_pose[i].as_matrix();
+            if self.skeleton.0[i].parent_index.is_negative() {
+                self.current_pose[i] = local_matrix;
             } else {
-                model_transforms[index] = model_transforms[parent_index as usize] * local_transform;
+                let parent_matrix = self.current_pose[self.skeleton.0[i].parent_index as usize];
+                self.current_pose[i] = parent_matrix * local_matrix;
             }
         }
 
-        array::from_fn(|i| model_transforms[i] * self.skeleton.0[i].inverse_bind_matrix)
+        // Premultiply here to avoid doing it in the vertex shader
+        for (mat, bone) in self.current_pose.iter_mut().zip(self.skeleton.0.iter()) {
+            *mat = *mat * bone.inverse_bind_matrix
+        }
     }
 }

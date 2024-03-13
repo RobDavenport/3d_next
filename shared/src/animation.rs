@@ -1,4 +1,3 @@
-use glam::Mat4;
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Archive, Serialize, Deserialize)]
@@ -10,7 +9,7 @@ pub struct AnimationChannel {
     pub interpolation_type: AnimationInterprolationType,
     pub target_bone: i8,
     pub timestamps: Vec<f32>,
-    pub values: Vec<Mat4>,
+    pub values: Vec<f32>,
 }
 
 #[derive(Debug, Clone, Copy, Archive, Serialize, Deserialize)]

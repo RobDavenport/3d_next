@@ -1,4 +1,5 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
+use gamercade_rs::prelude as gc;
 use glam::{Mat3, Vec4, Vec4Swizzles};
 use shared::{mesh::ArchivedMesh, skeleton::ArchivedSkeleton, types::Color};
 
@@ -112,49 +113,55 @@ impl Gpu {
         }
     }
 
-    pub fn render_skeleton<const B: usize>(&self, skeleton: &ArchivedSkeleton<B>) {
-        let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
+    // pub fn render_skeleton<const B: usize>(&self, skeleton: &ArchivedSkeleton<B>) {
+    //     let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
 
-        skeleton.0.iter().for_each(|bone| {
-            let local = bone.local_matrix;
-            let forward = local.forward_vector();
-            let local_pos = local.w_axis;
-            let forward_pos = forward + local_pos.xyz();
-            let local_world = mvp * local_pos;
-            let forward_world = mvp * forward_pos.extend(1.0);
+    //     skeleton.0.iter().for_each(|bone| {
+    //         let local = bone.global_transform;
+    //         let local_pos = local.w_axis;
+    //         let local_world = mvp * local_pos;
 
-            let local_world = self.clip_to_screen(local_world);
-            let forward_world = self.clip_to_screen(forward_world);
-            gamercade_rs::prelude::line(
-                Color::new(0, 255, 0).to_graphics_params(),
-                local_world.x as i32,
-                local_world.y as i32,
-                forward_world.x as i32,
-                forward_world.y as i32,
-            )
-        })
-    }
+    //         let local_world = self.clip_to_screen(local_world);
+
+    //         if bone.parent_index.is_negative() {
+    //             gc::set_pixel(Color::new(255, 0, 0).to_graphics_params(), local_world.x as i32, local_world.y as i32);
+    //         } else {
+    //             let parent = &skeleton.0[bone.parent_index as usize];
+    //             let parent_pos = parent.global_transform.w_axis;
+    //             let parent_world = mvp * parent_pos;
+    //             let parent_world = self.clip_to_screen(parent_world);
+    //             gc::line(Color::new(0, 255, 0).to_graphics_params(),
+    //                 local_world.x as i32,
+    //                 local_world.y as i32,
+    //                 parent_world.x as i32,
+    //             parent_world.y as i32)
+    //         }
+    //     })
+    // }
 
     pub fn render_animator<const B: usize, const I: usize>(&self, animator: &Animator<B, I>) {
         let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
 
-        animator.current_pose.iter().for_each(|bone| {
-            let local = bone;
-            let forward = local.forward_vector();
+        animator.skeleton.0.iter().enumerate().for_each(|(bone_index, bone)| {
+            let local = animator.current_pose[bone_index];
             let local_pos = local.w_axis;
-            let forward_pos = forward + local_pos.xyz();
             let local_world = mvp * local_pos;
-            let forward_world = mvp * forward_pos.extend(1.0);
 
             let local_world = self.clip_to_screen(local_world);
-            let forward_world = self.clip_to_screen(forward_world);
-            gamercade_rs::prelude::line(
-                Color::new(0, 255, 0).to_graphics_params(),
-                local_world.x as i32,
-                local_world.y as i32,
-                forward_world.x as i32,
-                forward_world.y as i32,
-            )
+
+            if bone.parent_index.is_negative() {
+                gc::set_pixel(Color::new(255, 0, 0).to_graphics_params(), local_world.x as i32, local_world.y as i32);
+            } else {
+                let parent = &animator.current_pose[bone.parent_index as usize];
+                let parent_pos = parent.w_axis;
+                let parent_world = mvp * parent_pos;
+                let parent_world = self.clip_to_screen(parent_world);
+                gc::line(Color::new(0, 255, 0).to_graphics_params(),
+                    local_world.x as i32,
+                    local_world.y as i32,
+                    parent_world.x as i32,
+                parent_world.y as i32)
+            }
         })
     }
 

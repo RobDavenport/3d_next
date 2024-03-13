@@ -2,11 +2,11 @@ use std::array;
 use std::collections::HashMap;
 
 use bytemuck::cast_slice;
-use glam::Mat4;
+use glam::{Mat4, Vec4};
 use gltf::Document;
 use rkyv::AlignedVec;
 use seq_macro::seq;
-use shared::skeleton::{Bone, Skeleton};
+use shared::skeleton::{Bone, BoneTrs, Skeleton};
 use shared::SKELETON_MAX_BONES;
 
 use crate::skin::get_bone_name_index_maps;
@@ -14,7 +14,7 @@ use crate::*;
 
 pub struct BoneVec {
     pub children: Vec<i8>,
-    pub local_matrix: Mat4,
+    pub local_matrix: BoneTrs,
     pub inverse_bind_matrix: Mat4,
 }
 
@@ -61,21 +61,9 @@ pub fn generate_skeleton(
     filename: &str,
     document: &Document,
     blob: &[u8],
-    root_transform: Mat4,
 ) -> Option<(SkeletonMetaData, String)> {
     if let Some(skin) = document.skins().next() {
-
-        for node in document.nodes() {
-            let name = node.name().unwrap_or("Unnamed");
-            let transform = node.transform();
-
-            println!("Node {name}, tx: {transform:?}");
-        }
-
         let mut bones = Vec::new();
-
-        let skel_root = skin.joints().next().unwrap();
-        println!("skel root: {}, tx: {:?}", skel_root.name().unwrap_or("Unnamed"), skel_root.transform());
 
         let (named_joints, indexed_joints) = get_bone_name_index_maps(&skin);
 
@@ -103,11 +91,12 @@ pub fn generate_skeleton(
                 children.push(*child_index as i8);
             }
 
-            let local_matrix = bone.transform().matrix();
-            let local_matrix = Mat4::from_cols_array_2d(&local_matrix);
-            let bone_name = bone.name().unwrap();
-
-            println!("{bone_name}: tx: {local_matrix}");
+            let (translation, rotation, scale) = bone.transform().decomposed();
+            let local_matrix = BoneTrs {
+                translation: Vec3::from_slice(&translation),
+                rotation: Vec4::from_slice(&rotation),
+                scale: Vec3::from_slice(&scale),
+            };
 
             let inverse_bind_matrix = ibms[index];
 
@@ -132,7 +121,7 @@ pub fn generate_skeleton(
 
         struct WorkingBone {
             parent: i8,
-            local_matrix: Mat4,
+            local_matrix: BoneTrs,
             inverse_bind_matrix: Mat4,
         }
 
