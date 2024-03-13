@@ -35,6 +35,7 @@ pub unsafe extern "C" fn init() {
     let scenes: Vec<Box<dyn Scene>> = vec![
         (Box::new(HelmetModelScene::new())),
         (Box::new(HelmetModelSimpleScene::new())),
+        (Box::new(BlockbenchScene::new())),
         (Box::new(CubeModelScene::new())),
         (Box::new(RiggedSimpleScene::new())),
         (Box::new(RiggedFigureScene::new())),

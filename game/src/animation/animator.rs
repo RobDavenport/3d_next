@@ -5,7 +5,7 @@ use shared::{
     animation::{
         ArchivedAnimation, ArchivedAnimationChannelType, ArchivedAnimationInterprolationType,
     },
-    skeleton::{ArchivedBoneTrs, ArchivedSkeleton, BoneTrs},
+    skeleton::{ArchivedBoneTrs, ArchivedSkeleton},
     skin::ArchivedSkin,
 };
 

@@ -14,6 +14,11 @@ pub mod meshes {
 pub static TRIANGLE: &MeshBytes<2> = &MeshBytes(include_bytes!("Triangle_MESH"));
 pub static PLANE: &MeshBytes<2> = &MeshBytes(include_bytes!("Plane_MESH"));
 pub static CUBE: &MeshBytes<8> = &MeshBytes(include_bytes!("Cube_MESH"));
+pub static BLOCKBENCH_SKL: &SkeletonBytes<2> = &SkeletonBytes(include_bytes!("blockbench_SKL"));
+pub static BLOCKBENCH_ANIMATION_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("blockbench_animation_ANM"));
+pub static BLOCKBENCH: &MeshBytes<5> = &MeshBytes(include_bytes!("blockbench_MESH"));
+pub static BLOCKBENCH_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("blockbench_SKN"));
+pub static BLOCKBENCH_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("blockbench_0_TEX"));
 pub static BOXVERTEXCOLORS: &MeshBytes<6> = &MeshBytes(include_bytes!("BoxVertexColors_MESH"));
 pub static FOX_SKL: &SkeletonBytes<24> = &SkeletonBytes(include_bytes!("Fox_SKL"));
 pub static FOX_SURVEY_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Survey_ANM"));
