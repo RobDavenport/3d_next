@@ -119,10 +119,10 @@ pub fn generate_meshes(config: &AssetList) -> String {
             } else {
                 None
             };
-    
+
             println!("## End Skeleton ##");
             println!("## Animations ##");
-    
+
             if let Some(metadata) = skeleton {
                 for animation in document.animations() {
                     out.push_str(&generate_animation(&animation, blob, &metadata, filename));
@@ -146,18 +146,24 @@ pub fn generate_meshes(config: &AssetList) -> String {
         let mut joints_length = 0;
 
         let primitive = mesh.primitives().next().unwrap();
-        
+
         let primitive_count = mesh.primitives().count();
 
         if primitive_count > 1 {
-            println!("Primitive count > 1 ({primitive_count}), mesh may not be exported correctly...")
+            println!(
+                "Primitive count > 1 ({primitive_count}), mesh may not be exported correctly..."
+            )
         }
 
         for (kind, attribute) in primitive.attributes() {
             if attribute.view().unwrap().buffer().index() != 0 {
                 panic!("wrong buffer index");
             }
-            println!("Found {kind:?}: {:?} x {:?}", attribute.data_type(), attribute.dimensions());
+            println!(
+                "Found {kind:?}: {:?} x {:?}",
+                attribute.data_type(),
+                attribute.dimensions()
+            );
             let view = attribute.view().unwrap();
             let start = attribute.offset() + view.offset();
             let end = start + (attribute.count() * attribute.size());

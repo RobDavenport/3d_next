@@ -112,30 +112,42 @@ impl Gpu {
         }
     }
 
+    #[allow(dead_code)]
     pub fn render_animator<const B: usize, const I: usize>(&self, animator: &Animator<B, I>) {
         let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
 
-        animator.skeleton.0.iter().enumerate().for_each(|(bone_index, bone)| {
-            let local = animator.current_pose[bone_index];
-            let local_pos = local.w_axis;
-            let local_world = mvp * local_pos;
+        animator
+            .skeleton
+            .0
+            .iter()
+            .enumerate()
+            .for_each(|(bone_index, bone)| {
+                let local = animator.current_pose[bone_index];
+                let local_pos = local.w_axis;
+                let local_world = mvp * local_pos;
 
-            let local_world = self.clip_to_screen(local_world);
+                let local_world = self.clip_to_screen(local_world);
 
-            if bone.parent_index.is_negative() {
-                gc::set_pixel(Color::new(255, 0, 0).to_graphics_params(), local_world.x as i32, local_world.y as i32);
-            } else {
-                let parent = &animator.current_pose[bone.parent_index as usize];
-                let parent_pos = parent.w_axis;
-                let parent_world = mvp * parent_pos;
-                let parent_world = self.clip_to_screen(parent_world);
-                gc::line(Color::new(0, 255, 0).to_graphics_params(),
-                    local_world.x as i32,
-                    local_world.y as i32,
-                    parent_world.x as i32,
-                parent_world.y as i32)
-            }
-        })
+                if bone.parent_index.is_negative() {
+                    gc::set_pixel(
+                        Color::new(255, 0, 0).to_graphics_params(),
+                        local_world.x as i32,
+                        local_world.y as i32,
+                    );
+                } else {
+                    let parent = &animator.current_pose[bone.parent_index as usize];
+                    let parent_pos = parent.w_axis;
+                    let parent_world = mvp * parent_pos;
+                    let parent_world = self.clip_to_screen(parent_world);
+                    gc::line(
+                        Color::new(0, 255, 0).to_graphics_params(),
+                        local_world.x as i32,
+                        local_world.y as i32,
+                        parent_world.x as i32,
+                        parent_world.y as i32,
+                    )
+                }
+            })
     }
 
     // Converts a triangle from clip space into screen space

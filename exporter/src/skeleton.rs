@@ -114,7 +114,7 @@ pub fn generate_skeleton(
         }
 
         let len = bones.len();
-        
+
         if len != ibms.len() {
             panic!("ibm.len() != len")
         };
@@ -144,7 +144,7 @@ pub fn generate_skeleton(
             bone.children.iter().for_each(|child| {
                 // Check if the bone already has a parent:
                 let prev_parent = inverted_bones[*child as usize].parent;
-                
+
                 if prev_parent.is_positive() && prev_parent != parent_index {
                     panic!("Bone has multiple parents, which isn't supported");
                 }
@@ -152,11 +152,14 @@ pub fn generate_skeleton(
             });
         });
 
-        inverted_bones.iter().enumerate().for_each(|(bone_index, bone)| {
-            if bone.parent > bone_index as i8 {
-                panic!("Bone parent > bone index!")
-            }
-        });
+        inverted_bones
+            .iter()
+            .enumerate()
+            .for_each(|(bone_index, bone)| {
+                if bone.parent > bone_index as i8 {
+                    panic!("Bone parent > bone index!")
+                }
+            });
 
         // Populate the output
         let bones = inverted_bones

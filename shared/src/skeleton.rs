@@ -18,7 +18,21 @@ pub struct BoneTrs {
 
 impl ArchivedBoneTrs {
     pub fn as_matrix(&self) -> Mat4 {
-        Mat4::from_scale_rotation_translation(self.scale, Quat::from_vec4(self.rotation), self.translation)
+        Mat4::from_scale_rotation_translation(
+            self.scale,
+            Quat::from_vec4(self.rotation),
+            self.translation,
+        )
+    }
+
+    pub fn lerp(&self, other: &Self, lerp_factor: f32) -> Self {
+        Self {
+            translation: self.translation.lerp(other.translation, lerp_factor),
+            rotation: Quat::from_vec4(self.rotation)
+                .slerp(Quat::from_vec4(other.rotation), lerp_factor)
+                .into(),
+            scale: self.scale.lerp(other.scale, lerp_factor),
+        }
     }
 }
 

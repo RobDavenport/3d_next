@@ -38,20 +38,19 @@ pub fn generate_textures(config: &AssetList) -> String {
     );
 
     config.images.iter().for_each(|filename| {
-
         // Try each of the valid image file formats
         let mut bytes = None;
 
-            // Iterate each extension supported
-            for extension in crate::SUPPORTED_IMAGE_EXTENSIONS.iter() {
-                // Read in the image file
-                let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
-                // Convert it to a vec of bytes
-                if let Ok(data) = fs::read(read_path) {
-                    bytes = Some(data);
-                    break;
-                }
-            };
+        // Iterate each extension supported
+        for extension in crate::SUPPORTED_IMAGE_EXTENSIONS.iter() {
+            // Read in the image file
+            let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+            // Convert it to a vec of bytes
+            if let Ok(data) = fs::read(read_path) {
+                bytes = Some(data);
+                break;
+            }
+        }
 
         if bytes.is_none() {
             println!("Couldn't find file: {filename}");

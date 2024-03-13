@@ -1,7 +1,10 @@
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Archive, Serialize, Deserialize)]
-pub struct Animation(pub Box<[AnimationChannel]>);
+pub struct Animation {
+    pub length: f32,
+    pub channels: Box<[AnimationChannel]>,
+}
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
 pub struct AnimationChannel {
@@ -21,9 +24,8 @@ pub enum AnimationChannelType {
 
 #[derive(Debug, Clone, Copy, Archive, Serialize, Deserialize)]
 pub enum AnimationInterprolationType {
-    Linear,
     Step,
-    CubicSpline,
+    Linear,
 }
 
 pub struct AnimationBytes(pub &'static [u8]);

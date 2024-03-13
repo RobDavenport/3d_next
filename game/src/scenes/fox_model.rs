@@ -1,6 +1,6 @@
 use gamercade_rs::prelude as gc;
 use glam::{Mat4, Vec3};
-use shared::animation::{ArchivedAnimation};
+use shared::animation::ArchivedAnimation;
 
 use crate::{
     actor::Actor,
@@ -15,7 +15,7 @@ pub struct FoxModelScene {
     fox: Actor<5>,
     shader: Animated<24, 4>,
     anim_index: usize,
-    anims: [&'static ArchivedAnimation; 3]
+    anims: [&'static ArchivedAnimation; 3],
 }
 
 impl FoxModelScene {
@@ -26,7 +26,7 @@ impl FoxModelScene {
             meshes::FOX_SURVEY_ANM.as_anim(),
             meshes::FOX_WALK_ANM.as_anim(),
             meshes::FOX_RUN_ANM.as_anim(),
-            ];
+        ];
 
         let shader = Animated {
             animator: Animator::new(
@@ -67,7 +67,7 @@ impl Scene for FoxModelScene {
             if self.anim_index == self.anims.len() {
                 self.anim_index = 0;
             }
-            
+
             self.shader.animator.animation = self.anims[self.anim_index];
         } else if let Some(true) = gc::button_left_stick_pressed(0) {
             self.anim_index -= 1;
@@ -75,8 +75,8 @@ impl Scene for FoxModelScene {
             if self.anim_index == usize::MAX {
                 self.anim_index = self.anims.len() - 1;
             }
-            
+
             self.shader.animator.animation = self.anims[self.anim_index];
-        } 
+        }
     }
 }

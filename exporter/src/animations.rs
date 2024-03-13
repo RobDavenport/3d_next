@@ -10,13 +10,17 @@ use crate::*;
 pub struct AnimationOutputVec {
     pub name: String,
     channels: Vec<AnimationChannel>,
+    length: f32,
 }
 
 impl AnimationOutputVec {
     fn to_output(&self) -> String {
         let filename = format!("{}_{ANIMATION_EXTENSION}", self.name);
 
-        let out = Animation(self.channels.clone().into_boxed_slice());
+        let out = Animation {
+            length: self.length,
+            channels: self.channels.clone().into_boxed_slice(),
+        };
         let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
         write_file(&filename, &archive);
 
@@ -83,7 +87,7 @@ pub fn generate_animation(
         let interpolate = match sampler.interpolation() {
             Interpolation::Linear => AnimationInterprolationType::Linear,
             Interpolation::Step => AnimationInterprolationType::Step,
-            Interpolation::CubicSpline => AnimationInterprolationType::CubicSpline,
+            Interpolation::CubicSpline => panic!("Cubic Spline animation is not supported"),
         };
 
         let channel_type = match property {
@@ -104,9 +108,17 @@ pub fn generate_animation(
         animation_channels.push(out);
     }
 
+    let mut length: f32 = 0.0;
+
+    for channel in animation_channels.iter() {
+        let max = channel.timestamps.last().unwrap();
+        length = length.max(*max)
+    }
+
     AnimationOutputVec {
         name: name.to_owned(),
         channels: animation_channels,
+        length,
     }
     .to_output()
 }

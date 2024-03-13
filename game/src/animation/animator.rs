@@ -1,8 +1,13 @@
-use std::array;
+use std::{array, cmp::Ordering};
 
-use gamercade_rs::{api::text::console_log, prelude as gc};
-use glam::{Mat4, Vec3, Vec4};
-use shared::{animation::{ArchivedAnimation, ArchivedAnimationChannelType}, skeleton::{ArchivedBoneTrs, ArchivedSkeleton, BoneTrs}, skin::ArchivedSkin};
+use glam::{Mat4, Quat, Vec3, Vec4};
+use shared::{
+    animation::{
+        ArchivedAnimation, ArchivedAnimationChannelType, ArchivedAnimationInterprolationType,
+    },
+    skeleton::{ArchivedBoneTrs, ArchivedSkeleton, BoneTrs},
+    skin::ArchivedSkin,
+};
 
 #[derive(Clone, Copy)]
 pub struct Animator<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> {
@@ -33,44 +38,80 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
     pub fn update_time(&mut self, delta: f32) {
         self.time += delta;
 
+        if self.time >= self.animation.length {
+            self.time -= self.animation.length
+        }
+
         // Set default values
-        let mut new_pose: [ArchivedBoneTrs; BONE_COUNT] = array::from_fn(|i| {
-            self.skeleton.0[i].local_matrix.clone()
-        });
+        let mut new_pose: [ArchivedBoneTrs; BONE_COUNT] =
+            array::from_fn(|i| self.skeleton.0[i].local_matrix.clone());
 
         //Find the animation channel, and combine the outputs
-        self.animation.0.iter().for_each(|channel| {
-            let mut current_keyframe = 0;
+        self.animation.channels.iter().for_each(|channel| {
             let target_bone = channel.target_bone as usize;
 
-            // TODO: binary search
-            for timestamp in channel.timestamps.iter() {
-                current_keyframe += 1;
-                if self.time < *timestamp {
-                    break;
+            let current_keyframe = match channel.timestamps.binary_search_by(|timestamp| {
+                timestamp.partial_cmp(&self.time).unwrap_or(Ordering::Less)
+            }) {
+                Ok(current_keyframe) => current_keyframe,
+                Err(index) => {
+                    if index == 0 {
+                        index
+                    } else {
+                        index - 1
+                    }
                 }
-            }
-
-            if current_keyframe >= channel.timestamps.len() {
-                self.time = 0.0;
-                current_keyframe = channel.timestamps.len() - 1;
-            }
+            };
 
             // Accumulte the individual channel transforms
-            // TODO: Lerp this
             let target = &mut new_pose[target_bone];
 
-            match channel.channel_type {
-                ArchivedAnimationChannelType::Translation => {
-                    target.translation = Vec3::from_slice(&channel.values[current_keyframe * 3..]);
+            match channel.interpolation_type {
+                ArchivedAnimationInterprolationType::Step => match channel.channel_type {
+                    ArchivedAnimationChannelType::Translation => {
+                        let value = Vec3::from_slice(&channel.values[current_keyframe * 3..]);
+                        target.translation = value;
+                    }
+                    ArchivedAnimationChannelType::Rotation => {
+                        let value = Vec4::from_slice(&channel.values[current_keyframe * 4..]);
+                        target.rotation = value;
+                    }
+                    ArchivedAnimationChannelType::Scale => {
+                        let value = Vec3::from_slice(&channel.values[current_keyframe * 3..]);
+                        target.scale = value;
+                    }
                 },
-                ArchivedAnimationChannelType::Rotation => {
-                    target.rotation = Vec4::from_slice(&channel.values[current_keyframe * 4..])
-                },
-                ArchivedAnimationChannelType::Scale => {
-                    target.scale = Vec3::from_slice(&channel.values[current_keyframe * 3..])
-                },
-            }
+                ArchivedAnimationInterprolationType::Linear => {
+                    let start_keyframe = current_keyframe;
+                    let end_keyframe = if start_keyframe == channel.timestamps.len() - 1 {
+                        0 // Loop back to the first keyframe if at the end
+                    } else {
+                        start_keyframe + 1
+                    };
+                    let t = (self.time - channel.timestamps[start_keyframe])
+                        / (channel.timestamps[end_keyframe] - channel.timestamps[start_keyframe]);
+                    match channel.channel_type {
+                        ArchivedAnimationChannelType::Translation => {
+                            let first = Vec3::from_slice(&channel.values[start_keyframe * 3..]);
+                            let second = Vec3::from_slice(&channel.values[end_keyframe * 3..]);
+                            let value = first.lerp(second, t);
+                            target.translation = value;
+                        }
+                        ArchivedAnimationChannelType::Rotation => {
+                            let first = Quat::from_slice(&channel.values[start_keyframe * 4..]);
+                            let second = Quat::from_slice(&channel.values[end_keyframe * 4..]);
+                            let value = first.slerp(second, t).into();
+                            target.rotation = value
+                        }
+                        ArchivedAnimationChannelType::Scale => {
+                            let first = Vec3::from_slice(&channel.values[start_keyframe * 3..]);
+                            let second = Vec3::from_slice(&channel.values[end_keyframe * 3..]);
+                            let value = first.lerp(second, t);
+                            target.scale = value
+                        }
+                    }
+                }
+            };
         });
 
         // Combine the animations for parent/child relationship
