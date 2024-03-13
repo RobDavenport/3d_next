@@ -20,7 +20,7 @@ impl Scene for PlaneScene {
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.plane.transform;
         gpu.uniforms.diffuse = textures::GAMERCADE_TEX.as_texture();
-        gpu.render_mesh(&self.plane.mesh, BaseVertexShader, Textured);
+        gpu.render_mesh(self.plane.mesh, BaseVertexShader, Textured);
     }
 }
 

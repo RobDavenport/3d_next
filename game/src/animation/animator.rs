@@ -114,20 +114,20 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> Animator<BONE_COUNT, 
             };
         });
 
-        // Combine the animations for parent/child relationship
-        for i in 0..BONE_COUNT {
-            let local_matrix = new_pose[i].as_matrix();
-            if self.skeleton.0[i].parent_index.is_negative() {
+        for (i, pose) in new_pose.iter().enumerate() {
+            let local_matrix = pose.as_matrix();
+            let bone = &self.skeleton.0[i];
+            if bone.parent_index.is_negative() {
                 self.current_pose[i] = local_matrix;
             } else {
-                let parent_matrix = self.current_pose[self.skeleton.0[i].parent_index as usize];
+                let parent_matrix = self.current_pose[bone.parent_index as usize];
                 self.current_pose[i] = parent_matrix * local_matrix;
             }
         }
 
         // Premultiply here to avoid doing it in the vertex shader
         for (mat, bone) in self.current_pose.iter_mut().zip(self.skeleton.0.iter()) {
-            *mat = *mat * bone.inverse_bind_matrix
+            *mat *= bone.inverse_bind_matrix
         }
     }
 }

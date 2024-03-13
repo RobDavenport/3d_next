@@ -39,7 +39,7 @@ impl Scene for BlockbenchScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.mesh.transform;
         gpu.uniforms.diffuse = meshes::BLOCKBENCH_0_TEX.as_texture();
-        gpu.render_mesh(&self.mesh.mesh, self.shader, TexturedLit);
+        gpu.render_mesh(self.mesh.mesh, self.shader, TexturedLit);
     }
 
     fn update(&mut self) {

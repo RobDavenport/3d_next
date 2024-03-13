@@ -364,7 +364,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
 
                 let entry = SkinEntryVec {
                     bones_indices: bone_indices,
-                    weights: weights,
+                    weights,
                 };
 
                 entries.push(entry)

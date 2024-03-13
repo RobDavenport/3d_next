@@ -31,7 +31,7 @@ impl Scene for HelmetModelSimpleScene {
         gpu.uniforms.model = self.helmet.transform;
         gpu.uniforms.diffuse = meshes::DAMAGEDHELMET_0_TEX.as_texture();
         gpu.uniforms.normal = meshes::DAMAGEDHELMET_4_TEX.as_texture();
-        gpu.render_mesh(&self.helmet.mesh, BaseVertexShader, TexturedLit);
+        gpu.render_mesh(self.helmet.mesh, BaseVertexShader, TexturedLit);
     }
 
     fn update(&mut self) {

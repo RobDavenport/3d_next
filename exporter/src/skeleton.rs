@@ -93,7 +93,7 @@ pub fn generate_skeleton(
                 let child_index = named_joints
                     .get(child.name().unwrap())
                     .expect("Bone name not found");
-                children.push(*child_index as i8);
+                children.push(*child_index);
             }
 
             let (translation, rotation, scale) = bone.transform().decomposed();
@@ -106,7 +106,7 @@ pub fn generate_skeleton(
             let inverse_bind_matrix = ibms[index];
 
             let bone = BoneVec {
-                children: children.into(),
+                children,
                 local_matrix,
                 inverse_bind_matrix,
             };
@@ -148,7 +148,7 @@ pub fn generate_skeleton(
                 if prev_parent.is_positive() && prev_parent != parent_index {
                     panic!("Bone has multiple parents, which isn't supported");
                 }
-                inverted_bones[*child as usize].parent = parent_index as i8
+                inverted_bones[*child as usize].parent = parent_index
             });
         });
 

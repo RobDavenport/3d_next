@@ -39,7 +39,7 @@ impl Scene for RiggedFigureScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.mesh.transform;
 
-        gpu.render_mesh(&self.mesh.mesh, self.shader, ColorBlend);
+        gpu.render_mesh(self.mesh.mesh, self.shader, ColorBlend);
     }
 
     fn update(&mut self) {

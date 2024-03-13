@@ -38,7 +38,8 @@ pub fn write_file(filename: &str, data: &[u8]) {
 fn main() {
     println!("Executing custom export script...");
 
-    let file = fs::read(&EXPORT_CONFIG).expect(&format!("Failed to find {EXPORT_CONFIG} file"));
+    let file =
+        fs::read(EXPORT_CONFIG).unwrap_or_else(|_| panic!("Failed to find {EXPORT_CONFIG} file"));
 
     let config: AssetList = serde_yaml::from_slice(&file)
         .map_err(|e| e.to_string())

@@ -30,6 +30,6 @@ impl Scene for CubeScene {
     fn draw(&self, gpu: &mut Gpu) {
         gpu.uniforms.model = self.cube.transform;
         gpu.uniforms.diffuse = textures::BRICKWALL_TEX.as_texture();
-        gpu.render_mesh(&self.cube.mesh, BaseVertexShader, TexturedNormalMapLit);
+        gpu.render_mesh(self.cube.mesh, BaseVertexShader, TexturedNormalMapLit);
     }
 }

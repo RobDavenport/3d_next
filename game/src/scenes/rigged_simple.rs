@@ -42,7 +42,7 @@ impl Scene for RiggedSimpleScene {
         gpu.uniforms.model = self.mesh.transform;
 
         //gpu.render_animator(&self.shader.animator);
-        gpu.render_mesh(&self.mesh.mesh, self.shader, ColorBlend);
+        gpu.render_mesh(self.mesh.mesh, self.shader, ColorBlend);
     }
 
     fn update(&mut self) {
