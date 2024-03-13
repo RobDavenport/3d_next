@@ -36,56 +36,45 @@ impl<const W: usize, const H: usize> RenderTile<W, H> {
         let bc = self.line_segment_intersects_aabb(triangle.b.xy(), triangle.c.xy());
         let ca = self.line_segment_intersects_aabb(triangle.c.xy(), triangle.a.xy());
 
-        ab | bc | ca
+        ab || bc || ca
     }
 
     fn line_segment_intersects_aabb(&self, a: Vec2, b: Vec2) -> bool {
-        let aabb_min_y = self.y as f32;
-        let aabb_min_x = self.x as f32;
-        let aabb_max_x = (self.x + W) as f32;
-        let aabb_max_y = (self.y + H) as f32;
+        let aabb_min = Vec2::new(self.x as f32, self.y as f32);
+        let aabb_max = Vec2::new((self.x + W - 1) as f32, (self.y + H - 1) as f32);
 
         // Check if any part of the line segment is within the AABB
-        if point_in_aabb(a, aabb_min_x, aabb_min_y, aabb_max_x, aabb_max_y)
-            || point_in_aabb(b, aabb_min_x, aabb_min_y, aabb_max_x, aabb_max_y)
-        {
+        if point_in_aabb(a, aabb_min, aabb_max) || point_in_aabb(b, aabb_min, aabb_max) {
             return true;
         }
 
         // Check for intersection with any side of the AABB
-        line_intersects_aabb(a, b, aabb_min_x, aabb_min_y, aabb_max_x, aabb_max_y)
+        line_intersects_aabb(a, b, aabb_min, aabb_max)
     }
 }
 
 // Helper function to check if a point is within an AABB
-fn point_in_aabb(point: Vec2, min_x: f32, min_y: f32, max_x: f32, max_y: f32) -> bool {
-    point.x >= min_x && point.x <= max_x && point.y >= min_y && point.y <= max_y
+fn point_in_aabb(point: Vec2, min: Vec2, max: Vec2) -> bool {
+    point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y
 }
 
 // Helper function to check if a line segment intersects with an AABB
-fn line_intersects_aabb(
-    a: Vec2,
-    b: Vec2,
-    aabb_min_x: f32,
-    aabb_min_y: f32,
-    aabb_max_x: f32,
-    aabb_max_y: f32,
-) -> bool {
+fn line_intersects_aabb(a: Vec2, b: Vec2, min: Vec2, max: Vec2) -> bool {
     // Check if any part of the line segment intersects with the AABB's sides
     let dx = b.x - a.x;
     let dy = b.y - a.y;
 
     // Check for intersection with the left and right sides of the AABB
-    let mut t_min = (aabb_min_x - a.x) / dx;
-    let mut t_max = (aabb_max_x - a.x) / dx;
+    let mut t_min = (min.x - a.x) / dx;
+    let mut t_max = (max.x - a.x) / dx;
 
     if dx < 0.0 {
         std::mem::swap(&mut t_min, &mut t_max);
     }
 
     // Check for intersection with the top and bottom sides of the AABB
-    let mut t3 = (aabb_min_y - a.y) / dy;
-    let mut t4 = (aabb_max_y - a.y) / dy;
+    let mut t3 = (min.y - a.y) / dy;
+    let mut t4 = (max.y - a.y) / dy;
 
     if dy < 0.0 {
         std::mem::swap(&mut t3, &mut t4);

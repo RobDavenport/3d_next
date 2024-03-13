@@ -36,7 +36,7 @@ impl<const W: usize, const H: usize> TileManager<W, H> {
 
         let tiles = (0..total_tile_count)
             .map(|i| {
-                let y_tile = i / tile_count_vertical;
+                let y_tile = i / tile_count_horizontal;
                 let x_tile = i % tile_count_horizontal;
 
                 RenderTile::new(x_tile * W, y_tile * H)

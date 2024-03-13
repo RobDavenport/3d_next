@@ -1,13 +1,15 @@
 Todo:
+- Trivially depth reject tiles
+  - Store lowest depth value in tile
+  - Reject triangle if its lowest Z is higher than tiles
+- Add const screen width / height settings
 - Ways to benchmark performance
 - Exporter improvements
   - Add support for multiple primitives/meshes
   - Add support for multiple skeletons
     - Separate exporting of skeleton, animations
 - Convert rendering to lib, separate out game from rendering 
-- Trivially depth reject tiles
-  - Store lowest depth value in tile
-  - Reject triangle if its lowest Z is higher than tiles
+
 - Consider Deferred Rendering
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]

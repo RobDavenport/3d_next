@@ -287,6 +287,8 @@ pub(super) struct RenderTriangle<const P: usize> {
     pub(super) max_x: f32,
     pub(super) min_y: f32,
     pub(super) max_y: f32,
+    pub(super) max_z: f32,
+    pub(super) min_z: f32,
 }
 
 impl<const P: usize> RenderTriangle<P> {
@@ -305,6 +307,9 @@ impl<const P: usize> RenderTriangle<P> {
         let b_params = (triangle.parameters[1] * b.w) - a_params;
         let c_params = (triangle.parameters[2] * c.w) - a_params;
 
+        let max_z = a.z.max(b.z).max(c.z);
+        let min_z = a.z.min(b.z).min(c.z);
+
         Self {
             a: a.xyw(),
             b: b.xy(),
@@ -316,6 +321,8 @@ impl<const P: usize> RenderTriangle<P> {
             min_y,
             max_x,
             max_y,
+            max_z,
+            min_z,
         }
     }
 }

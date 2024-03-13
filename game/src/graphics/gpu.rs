@@ -18,7 +18,7 @@ pub struct Gpu {
     pub(super) screen_height: usize,
     frame_buffer: FrameBuffer,
     pub uniforms: Uniforms,
-    pub(super) render_tiles: TileManager<32, 18>,
+    pub(super) render_tiles: TileManager<8, 9>, //32 x 18
 }
 
 impl Gpu {
@@ -162,26 +162,30 @@ impl Gpu {
         clip_space_triangle
     }
 
+    // Stitches together a frame buffer
     pub fn generate_frame_buffer(&mut self) -> &[GraphicsParameters] {
-        let frame_width = self.screen_width;
         let tile_width = self.render_tiles.w();
         let tile_height = self.render_tiles.h();
+        let tile_count_horizontal = self.render_tiles.tile_count_horizontal;
 
-        for (index, tile) in self.render_tiles.tiles.iter().enumerate() {
-            let tile_row = index / (frame_width / tile_width);
-            let tile_col = index % (frame_width / tile_width);
+        for (chunk_index, target) in self
+            .frame_buffer
+            .frame_buffer
+            .chunks_exact_mut(tile_width)
+            .enumerate()
+        {
+            let tile_column = chunk_index % tile_count_horizontal;
+            let tile_row = chunk_index / (tile_count_horizontal * tile_height);
 
-            let tile_offset_x = tile_col * tile_width;
-            let tile_offset_y = tile_row * tile_height;
+            let tile_index = tile_row * tile_count_horizontal + tile_column;
 
-            for y in 0..tile_height {
-                let frame_index = (tile_offset_y + y) * frame_width + tile_offset_x;
-                self.frame_buffer.frame_buffer[frame_index..frame_index + tile_width]
-                    .copy_from_slice(
-                        &tile.frame_buffer.frame_buffer
-                            [(y * tile_width)..(y * tile_width) + tile_width],
-                    );
-            }
+            let source_start = ((chunk_index / tile_count_horizontal) % tile_height) * tile_width;
+            let source_end = source_start + tile_width;
+
+            let source = &self.render_tiles.tiles[tile_index]
+                .frame_buffer
+                .frame_buffer[source_start..source_end];
+            target.copy_from_slice(source);
         }
 
         &self.frame_buffer.frame_buffer
