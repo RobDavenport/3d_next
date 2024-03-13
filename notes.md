@@ -1,15 +1,13 @@
-In Progress:
-- Skinned Animation
-  - Import/export the animations themselves
-  - Implement animator struct which handles all of the matrix math for bones
-  - Plug ^ into vertex shaders
-
 Todo:
+- Ways to benchmark performance
 - Trivially depth reject tiles
 - Consider Deferred Rendering
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
 - Reconsider tiled rendering (last attempt was too slow)
+- Add support for multiple primitives/meshes
+- Add support for multiple skeletons
+  - Separate exporting of skeleton, animations
 
 ---
 Helmet Model Textures

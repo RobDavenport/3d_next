@@ -1,5 +1,4 @@
 use bytemuck::cast_slice;
-use glam::{Quat, Vec4};
 use gltf::animation::{Interpolation, Property};
 use shared::animation::{
     Animation, AnimationChannel, AnimationChannelType, AnimationInterprolationType,
@@ -76,8 +75,6 @@ pub fn generate_animation(
             panic!("ANIMATION OUTPUT HAS STRIDE: {stride}");
         };
 
-        //let data_type = output_accessor.data_type();
-        let dimensions = output_accessor.dimensions();
         let property = target.property();
 
         let output: &[f32] = cast_slice(output);

@@ -1,11 +1,10 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 use gamercade_rs::prelude as gc;
 use glam::{Mat3, Vec4, Vec4Swizzles};
-use shared::{mesh::ArchivedMesh, skeleton::ArchivedSkeleton, types::Color};
+use shared::{mesh::ArchivedMesh, types::Color};
 
 use crate::{
     animation::Animator,
-    math::Math,
     shaders::{PixelShader, VertexShader},
 };
 
@@ -112,32 +111,6 @@ impl Gpu {
             }
         }
     }
-
-    // pub fn render_skeleton<const B: usize>(&self, skeleton: &ArchivedSkeleton<B>) {
-    //     let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);
-
-    //     skeleton.0.iter().for_each(|bone| {
-    //         let local = bone.global_transform;
-    //         let local_pos = local.w_axis;
-    //         let local_world = mvp * local_pos;
-
-    //         let local_world = self.clip_to_screen(local_world);
-
-    //         if bone.parent_index.is_negative() {
-    //             gc::set_pixel(Color::new(255, 0, 0).to_graphics_params(), local_world.x as i32, local_world.y as i32);
-    //         } else {
-    //             let parent = &skeleton.0[bone.parent_index as usize];
-    //             let parent_pos = parent.global_transform.w_axis;
-    //             let parent_world = mvp * parent_pos;
-    //             let parent_world = self.clip_to_screen(parent_world);
-    //             gc::line(Color::new(0, 255, 0).to_graphics_params(),
-    //                 local_world.x as i32,
-    //                 local_world.y as i32,
-    //                 parent_world.x as i32,
-    //             parent_world.y as i32)
-    //         }
-    //     })
-    // }
 
     pub fn render_animator<const B: usize, const I: usize>(&self, animator: &Animator<B, I>) {
         let mvp = self.uniforms.projection * (self.uniforms.view * self.uniforms.model);

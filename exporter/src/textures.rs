@@ -31,18 +31,34 @@ impl TextureOutput {
     }
 }
 
-pub fn generate_textures() -> String {
+pub fn generate_textures(config: &AssetList) -> String {
     let mut out = String::from(
         "pub mod textures {
     use super::*;\n",
     );
 
-    TEXTURES.iter().for_each(|[filename, extension]| {
-        // Read in the image file
-        let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+    config.images.iter().for_each(|filename| {
 
-        // Convert it to a vec of bytes
-        let bytes = fs::read(read_path).unwrap();
+        // Try each of the valid image file formats
+        let mut bytes = None;
+
+            // Iterate each extension supported
+            for extension in crate::SUPPORTED_IMAGE_EXTENSIONS.iter() {
+                // Read in the image file
+                let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+                // Convert it to a vec of bytes
+                if let Ok(data) = fs::read(read_path) {
+                    bytes = Some(data);
+                    break;
+                }
+            };
+
+        if bytes.is_none() {
+            println!("Couldn't find file: {filename}");
+            return;
+        }
+        let bytes = bytes.unwrap();
+
         let image = image::load_from_memory(&bytes).unwrap();
         let image_data = image
             .pixels()

@@ -1,6 +1,6 @@
 use gamercade_rs::prelude as gc;
 use glam::{Mat4, Vec3};
-use shared::animation::{Animation, ArchivedAnimation};
+use shared::animation::{ArchivedAnimation};
 
 use crate::{
     actor::Actor,

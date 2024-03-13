@@ -35,7 +35,7 @@ impl SkeletonOutput {
     fn resize(bones: Vec<Bone>) -> AlignedVec {
         let bone_count = bones.len();
 
-        seq!(BC in 0..64 {
+        seq!(BC in 0..128 {
             match bone_count {
                 #(BC => rkyv::to_bytes::<_, 256>(&Skeleton::<BC>(array::from_fn(|i| bones[i].clone()))).unwrap(),)*
                 too_many_bones => panic!("Too many bones: {too_many_bones}, max is {SKELETON_MAX_BONES}"),
@@ -62,6 +62,11 @@ pub fn generate_skeleton(
     document: &Document,
     blob: &[u8],
 ) -> Option<(SkeletonMetaData, String)> {
+    let skin_count = document.skins().count();
+    if skin_count > 1 {
+        println!("Skin count > 1 {skin_count}. May not be exported correctly...")
+    }
+
     if let Some(skin) = document.skins().next() {
         let mut bones = Vec::new();
 

@@ -75,7 +75,7 @@ impl MeshOutput {
     }
 }
 
-pub fn generate_meshes() -> String {
+pub fn generate_meshes(config: &AssetList) -> String {
     let mut out = String::from(
         "pub mod meshes {
     use super::*;\n",
@@ -91,9 +91,9 @@ pub fn generate_meshes() -> String {
         out.push_str(&mesh.to_output());
     });
 
-    MESHES.iter().for_each(|[filename, extension]| {
+    config.meshes.iter().for_each(|filename| {
         // Read in the image file
-        let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+        let read_path = format!("{INPUT_DIR}/{filename}.glb");
 
         println!("### Importing {filename}... ###");
 
@@ -101,6 +101,11 @@ pub fn generate_meshes() -> String {
 
         let blob = &buffers[0].0;
         let mesh = document.meshes().next().unwrap();
+        let mesh_count = document.meshes().count();
+
+        if mesh_count > 1 {
+            println!("Mesh count > 1 {mesh_count}. Not exported correctly...")
+        }
 
         let mut total_bone_count = 0;
 
@@ -141,6 +146,12 @@ pub fn generate_meshes() -> String {
         let mut joints_length = 0;
 
         let primitive = mesh.primitives().next().unwrap();
+        
+        let primitive_count = mesh.primitives().count();
+
+        if primitive_count > 1 {
+            println!("Primitive count > 1 ({primitive_count}), mesh may not be exported correctly...")
+        }
 
         for (kind, attribute) in primitive.attributes() {
             if attribute.view().unwrap().buffer().index() != 0 {

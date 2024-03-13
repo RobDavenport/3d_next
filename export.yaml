@@ -1,0 +1,14 @@
+# Images
+images:
+- gamercade
+- brickwall
+- brickwall_normal
+
+# Meshes in .glb format to export
+meshes:
+- BoxVertexColors
+- Fox
+- Duck
+- DamagedHelmet
+- RiggedSimple
+- RiggedFigure
