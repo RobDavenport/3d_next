@@ -170,7 +170,7 @@ impl<const W: usize, const H: usize> RenderTile<W, H> {
         PS: PixelShader<PSIN>,
     {
         // Determine the bounding box of the triangle in tile space
-        let min_x = triangle.min_x.max(self.x as f32) as usize;
+        let min_x = triangle.min_x.max(self.x as f32) as usize & !3;
         let min_y = triangle.min_y.max(self.y as f32) as usize;
         let max_x = triangle.max_x.min((self.x + W - 1) as f32) as usize;
         let max_y = triangle.max_y.min((self.y + H - 1) as f32) as usize;
@@ -287,8 +287,6 @@ pub(super) struct RenderTriangle<const P: usize> {
     pub(super) max_x: f32,
     pub(super) min_y: f32,
     pub(super) max_y: f32,
-    pub(super) max_z: f32,
-    pub(super) min_z: f32,
 }
 
 impl<const P: usize> RenderTriangle<P> {
@@ -307,9 +305,6 @@ impl<const P: usize> RenderTriangle<P> {
         let b_params = (triangle.parameters[1] * b.w) - a_params;
         let c_params = (triangle.parameters[2] * c.w) - a_params;
 
-        let max_z = a.z.max(b.z).max(c.z);
-        let min_z = a.z.min(b.z).min(c.z);
-
         Self {
             a: a.xyw(),
             b: b.xy(),
@@ -321,8 +316,6 @@ impl<const P: usize> RenderTriangle<P> {
             min_y,
             max_x,
             max_y,
-            max_z,
-            min_z,
         }
     }
 }

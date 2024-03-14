@@ -2,8 +2,6 @@ use std::ops::{Index, IndexMut};
 
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
 
-use super::rasterizer::X_STEP_SIZE;
-
 pub struct FrameBuffer {
     pub frame_buffer: Box<[GraphicsParameters]>,
 }
@@ -11,7 +9,7 @@ pub struct FrameBuffer {
 impl FrameBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
-            frame_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
+            frame_buffer: (0..(screen_height * screen_width))
                 .map(|_| GraphicsParameters::default())
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),

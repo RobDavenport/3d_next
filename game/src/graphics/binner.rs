@@ -50,20 +50,15 @@ impl Gpu {
                 let tile_index = (y * horizontal_count) + x;
                 let tile = &mut self.render_tiles[tile_index];
 
-                // Early Z buffer rejection
-                // TODO: Handle this
-                if !tile.z_buffer.should_early_reject(&triangle) {
-                    // We only care about triangles which overlap the tile's BB
-                    if stepper.points_inside_triangle_mask().all() {
-                        // Trivial Accept - All corners of the tile are within the triangle
-                        tile.trivial_rasterize_triangle(&self.uniforms, triangle.clone(), ps);
-                    } else if tile.triangle_edges_intersect_aabb(&triangle) {
-                        // Triangle is overlapping, but only render those whose edges intersect the AABB
-                        tile.rasterize_triangle(&self.uniforms, triangle.clone(), ps);
-                    }
-                } else {
-                    gamercade_rs::prelude::console_log("early depth out");
+                // We only care about triangles which overlap the tile's BB
+                if stepper.points_inside_triangle_mask().all() {
+                    // Trivial Accept - All corners of the tile are within the triangle
+                    tile.trivial_rasterize_triangle(&self.uniforms, triangle.clone(), ps);
+                } else if tile.triangle_edges_intersect_aabb(&triangle) {
+                    // Triangle is overlapping, but only render those whose edges intersect the AABB
+                    tile.rasterize_triangle(&self.uniforms, triangle.clone(), ps);
                 }
+
                 // Tile shoulud just be skipped
 
                 stepper.step_x();

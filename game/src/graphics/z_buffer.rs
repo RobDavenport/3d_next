@@ -1,35 +1,26 @@
 use wide::{f32x4, CmpNe};
 
-use super::rasterizer::{RenderTriangle, X_STEP_SIZE};
+//use super::rasterizer::X_STEP_SIZE;
 
 const RESET_DEPTH: f32 = f32::NEG_INFINITY;
 
 pub struct ZBuffer {
     pub z_buffer: Box<[f32]>,
-    pub z_max: f32,
 }
 
 impl ZBuffer {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         Self {
-            z_buffer: (0..(screen_height * screen_width) + X_STEP_SIZE)
+            z_buffer: (0..(screen_height * screen_width))
                 .map(|_| RESET_DEPTH)
                 .collect::<Vec<_>>()
                 .into_boxed_slice(),
-            z_max: RESET_DEPTH,
         }
     }
 
     // Clears the Z buffer by setting all values to reset value
     pub(crate) fn clear(&mut self) {
         self.z_buffer.iter_mut().for_each(|d| *d = RESET_DEPTH);
-        self.z_max = RESET_DEPTH;
-    }
-
-    // Checks if the triangle could even be rendered in this Z buffer
-    // by checking the max Z value versus the triangle's max Z
-    pub(super) fn should_early_reject<const P: usize>(&self, triangle: &RenderTriangle<P>) -> bool {
-        triangle.max_z < self.z_max
     }
 
     // Returns a u32x4 mask if the value was closer the target value
@@ -56,10 +47,6 @@ impl ZBuffer {
         if changed.any() {
             let data = self.z_buffer[pixel_index..pixel_index].as_mut_ptr();
             unsafe { (data as *mut [f32; 4]).write(new_depths.into()) }
-
-            for depth in new_depths.as_array_ref() {
-                self.z_max = self.z_max.max(*depth);
-            }
 
             changed.move_mask()
         } else {
