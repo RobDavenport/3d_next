@@ -1,5 +1,5 @@
 use bytemuck::{cast_slice, from_bytes};
-use glam::Vec3;
+use glam::Vec3A;
 use rkyv::AlignedVec;
 use shared::{
     mesh::Mesh, vertex_parameters::VertexParametersList, IndexList, TriangleIndices, VertexList,
@@ -16,7 +16,7 @@ use crate::{
 
 pub struct MeshOutput {
     pub name: String,
-    pub vertices: Vec<Vec3>,
+    pub vertices: Vec<Vec3A>,
     pub indices: Vec<TriangleIndices>,
     pub parameters: Vec<f32>,
     pub attribute_count: usize,
@@ -174,14 +174,14 @@ pub fn generate_meshes(config: &AssetList) -> String {
                     let view: &[f32] = cast_slice(view);
 
                     for p in view.chunks_exact(3) {
-                        positions.push(Vec3::from_slice(p));
+                        positions.push(Vec3A::from_slice(p));
                     }
                 }
                 gltf::Semantic::Normals => {
                     let view: &[f32] = cast_slice(view);
 
                     for n in view.chunks_exact(3) {
-                        normals.push(Vec3::from_slice(n))
+                        normals.push(Vec3A::from_slice(n))
                     }
                     attribute_count += 3;
                 }
@@ -197,7 +197,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
                     let view: &[f32] = cast_slice(view);
 
                     for c in view.chunks_exact(3) {
-                        colors.push(Vec3::from_slice(c));
+                        colors.push(Vec3A::from_slice(c));
                     }
                     attribute_count += 3;
                 }
@@ -205,7 +205,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
                     let view: &[f32] = cast_slice(view);
 
                     for t in view.chunks_exact(3) {
-                        tangents.push(Vec3::from_slice(t))
+                        tangents.push(Vec3A::from_slice(t))
                     }
                     attribute_count += 3;
                 }
@@ -280,7 +280,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
         // Generate Normals
         if normals.is_empty() {
             println!("Normals not found, manually generating them...");
-            normals.extend((0..positions.len()).map(|_| Vec3::default()));
+            normals.extend((0..positions.len()).map(|_| Vec3A::default()));
 
             for indices in indices.iter() {
                 let TriangleIndices(a, b, c) = indices;
@@ -451,7 +451,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
 }
 
 // Function to calculate the normal of a triangle given its vertices
-fn calculate_triangle_normal(v0: Vec3, v1: Vec3, v2: Vec3) -> Vec3 {
+fn calculate_triangle_normal(v0: Vec3A, v1: Vec3A, v2: Vec3A) -> Vec3A {
     // Calculate the vectors representing two edges of the triangle
     let edge1 = v1 - v0;
     let edge2 = v2 - v0;

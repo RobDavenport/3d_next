@@ -12,7 +12,7 @@ pub use gpu::Gpu;
 use shared::{texture::ArchivedTexture, vertex_parameters::VertexParameters};
 pub use z_buffer::ZBuffer;
 
-use glam::{Mat4, Vec3, Vec4};
+use glam::{Mat4, Vec3A, Vec4};
 
 use crate::generated::{meshes, textures};
 
@@ -24,7 +24,7 @@ pub(crate) struct Triangle<const P: usize> {
 
 pub struct Uniforms {
     // Pixel Shader
-    pub light_position: Vec3,
+    pub light_position: Vec3A,
     pub light_intensity: f32,
     pub ambient_light: f32,
     pub diffuse: &'static ArchivedTexture,
@@ -41,7 +41,7 @@ pub struct Uniforms {
 impl Default for Uniforms {
     fn default() -> Self {
         Self {
-            light_position: Vec3::default(),
+            light_position: Vec3A::default(),
             light_intensity: 1.25,
             ambient_light: 0.15,
             diffuse: textures::BRICKWALL_TEX.as_texture(),

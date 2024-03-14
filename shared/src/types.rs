@@ -1,5 +1,5 @@
 use gamercade_rs::api::graphics_parameters::GraphicsParameters;
-use glam::Vec3;
+use glam::Vec3A;
 
 #[derive(Clone, Copy)]
 pub struct Color {
@@ -18,8 +18,8 @@ impl From<[f32; 3]> for Color {
     }
 }
 
-impl From<Vec3> for Color {
-    fn from(value: Vec3) -> Self {
+impl From<Vec3A> for Color {
+    fn from(value: Vec3A) -> Self {
         Self::from([value.x, value.y, value.z])
     }
 }

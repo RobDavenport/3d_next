@@ -3,7 +3,7 @@ use std::mem::MaybeUninit;
 use camera::Camera;
 
 use gamercade_rs::prelude as gc;
-use glam::Vec3;
+use glam::Vec3A;
 use graphics::Gpu;
 use scenes::*;
 
@@ -52,7 +52,7 @@ pub unsafe extern "C" fn init() {
         scene_index: 0,
     });
     CAMERA.write(Camera::new(
-        Vec3::new(0.0, 0.0, 5.0),
+        Vec3A::new(0.0, 0.0, 5.0),
         screen_width as f32 / screen_height as f32,
     ));
     GPU.write(Gpu::new(screen_width, screen_height));

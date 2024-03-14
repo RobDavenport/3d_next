@@ -1,5 +1,5 @@
 use crate::Color;
-use glam::{UVec3, Vec3};
+use glam::{UVec3, Vec3A};
 use rkyv::{Archive, Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Archive)]
@@ -28,9 +28,9 @@ impl ArchivedTexture {
         ((v * self.width as usize) + u) * Self::STRIDE
     }
 
-    pub fn index_vec(&self, index: usize) -> Vec3 {
+    pub fn index_veca(&self, index: usize) -> Vec3A {
         let rgb = &self.data[index..index + Self::STRIDE];
-        UVec3::new(rgb[0] as u32, rgb[1] as u32, rgb[2] as u32).as_vec3() / u8::MAX as f32
+        UVec3::new(rgb[0] as u32, rgb[1] as u32, rgb[2] as u32).as_vec3a() / u8::MAX as f32
     }
 
     pub fn index_color(&self, index: usize) -> Color {
@@ -39,9 +39,9 @@ impl ArchivedTexture {
     }
 
     /// Simpler convenience functions, prefer get_index variants for performance
-    pub fn sample_vec(&self, u: f32, v: f32) -> Vec3 {
+    pub fn sample_vec(&self, u: f32, v: f32) -> Vec3A {
         let index = self.get_index(u, v);
-        self.index_vec(index)
+        self.index_veca(index)
     }
 
     /// Simpler convenience functions, prefer get_index variants for performance

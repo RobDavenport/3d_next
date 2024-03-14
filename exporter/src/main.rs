@@ -1,6 +1,6 @@
 use std::{fs, io::Write};
 
-use glam::{Vec2, Vec3};
+use glam::Vec2;
 use image::GenericImageView;
 
 use crate::{asset_list::AssetList, meshes::generate_meshes, textures::generate_textures};

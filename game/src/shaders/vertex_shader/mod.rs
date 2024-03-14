@@ -1,4 +1,4 @@
-use glam::{Mat4, Vec3, Vec4};
+use glam::{Mat4, Vec3A, Vec4};
 
 mod base;
 pub use base::*;
@@ -19,7 +19,7 @@ pub trait VertexShader<const IN: usize, const OUT: usize> {
         &self,
         vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; IN],
     ) -> VertexShaderOutput<OUT>;
 }

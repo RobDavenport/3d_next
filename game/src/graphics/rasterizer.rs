@@ -1,4 +1,4 @@
-use glam::{Vec2, Vec3, Vec3Swizzles, Vec4Swizzles};
+use glam::{Vec2, Vec3A, Vec3Swizzles, Vec4Swizzles};
 use shared::vertex_parameters::VertexParameters;
 use wide::{f32x4, i32x4, CmpGt, CmpLt};
 
@@ -277,7 +277,7 @@ impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
 
 #[derive(Clone)]
 pub(super) struct RenderTriangle<const P: usize> {
-    pub(super) a: Vec3,
+    pub(super) a: Vec3A,
     pub(super) b: Vec2,
     pub(super) c: Vec2,
     a_params: VertexParametersSimd<P>,
@@ -306,7 +306,7 @@ impl<const P: usize> RenderTriangle<P> {
         let c_params = (triangle.parameters[2] * c.w) - a_params;
 
         Self {
-            a: a.xyw(),
+            a: a.xyw().into(),
             b: b.xy(),
             c: c.xy(),
             a_params: VertexParametersSimd::splat(&a_params),

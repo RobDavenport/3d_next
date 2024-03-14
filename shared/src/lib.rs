@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::Vec3A;
 use rkyv::{Archive, Deserialize, Serialize};
 use types::Color;
 
@@ -22,4 +22,4 @@ pub struct TriangleIndices(pub u16, pub u16, pub u16);
 pub struct IndexList(pub Box<[TriangleIndices]>);
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
-pub struct VertexList(pub Box<[Vec3]>);
+pub struct VertexList(pub Box<[Vec3A]>);

@@ -2,7 +2,7 @@ use std::array;
 use std::collections::HashMap;
 
 use bytemuck::cast_slice;
-use glam::{Mat4, Vec4};
+use glam::{Mat4, Vec3, Vec4};
 use gltf::Document;
 use rkyv::AlignedVec;
 use seq_macro::seq;

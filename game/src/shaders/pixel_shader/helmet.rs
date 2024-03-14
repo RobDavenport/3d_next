@@ -1,4 +1,4 @@
-use glam::Vec3;
+use glam::Vec3A;
 use shared::types::Color;
 
 use crate::graphics::Uniforms;
@@ -12,12 +12,12 @@ impl PixelShader<8> for HelmetShader {
     fn run(uniforms: &Uniforms, parameters: [f32; 8]) -> Color {
         // Shader Setup
         let [u, v, norm_x, norm_y, norm_z, pixel_x, pixel_y, pixel_z] = parameters;
-        let pixel_position = Vec3::new(pixel_x, pixel_y, pixel_z);
-        let normal = Vec3::new(norm_x, norm_y, norm_z);
+        let pixel_position = Vec3A::new(pixel_x, pixel_y, pixel_z);
+        let normal = Vec3A::new(norm_x, norm_y, norm_z);
         let index = uniforms.diffuse.get_index(u, v);
-        let object_color = uniforms.diffuse.index_vec(index);
-        let emissive = uniforms.emissive.index_vec(index);
-        let occlusion = uniforms.occlusion.index_vec(index);
+        let object_color = uniforms.diffuse.index_veca(index);
+        let emissive = uniforms.emissive.index_veca(index);
+        let occlusion = uniforms.occlusion.index_veca(index);
 
         // Lighting Calculations
         // TODO: Add tangent & normal map to this shader

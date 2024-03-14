@@ -1,4 +1,4 @@
-use glam::{Mat4, Vec3, Vec4, Vec4Swizzles};
+use glam::{Mat4, Vec3A, Vec4, Vec4Swizzles};
 use shared::vertex_parameters::VertexParameters;
 
 use crate::{animation::Animator, graphics::Uniforms};
@@ -17,7 +17,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<3, 3>
         &self,
         vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 3],
     ) -> VertexShaderOutput<3> {
         let [r, g, b] = input;
@@ -53,7 +53,7 @@ impl<const BONE_COUNT: usize, const MAX_INFLUENCES: usize> VertexShader<5, 8>
         &self,
         vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 5],
     ) -> VertexShaderOutput<8> {
         let [u, v, norm_x, norm_y, norm_z] = input;

@@ -1,6 +1,6 @@
 use std::f32::consts::FRAC_2_PI;
 
-use glam::{Mat4, Vec3};
+use glam::{Mat4, Vec3A};
 
 use super::Scene;
 use crate::{
@@ -17,9 +17,9 @@ pub struct CubesScene {
 impl CubesScene {
     pub fn new() -> Self {
         let positions = [
-            Vec3::new(0.0, 0.0, 0.0),
-            Vec3::new(2.5, -2.5, 0.0),
-            Vec3::new(-2.5, 2.5, 0.0),
+            Vec3A::new(0.0, 0.0, 0.0),
+            Vec3A::new(2.5, -2.5, 0.0),
+            Vec3A::new(-2.5, 2.5, 0.0),
         ];
 
         let mesh = meshes::CUBE.as_mesh();
@@ -29,7 +29,7 @@ impl CubesScene {
         positions.into_iter().for_each(|position| {
             cubes.push(Actor {
                 mesh,
-                transform: Mat4::from_translation(position),
+                transform: Mat4::from_translation(position.into()),
                 delta,
             });
 

@@ -1,5 +1,5 @@
 use crate::{vertex_parameters::VertexParameters, TriangleIndices};
-use glam::Vec3;
+use glam::Vec3A;
 
 // RH Coordinate System
 // +X is Right
@@ -38,7 +38,7 @@ pub const CUBE_INDICES: &[TriangleIndices; 12] = &[
 
 // Position, UV, Normals
 pub const SIDE: f32 = 1.0;
-pub const CUBE: &[Vec3; 24] = &[
+pub const CUBE: &[Vec3A; 24] = &[
     // Front
     CUBE_SIMPLE[0],
     CUBE_SIMPLE[1],
@@ -321,28 +321,28 @@ pub const CUBE_PARAMETERS: &[VertexParameters<8>; 24] = &[
     ]),
 ];
 
-pub const CUBE_SIMPLE: &[Vec3] = &[
-    Vec3::new(-SIDE, -SIDE, SIDE),
-    Vec3::new(SIDE, -SIDE, SIDE),
-    Vec3::new(-SIDE, SIDE, SIDE),
-    Vec3::new(SIDE, SIDE, SIDE),
-    Vec3::new(-SIDE, -SIDE, -SIDE),
-    Vec3::new(SIDE, -SIDE, -SIDE),
-    Vec3::new(-SIDE, SIDE, -SIDE),
-    Vec3::new(SIDE, SIDE, -SIDE),
+pub const CUBE_SIMPLE: &[Vec3A] = &[
+    Vec3A::new(-SIDE, -SIDE, SIDE),
+    Vec3A::new(SIDE, -SIDE, SIDE),
+    Vec3A::new(-SIDE, SIDE, SIDE),
+    Vec3A::new(SIDE, SIDE, SIDE),
+    Vec3A::new(-SIDE, -SIDE, -SIDE),
+    Vec3A::new(SIDE, -SIDE, -SIDE),
+    Vec3A::new(-SIDE, SIDE, -SIDE),
+    Vec3A::new(SIDE, SIDE, -SIDE),
 ];
 
-pub const PLANE: &[Vec3] = &[
-    Vec3::new(-SIDE, -SIDE, 0.0), //Bottom Left
-    Vec3::new(SIDE, -SIDE, 0.0),  // Bottom Right
-    Vec3::new(-SIDE, SIDE, 0.0),  // Top Left
-    Vec3::new(SIDE, SIDE, 0.0),   // Top Right
+pub const PLANE: &[Vec3A] = &[
+    Vec3A::new(-SIDE, -SIDE, 0.0), //Bottom Left
+    Vec3A::new(SIDE, -SIDE, 0.0),  // Bottom Right
+    Vec3A::new(-SIDE, SIDE, 0.0),  // Top Left
+    Vec3A::new(SIDE, SIDE, 0.0),   // Top Right
 ];
 
-pub const TRIANGLE: &[Vec3] = &[
-    Vec3::new(-SIDE, -SIDE, 0.0), //Bottom Left
-    Vec3::new(SIDE, -SIDE, 0.0),  // Bottom Right
-    Vec3::new(-SIDE, SIDE, 0.0),  // Top Left
+pub const TRIANGLE: &[Vec3A] = &[
+    Vec3A::new(-SIDE, -SIDE, 0.0), //Bottom Left
+    Vec3A::new(SIDE, -SIDE, 0.0),  // Bottom Right
+    Vec3A::new(-SIDE, SIDE, 0.0),  // Top Left
 ];
 
 pub const PLANE_UVS: &[VertexParameters<2>; 4] = &[

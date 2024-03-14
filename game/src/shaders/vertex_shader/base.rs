@@ -1,4 +1,4 @@
-use glam::{Mat3, Vec3, Vec4, Vec4Swizzles};
+use glam::{Mat3, Vec3A, Vec4, Vec4Swizzles};
 use shared::vertex_parameters::VertexParameters;
 
 use crate::graphics::Uniforms;
@@ -14,7 +14,7 @@ impl VertexShader<3, 3> for BaseVertexShader {
         &self,
         _vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 3],
     ) -> VertexShaderOutput<3> {
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
@@ -33,7 +33,7 @@ impl VertexShader<2, 2> for BaseVertexShader {
         &self,
         _vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 2],
     ) -> VertexShaderOutput<2> {
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
@@ -52,7 +52,7 @@ impl VertexShader<6, 9> for BaseVertexShader {
         &self,
         _vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 6],
     ) -> VertexShaderOutput<9> {
         let [r, g, b, norm_x, norm_y, norm_z] = input;
@@ -85,7 +85,7 @@ impl VertexShader<5, 8> for BaseVertexShader {
         &self,
         _vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 5],
     ) -> VertexShaderOutput<8> {
         let [u, v, norm_x, norm_y, norm_z] = input;
@@ -93,7 +93,7 @@ impl VertexShader<5, 8> for BaseVertexShader {
         let frag_position = (uniforms.model * position).xyz();
 
         let mvp = uniforms.projection * (uniforms.view * uniforms.model);
-        let normal = (uniforms.model * Vec3::new(norm_x, norm_y, norm_z).extend(0.0)).normalize();
+        let normal = (uniforms.model * Vec3A::new(norm_x, norm_y, norm_z).extend(0.0)).normalize();
         let position = transform_point_to_clip_space(&position, &mvp);
 
         VertexShaderOutput {
@@ -118,7 +118,7 @@ impl VertexShader<8, 8> for BaseVertexShader {
         &self,
         _vertex_index: usize,
         uniforms: &Uniforms,
-        position: Vec3,
+        position: Vec3A,
         input: [f32; 8],
     ) -> VertexShaderOutput<8> {
         let [u, v, nx, ny, nz, tx, ty, tz] = input;
