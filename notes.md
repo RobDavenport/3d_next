@@ -9,11 +9,11 @@ Todo:
 - Trivially depth reject tiles
   - Store lowest depth value in tile
   - Reject triangle if its lowest Z is higher than tiles
-- Consider Deferred Rendering
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
+- Separate geometry and fragment stages 
 - Reconsider tiled rendering (last attempt was too slow)
-
+- Deferred Rendering?
 
 ---
 Helmet Model Textures
