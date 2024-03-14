@@ -9,16 +9,19 @@ use crate::{
 };
 
 use super::{
-    clipping::ClipResult, frame_buffer::FrameBuffer, rasterizer::RenderTriangle,
-    tile_manager::TileManager, Triangle, Uniforms,
+    clipping::ClipResult,
+    rasterizer::RenderTriangle,
+    render_tile::{TILE_HEIGHT, TILE_PIXELS, TILE_WIDTH},
+    tile_manager::TileManager,
+    Triangle, Uniforms,
 };
 
 pub struct Gpu {
     pub(super) screen_width: usize,
     pub(super) screen_height: usize,
-    frame_buffer: FrameBuffer,
+    frame_buffer: Box<[GraphicsParameters]>,
     pub uniforms: Uniforms,
-    pub(super) render_tiles: TileManager<8, 9>, //32 x 18
+    pub(super) render_tiles: TileManager<TILE_WIDTH, TILE_HEIGHT, TILE_PIXELS>,
 }
 
 impl Gpu {
@@ -26,7 +29,8 @@ impl Gpu {
         Self {
             screen_height,
             screen_width,
-            frame_buffer: FrameBuffer::new(screen_width, screen_height),
+            frame_buffer: vec![GraphicsParameters::default(); screen_height * screen_width]
+                .into_boxed_slice(),
             uniforms: Uniforms::default(),
             render_tiles: TileManager::new(screen_width, screen_height),
         }
@@ -168,12 +172,7 @@ impl Gpu {
         let tile_height = self.render_tiles.h();
         let tile_count_horizontal = self.render_tiles.tile_count_horizontal;
 
-        for (chunk_index, target) in self
-            .frame_buffer
-            .frame_buffer
-            .chunks_exact_mut(tile_width)
-            .enumerate()
-        {
+        for (chunk_index, target) in self.frame_buffer.chunks_exact_mut(tile_width).enumerate() {
             let tile_column = chunk_index % tile_count_horizontal;
             let tile_row = chunk_index / (tile_count_horizontal * tile_height);
 
@@ -188,7 +187,7 @@ impl Gpu {
             target.copy_from_slice(source);
         }
 
-        &self.frame_buffer.frame_buffer
+        &self.frame_buffer
     }
 
     fn clip_to_screen(&self, clip_space_vertex: Vec4) -> Vec4 {

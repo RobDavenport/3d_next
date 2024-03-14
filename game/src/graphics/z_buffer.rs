@@ -1,26 +1,21 @@
 use wide::{f32x4, CmpNe};
 
-//use super::rasterizer::X_STEP_SIZE;
-
 const RESET_DEPTH: f32 = f32::NEG_INFINITY;
 
-pub struct ZBuffer {
-    pub z_buffer: Box<[f32]>,
+pub struct ZBuffer<const PIXELS: usize> {
+    pub z_buffer: [f32; PIXELS],
 }
 
-impl ZBuffer {
-    pub fn new(screen_width: usize, screen_height: usize) -> Self {
+impl<const P: usize> ZBuffer<P> {
+    pub fn new() -> Self {
         Self {
-            z_buffer: (0..(screen_height * screen_width))
-                .map(|_| RESET_DEPTH)
-                .collect::<Vec<_>>()
-                .into_boxed_slice(),
+            z_buffer: [RESET_DEPTH; P],
         }
     }
 
     // Clears the Z buffer by setting all values to reset value
     pub(crate) fn clear(&mut self) {
-        self.z_buffer.iter_mut().for_each(|d| *d = RESET_DEPTH);
+        self.z_buffer = [RESET_DEPTH; P];
     }
 
     // Returns a u32x4 mask if the value was closer the target value

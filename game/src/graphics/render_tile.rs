@@ -6,25 +6,32 @@
 // VeryLow Valid Widths: 4, 8, 16, 32
 // VeryLow Valid Heights 1, 2, 3, 6, 9, 18
 
+pub const TILE_WIDTH: usize = 32;
+pub const TILE_HEIGHT: usize = 18;
+pub const TILE_PIXELS: usize = TILE_WIDTH * TILE_HEIGHT;
+
 use glam::{Vec2, Vec2Swizzles, Vec3Swizzles};
 
 use super::{rasterizer::RenderTriangle, FrameBuffer, ZBuffer};
 
 // W and H represent the width and height of the tile
-pub(super) struct RenderTile<const W: usize, const H: usize> {
+pub(super) struct RenderTile<const W: usize, const H: usize, const PC: usize> {
     pub(super) x: usize, // Left point
     pub(super) y: usize, // Top point
-    pub(super) z_buffer: ZBuffer,
-    pub(super) frame_buffer: FrameBuffer,
+    pub(super) z_buffer: ZBuffer<PC>,
+    pub(super) frame_buffer: FrameBuffer<PC>,
 }
 
-impl<const W: usize, const H: usize> RenderTile<W, H> {
+impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
     pub fn new(x: usize, y: usize) -> Self {
+        if W * H != PC {
+            panic!("Invalid RenderTile Dimensions, W * H != PC")
+        }
         Self {
             x,
             y,
-            z_buffer: ZBuffer::new(W, H),
-            frame_buffer: FrameBuffer::new(W, H),
+            z_buffer: ZBuffer::new(),
+            frame_buffer: FrameBuffer::new(),
         }
     }
 

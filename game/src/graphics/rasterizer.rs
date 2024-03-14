@@ -116,7 +116,7 @@ impl EdgeStepperCombined {
     }
 }
 
-impl<const W: usize, const H: usize> RenderTile<W, H> {
+impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
     pub(super) fn trivial_rasterize_triangle<PS, const PSIN: usize>(
         &mut self,
         uniforms: &Uniforms,

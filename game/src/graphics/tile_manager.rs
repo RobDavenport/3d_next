@@ -2,27 +2,27 @@ use std::ops::{Index, IndexMut};
 
 use super::render_tile::RenderTile;
 
-pub(super) struct TileManager<const W: usize, const H: usize> {
-    pub(super) tiles: Box<[RenderTile<W, H>]>,
+pub(super) struct TileManager<const W: usize, const H: usize, const PC: usize> {
+    pub(super) tiles: Box<[RenderTile<W, H, PC>]>,
     pub(super) tile_count_horizontal: usize,
     pub(super) tile_count_vertical: usize,
 }
 
-impl<const W: usize, const H: usize> Index<usize> for TileManager<W, H> {
-    type Output = RenderTile<W, H>;
+impl<const W: usize, const H: usize, const PC: usize> Index<usize> for TileManager<W, H, PC> {
+    type Output = RenderTile<W, H, PC>;
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.tiles[index]
     }
 }
 
-impl<const W: usize, const H: usize> IndexMut<usize> for TileManager<W, H> {
+impl<const W: usize, const H: usize, const PC: usize> IndexMut<usize> for TileManager<W, H, PC> {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.tiles[index]
     }
 }
 
-impl<const W: usize, const H: usize> TileManager<W, H> {
+impl<const W: usize, const H: usize, const PC: usize> TileManager<W, H, PC> {
     pub fn new(screen_width: usize, screen_height: usize) -> Self {
         if screen_width % W != 0 {
             panic!("Invalid tile width: {W} for screen width {screen_width}");
