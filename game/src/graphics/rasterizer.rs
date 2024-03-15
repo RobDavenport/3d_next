@@ -145,7 +145,7 @@ impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
                 triangle.b_sub_a.weight = stepper.wb * stepper.one_over_triangle_2a;
                 triangle.c_sub_a.weight = stepper.wc * stepper.one_over_triangle_2a;
 
-                self.render_pixels(ps, uniforms, x, y, &triangle, f32x4::splat(-1.0));
+                self.render_pixels(ps, uniforms, x, y, &triangle, f32x4::splat(bytemuck::cast(u32::MAX)));
 
                 // One step right
                 stepper.step_x();

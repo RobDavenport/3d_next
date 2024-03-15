@@ -10,6 +10,7 @@ Todo:
 - Trivially depth reject tiles
   - Store lowest depth value in tile
   - Reject triangle if its lowest Z is higher than tiles
+  - May only be possible if we write the entire tile
 - Use Mesh Shader instead of Vertex Shader, option to include Triangle Components
 - Consider reworking Shader Input Parameters (support Vec, Mat) instead of [f32; N]
 - Separate geometry and fragment stages
