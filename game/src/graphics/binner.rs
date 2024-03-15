@@ -51,10 +51,12 @@ impl Gpu {
                 let tile = &mut self.render_tiles[tile_index];
 
                 // We only care about triangles which overlap the tile's BB
-                if stepper.points_inside_triangle_mask().all() {
+                let point_test_result = stepper.points_inside_triangle_mask();
+                if point_test_result.all() {
                     // Trivial Accept - All corners of the tile are within the triangle
                     tile.trivial_rasterize_triangle(&self.uniforms, triangle.clone(), ps);
-                } else if tile.triangle_edges_intersect_aabb(&triangle) {
+                } else if point_test_result.any() || tile.triangle_edges_intersect_aabb(&triangle) {
+                    // First tests if any triangle point is already in the triangle
                     // Triangle is overlapping, but only render those whose edges intersect the AABB
                     tile.rasterize_triangle(&self.uniforms, triangle.clone(), ps);
                 }

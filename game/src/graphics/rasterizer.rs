@@ -145,13 +145,7 @@ impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
                 triangle.b_sub_a.weight = stepper.wb * stepper.one_over_triangle_2a;
                 triangle.c_sub_a.weight = stepper.wc * stepper.one_over_triangle_2a;
 
-                // See if any pixels extend out of the bb
-                // and update mask accordingly
-                let pixel_indices = i32x4::splat(x as i32) + i32x4::new(X_STAMP_OFFSETS);
-                let bb_valid_mask = pixel_indices.cmp_lt(i32x4::splat(W as i32));
-                let mask = bytemuck::cast::<_, f32x4>(bb_valid_mask);
-
-                self.render_pixels(ps, uniforms, x, y, &triangle, mask);
+                self.render_pixels(ps, uniforms, x, y, &triangle, f32x4::splat(-1.0));
 
                 // One step right
                 stepper.step_x();

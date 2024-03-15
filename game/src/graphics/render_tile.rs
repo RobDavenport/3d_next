@@ -39,30 +39,15 @@ impl<const W: usize, const H: usize, const PC: usize> RenderTile<W, H, PC> {
         &self,
         triangle: &RenderTriangle<P>,
     ) -> bool {
-        let ab = self.line_segment_intersects_aabb(triangle.a.xy(), triangle.b.xy());
-        let bc = self.line_segment_intersects_aabb(triangle.b.xy(), triangle.c.xy());
-        let ca = self.line_segment_intersects_aabb(triangle.c.xy(), triangle.a.xy());
-
-        ab || bc || ca
-    }
-
-    fn line_segment_intersects_aabb(&self, a: Vec2, b: Vec2) -> bool {
         let aabb_min = Vec2::new(self.x as f32, self.y as f32);
         let aabb_max = Vec2::new((self.x + W - 1) as f32, (self.y + H - 1) as f32);
 
-        // Check if any part of the line segment is within the AABB
-        if point_in_aabb(a, aabb_min, aabb_max) || point_in_aabb(b, aabb_min, aabb_max) {
-            return true;
-        }
+        let ab = line_intersects_aabb(triangle.a.xy(), triangle.b.xy(), aabb_min, aabb_max);
+        let bc = line_intersects_aabb(triangle.b.xy(), triangle.c.xy(), aabb_min, aabb_max);
+        let ca = line_intersects_aabb(triangle.c.xy(), triangle.a.xy(), aabb_min, aabb_max);
 
-        // Check for intersection with any side of the AABB
-        line_intersects_aabb(a, b, aabb_min, aabb_max)
+        ab || bc || ca
     }
-}
-
-// Helper function to check if a point is within an AABB
-fn point_in_aabb(point: Vec2, min: Vec2, max: Vec2) -> bool {
-    point.x >= min.x && point.x <= max.x && point.y >= min.y && point.y <= max.y
 }
 
 // Helper function to check if a line segment intersects with an AABB
