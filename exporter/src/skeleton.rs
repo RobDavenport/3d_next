@@ -43,12 +43,12 @@ impl SkeletonOutput {
         })
     }
 
-    pub fn to_output(&self) -> String {
+    pub fn to_output(&self, config: &AssetList) -> String {
         let filename = format!("{}_{SKELETON_EXTENSION}", self.name);
         let bone_count = self.bones.len();
 
         let archive = Self::resize(self.bones.clone());
-        write_file(&filename, &archive);
+        write_file(config, &filename, &archive);
         let name = filename.to_uppercase();
 
         format!(
@@ -58,6 +58,7 @@ impl SkeletonOutput {
 }
 
 pub fn generate_skeleton(
+    config: &AssetList,
     filename: &str,
     document: &Document,
     blob: &[u8],
@@ -182,7 +183,7 @@ pub fn generate_skeleton(
             node_to_index: indexed_joints,
             root_transform: Mat4::IDENTITY,
         };
-        Some((metadata, skeleton.to_output()))
+        Some((metadata, skeleton.to_output(config)))
     } else {
         None
     }

@@ -14,7 +14,7 @@ pub struct AnimationOutputVec {
 }
 
 impl AnimationOutputVec {
-    fn to_output(&self) -> String {
+    fn to_output(&self, config: &AssetList) -> String {
         let filename = format!("{}_{ANIMATION_EXTENSION}", self.name);
 
         let out = Animation {
@@ -22,7 +22,7 @@ impl AnimationOutputVec {
             channels: self.channels.clone().into_boxed_slice(),
         };
         let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
-        write_file(&filename, &archive);
+        write_file(config, &filename, &archive);
 
         let name = filename.to_uppercase();
         format!(
@@ -32,6 +32,7 @@ impl AnimationOutputVec {
 }
 
 pub fn generate_animation(
+    config: &AssetList,
     animation: &gltf::Animation,
     blob: &[u8],
     metadata: &SkeletonMetaData,
@@ -120,5 +121,5 @@ pub fn generate_animation(
         channels: animation_channels,
         length,
     }
-    .to_output()
+    .to_output(config)
 }

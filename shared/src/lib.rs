@@ -23,3 +23,11 @@ pub struct IndexList(pub Box<[TriangleIndices]>);
 
 #[derive(Clone, Archive, Serialize, Deserialize)]
 pub struct VertexList(pub Box<[Vec3A]>);
+
+pub mod bytes {
+    pub use super::animation::AnimationBytes;
+    pub use super::mesh::MeshBytes;
+    pub use super::skeleton::SkeletonBytes;
+    pub use super::skin::SkinBytes;
+    pub use super::texture::TextureBytes;
+}

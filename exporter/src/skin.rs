@@ -6,7 +6,7 @@ use shared::{
     SKIN_MAX_BONE_INFLUENCES,
 };
 
-use crate::{write_file, SKIN_EXTENSION};
+use crate::{asset_list::AssetList, write_file, SKIN_EXTENSION};
 
 // Each of these is guarenteed to have the same length
 pub struct SkinEntryVec {
@@ -51,7 +51,7 @@ impl SkinOutput {
         }
     }
 
-    pub fn to_output(&self) -> String {
+    pub fn to_output(&self, config: &AssetList) -> String {
         let filename = format!("{}_{SKIN_EXTENSION}", self.name);
 
         let max_influences = self
@@ -62,7 +62,7 @@ impl SkinOutput {
             .unwrap();
 
         let archive = self.to_archive(max_influences);
-        write_file(&filename, &archive);
+        write_file(config, &filename, &archive);
         let name = filename.to_uppercase();
 
         format!(

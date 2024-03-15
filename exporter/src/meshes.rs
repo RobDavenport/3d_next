@@ -60,11 +60,11 @@ impl MeshOutput {
         rkyv::to_bytes::<_, 256>(&mesh).unwrap()
     }
 
-    pub fn to_output(&self) -> String {
+    pub fn to_output(&self, config: &AssetList) -> String {
         let filename = format!("{}_{MESH_EXTENSION}", self.name);
 
         let archive = self.to_archive();
-        write_file(&filename, &archive);
+        write_file(config, &filename, &archive);
 
         let name = self.name.to_uppercase();
         let p = self.attribute_count;
@@ -76,6 +76,7 @@ impl MeshOutput {
 }
 
 pub fn generate_meshes(config: &AssetList) -> String {
+    let input_dir = &config.in_dir;
     let mut out = String::from(
         "pub mod meshes {
     use super::*;\n",
@@ -88,12 +89,12 @@ pub fn generate_meshes(config: &AssetList) -> String {
     ]
     .iter()
     .for_each(|mesh| {
-        out.push_str(&mesh.to_output());
+        out.push_str(&mesh.to_output(config));
     });
 
     config.meshes.iter().for_each(|filename| {
         // Read in the image file
-        let read_path = format!("{INPUT_DIR}/{filename}.glb");
+        let read_path = format!("{input_dir}/{filename}.glb");
 
         println!("### Importing {filename}... ###");
 
@@ -111,7 +112,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
 
         if document.animations().next().is_some() || document.skins().next().is_some() {
             println!("## Skeleton ##");
-            let skeleton_result = generate_skeleton(filename, &document, blob);
+            let skeleton_result = generate_skeleton(config, filename, &document, blob);
             let skeleton = if let Some((metadata, text)) = skeleton_result {
                 out.push_str(&text);
                 total_bone_count = metadata.bone_count;
@@ -125,7 +126,9 @@ pub fn generate_meshes(config: &AssetList) -> String {
 
             if let Some(metadata) = skeleton {
                 for animation in document.animations() {
-                    out.push_str(&generate_animation(&animation, blob, &metadata, filename));
+                    out.push_str(&generate_animation(
+                        config, &animation, blob, &metadata, filename,
+                    ));
                 }
             }
         }
@@ -345,7 +348,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
             parameters,
             attribute_count,
         };
-        let mut append = static_mesh.to_output();
+        let mut append = static_mesh.to_output(config);
 
         if total_bone_count > 0 {
             let mut entries = Vec::new();
@@ -374,7 +377,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
                 name: filename.to_string(),
                 entries,
             };
-            append.push_str(&skin.to_output())
+            append.push_str(&skin.to_output(config))
         };
 
         // Append the output String
@@ -439,7 +442,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
                 image_data,
             };
 
-            out.push_str(&texture.to_output());
+            out.push_str(&texture.to_output(config));
         }
 
         println!("### Finished Importing {filename} ###");

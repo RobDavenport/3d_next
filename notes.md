@@ -2,6 +2,7 @@ Todo:
 - Add const screen width / height settings
 - Ways to benchmark performance
 - Exporter improvements
+  - Pretty format the modfile somehow
   - Add support for multiple primitives/meshes
   - Add support for multiple skeletons
     - Separate exporting of skeleton, animations

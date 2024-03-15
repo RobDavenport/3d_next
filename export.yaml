@@ -1,3 +1,14 @@
+# File Setup
+# Input Directory containing all files
+in_dir: "assets"
+
+# Output Directory for the exported data
+out_dir: "game/src/generated"
+
+# Optional modfile which contains the exported assets
+out_file: "mod.rs"
+
+# Lists of Assets
 # Images
 images:
 - gamercade

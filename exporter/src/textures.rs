@@ -9,7 +9,7 @@ pub struct TextureOutput {
 }
 
 impl TextureOutput {
-    pub fn to_output(&self) -> String {
+    pub fn to_output(&self, config: &AssetList) -> String {
         // Write the struct as Rust code
         let filename = format!("{}_{TEXTURES_EXTENSION}", self.name);
         let width = self.width;
@@ -22,7 +22,7 @@ impl TextureOutput {
         };
 
         let archive = rkyv::to_bytes::<_, 256>(&out).unwrap();
-        write_file(&filename, &archive);
+        write_file(config, &filename, &archive);
         let name = filename.to_uppercase();
 
         format!(
@@ -32,6 +32,8 @@ impl TextureOutput {
 }
 
 pub fn generate_textures(config: &AssetList) -> String {
+    let input_dir = &config.in_dir;
+
     let mut out = String::from(
         "pub mod textures {
     use super::*;\n",
@@ -44,7 +46,7 @@ pub fn generate_textures(config: &AssetList) -> String {
         // Iterate each extension supported
         for extension in crate::SUPPORTED_IMAGE_EXTENSIONS.iter() {
             // Read in the image file
-            let read_path = format!("{INPUT_DIR}/{filename}.{extension}");
+            let read_path = format!("{input_dir}/{filename}.{extension}");
             // Convert it to a vec of bytes
             if let Ok(data) = fs::read(read_path) {
                 bytes = Some(data);
@@ -72,7 +74,7 @@ pub fn generate_textures(config: &AssetList) -> String {
         };
 
         // Append the output String
-        out.push_str(&texture.to_output());
+        out.push_str(&texture.to_output(config));
     });
 
     out.push_str("}\n");
