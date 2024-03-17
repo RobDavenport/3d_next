@@ -55,11 +55,3 @@ impl Default for Uniforms {
         }
     }
 }
-
-// A mesh which is ready to be used
-// #[derive(Clone, Copy)]
-// pub struct StaticMesh<const P: usize> {
-//     pub vertices: VertexList,
-//     pub indices: IndexList,
-//     pub parameters: VertexParametersList<P>,
-// }
