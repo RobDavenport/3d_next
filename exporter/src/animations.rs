@@ -45,11 +45,11 @@ pub fn generate_animation(
     // Bone Index -> List of Transforms
     let mut animation_channels = Vec::new();
 
-    let named_bones = &metadata.named_bones;
+    let index_to_bone = &metadata.node_to_index;
 
     for channel in animation.channels() {
         let target = channel.target();
-        let target_index = *named_bones.get(target.node().name().unwrap()).unwrap();
+        let target_index = *index_to_bone.get(&target.node().index()).unwrap();
         let sampler = channel.sampler();
 
         // Get Input Keyframes

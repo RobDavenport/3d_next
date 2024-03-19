@@ -91,8 +91,8 @@ pub fn generate_skeleton(
         for (index, bone) in skin.joints().enumerate() {
             let mut children = Vec::new();
             for child in bone.children() {
-                let child_index = named_joints
-                    .get(child.name().unwrap())
+                let child_index = indexed_joints
+                    .get(&child.index())
                     .expect("Bone name not found");
                 children.push(*child_index);
             }

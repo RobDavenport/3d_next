@@ -54,4 +54,10 @@ pub mod meshes {
         &AnimationBytes(include_bytes!("RiggedFigure_Unnamed_ANM"));
     pub static RIGGEDFIGURE: &MeshBytes<3> = &MeshBytes(include_bytes!("RiggedFigure_MESH"));
     pub static RIGGEDFIGURE_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("RiggedFigure_SKN"));
+    pub static HANDRIG_SKL: &SkeletonBytes<10> = &SkeletonBytes(include_bytes!("handrig_SKL"));
+    pub static HANDRIG_THUMBSUP_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("handrig_ThumbsUp_ANM"));
+    pub static HANDRIG: &MeshBytes<5> = &MeshBytes(include_bytes!("handrig_MESH"));
+    pub static HANDRIG_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("handrig_SKN"));
+    pub static HANDRIG_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("handrig_0_TEX"));
 }

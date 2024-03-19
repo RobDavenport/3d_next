@@ -36,6 +36,9 @@ pub use rigged_simple::RiggedSimpleScene;
 mod blockbench;
 pub use blockbench::BlockbenchScene;
 
+mod handrig;
+pub use handrig::HandScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);
