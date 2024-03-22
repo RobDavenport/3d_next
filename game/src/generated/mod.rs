@@ -9,6 +9,8 @@ pub mod textures {
     pub static BRICKWALL_TEX: &TextureBytes = &TextureBytes(include_bytes!("brickwall_TEX"));
     pub static BRICKWALL_NORMAL_TEX: &TextureBytes =
         &TextureBytes(include_bytes!("brickwall_normal_TEX"));
+    pub static TESTCHARTEXTURE_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("testCharTexture_TEX"));
 }
 pub mod meshes {
     use super::*;
@@ -60,4 +62,9 @@ pub mod meshes {
     pub static HANDRIG: &MeshBytes<5> = &MeshBytes(include_bytes!("handrig_MESH"));
     pub static HANDRIG_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("handrig_SKN"));
     pub static HANDRIG_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("handrig_0_TEX"));
+    pub static CHARTEST_SKL: &SkeletonBytes<33> = &SkeletonBytes(include_bytes!("charTest_SKL"));
+    pub static CHARTEST_IDLE_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("charTest_idle_ANM"));
+    pub static CHARTEST: &MeshBytes<5> = &MeshBytes(include_bytes!("charTest_MESH"));
+    pub static CHARTEST_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("charTest_SKN"));
 }

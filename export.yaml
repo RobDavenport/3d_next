@@ -14,6 +14,7 @@ images:
 - gamercade
 - brickwall
 - brickwall_normal
+- testCharTexture
 
 # Meshes in .glb format to export
 meshes:
@@ -25,3 +26,4 @@ meshes:
 - RiggedSimple
 - RiggedFigure
 - handrig
+- charTest
