@@ -7,7 +7,7 @@ use gamercade_rs::prelude as gc;
 use crate::math::Math;
 
 const PITCH_CLAMP: f32 = FRAC_PI_2 * 0.99;
-pub const NEAR_PLANE: f32 = 1.0;
+pub const NEAR_PLANE: f32 = 0.1;
 
 pub struct Camera {
     pub position: Vec3A,

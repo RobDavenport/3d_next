@@ -67,4 +67,7 @@ pub mod meshes {
         &AnimationBytes(include_bytes!("charTest_idle_ANM"));
     pub static CHARTEST: &MeshBytes<5> = &MeshBytes(include_bytes!("charTest_MESH"));
     pub static CHARTEST_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("charTest_SKN"));
+    pub static VSBACKGROUND: &MeshBytes<5> = &MeshBytes(include_bytes!("vsBackground_MESH"));
+    pub static VSBACKGROUND_0_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("vsBackground_0_TEX"));
 }
