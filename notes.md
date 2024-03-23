@@ -1,5 +1,6 @@
 Todo:
 - Add const screen width / height settings
+- Add Alpha Textures / Blending Support
 - Ways to benchmark performance
 - Exporter improvements
   - Pretty format the modfile somehow
