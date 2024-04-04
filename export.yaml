@@ -15,6 +15,7 @@ images:
 - brickwall
 - brickwall_normal
 - testCharTexture
+- endesga32
 
 # Meshes in .glb format to export
 meshes:
@@ -28,3 +29,4 @@ meshes:
 - handrig
 - charTest
 - vsBackground
+- mech
