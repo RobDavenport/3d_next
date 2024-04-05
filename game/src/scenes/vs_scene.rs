@@ -74,7 +74,7 @@ impl Scene for VsScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.diffuse = self.bg_texture;
         gpu.uniforms.model = Mat4::IDENTITY;
-        gpu.render_mesh(&self.background, BaseVertexShader, TexturedLit);
+        gpu.render_mesh(self.background, BaseVertexShader, TexturedLit);
 
         gpu.uniforms.diffuse = crate::generated::textures::TESTCHARTEXTURE_TEX.as_texture();
 

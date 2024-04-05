@@ -42,6 +42,9 @@ pub use handrig::HandScene;
 mod vs_scene;
 pub use vs_scene::VsScene;
 
+mod multimesh;
+pub use multimesh::MultimeshScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);
