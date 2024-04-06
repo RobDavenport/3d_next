@@ -9,12 +9,12 @@ use crate::{
 
 use super::Scene;
 
-pub struct HandScene {
+pub struct MechScene {
     mesh: Actor<5>,
     shader: Animated<19, 4>,
 }
 
-impl HandScene {
+impl MechScene {
     pub fn new() -> Self {
         let shader = Animated {
             animator: Animator::new(
@@ -35,7 +35,7 @@ impl HandScene {
     }
 }
 
-impl Scene for HandScene {
+impl Scene for MechScene {
     fn draw(&self, gpu: &mut crate::graphics::Gpu) {
         gpu.uniforms.model = self.mesh.transform;
         gpu.uniforms.diffuse = textures::ENDESGA32_TEX.as_texture();

@@ -19,14 +19,9 @@ images:
 
 # Meshes in .glb format to export
 meshes:
-- blockbench
 - BoxVertexColors
 - Fox
-- Duck
 - DamagedHelmet
-- RiggedSimple
-- RiggedFigure
-- handrig
 - charTest
 - vsBackground
 - mech
