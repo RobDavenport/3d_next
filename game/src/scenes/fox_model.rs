@@ -58,7 +58,7 @@ impl Scene for FoxModelScene {
     }
 
     fn update(&mut self) {
-        self.shader.animator.update_time(0.008);
+        self.shader.animator.update_time(0.016);
 
         if let Some(true) = gc::button_right_stick_pressed(0) {
             self.anim_index += 1;

@@ -43,6 +43,6 @@ impl Scene for BlockbenchScene {
     }
 
     fn update(&mut self) {
-        self.shader.animator.update_time(0.008);
+        self.shader.animator.update_time(0.016);
     }
 }
