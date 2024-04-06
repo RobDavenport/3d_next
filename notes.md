@@ -1,12 +1,11 @@
 Todo:
 - Add const screen width / height settings
 - Add Alpha Textures / Blending Support
-- Ways to benchmark performance
+- Try deferring Color -> GraphicsParameters conversion until later/Blitting Phase
 - Exporter improvements
   - Pretty format the modfile somehow
-  - Add support for multiple primitives/meshes
   - Add support for multiple skeletons
-    - Separate exporting of skeleton, animations
+    - Consider Separate exporting of skeleton, animations?? based on config
 - Convert rendering to lib, separate out game from rendering 
 - Trivially depth reject tiles
   - Store lowest depth value in tile
