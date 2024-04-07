@@ -70,7 +70,7 @@ impl MeshOutput {
         let p = self.attribute_count;
 
         format!(
-            "pub static {name}: &MeshBytes<{p}> = &MeshBytes(include_bytes!(\"{filename}\"));\n"
+            "pub const {name}: &MeshBytes<{p}> = &MeshBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }

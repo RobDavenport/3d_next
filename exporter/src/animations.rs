@@ -26,7 +26,7 @@ impl AnimationOutputVec {
 
         let name = filename.to_uppercase();
         format!(
-            "pub static {name}: &AnimationBytes = &AnimationBytes(include_bytes!(\"{filename}\"));\n"
+            "pub const {name}: &AnimationBytes = &AnimationBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }

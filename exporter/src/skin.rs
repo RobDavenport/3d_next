@@ -66,7 +66,7 @@ impl SkinOutput {
         let name = filename.to_uppercase();
 
         format!(
-            "pub static {name}: &SkinBytes<{max_influences}> = &SkinBytes(include_bytes!(\"{filename}\"));\n"
+            "pub const {name}: &SkinBytes<{max_influences}> = &SkinBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }

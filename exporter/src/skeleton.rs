@@ -52,7 +52,7 @@ impl SkeletonOutput {
         let name = filename.to_uppercase();
 
         format!(
-            "pub static {name}: &SkeletonBytes<{bone_count}> = &SkeletonBytes(include_bytes!(\"{filename}\"));\n"
+            "pub const {name}: &SkeletonBytes<{bone_count}> = &SkeletonBytes(include_bytes!(\"{filename}\"));\n"
         )
     }
 }
