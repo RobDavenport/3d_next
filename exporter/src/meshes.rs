@@ -69,9 +69,7 @@ impl MeshOutput {
         let name = self.name.to_uppercase();
         let p = self.attribute_count;
 
-        format!(
-            "pub const {name}: &MeshBytes<{p}> = &MeshBytes(include_bytes!(\"{filename}\"));\n"
-        )
+        format!("pub const {name}: &MeshBytes<{p}> = &MeshBytes(include_bytes!(\"{filename}\"));\n")
     }
 }
 

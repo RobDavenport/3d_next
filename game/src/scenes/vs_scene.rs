@@ -84,7 +84,6 @@ impl Scene for VsScene {
         gpu.uniforms.diffuse = self.bg_texture;
         gpu.uniforms.model = Mat4::from_translation(Vec3::new(0.0, -1.0, 0.0));
         gpu.render_mesh(self.background, BaseVertexShader, TexturedLit);
-
     }
 
     fn update(&mut self) {

@@ -25,6 +25,19 @@ pub struct GameState {
     scene_index: usize,
 }
 
+// static mut DATA_PTR: *const i8 = std::ptr::null();
+// static mut DATA_LEN: usize = 0;
+
+// #[no_mangle]
+// pub unsafe extern "C" fn datapack(ptr: i32, len: i32) {
+//     DATA_PTR = ptr as *const i8;
+//     DATA_LEN = len as usize;
+//     let leak = Vec::from_raw_parts(ptr as *mut u8, len as usize, len as usize);
+//     std::mem::forget(leak);
+//     let text = CStr::from_ptr(ptr as *const i8).to_str().unwrap();
+//     gc::console_log(&format!("{text}"));
+// }
+
 /// # Safety
 /// This function calls external Gamercade Api Functions
 #[no_mangle]
