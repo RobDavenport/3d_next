@@ -29,8 +29,6 @@ pub struct Uniforms {
     pub ambient_light: f32,
     pub diffuse: &'static ArchivedTexture,
     pub normal: &'static ArchivedTexture,
-    pub emissive: &'static ArchivedTexture,
-    pub occlusion: &'static ArchivedTexture,
 
     // Vertex Shader
     pub model: Mat4,
@@ -46,8 +44,6 @@ impl Default for Uniforms {
             ambient_light: 0.15,
             diffuse: textures::BRICKWALL_TEX.as_texture(),
             normal: textures::BRICKWALL_NORMAL_TEX.as_texture(),
-            emissive: meshes::DAMAGEDHELMET_2_TEX.as_texture(),
-            occlusion: meshes::DAMAGEDHELMET_3_TEX.as_texture(),
 
             model: Mat4::IDENTITY,
             view: Mat4::IDENTITY,

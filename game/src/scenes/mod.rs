@@ -18,12 +18,6 @@ pub use cube::CubeScene;
 mod fox_model;
 pub use fox_model::FoxModelScene;
 
-mod helmet_model;
-pub use helmet_model::HelmetModelScene;
-
-mod helmet_model_simple;
-pub use helmet_model_simple::HelmetModelSimpleScene;
-
 mod mechscene;
 pub use mechscene::MechScene;
 

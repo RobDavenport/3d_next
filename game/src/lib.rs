@@ -36,8 +36,6 @@ pub unsafe extern "C" fn init() {
         (Box::new(VsScene::new())),
         (Box::new(MultimeshScene::new())),
         (Box::new(MechScene::new())),
-        (Box::new(HelmetModelScene::new())),
-        (Box::new(HelmetModelSimpleScene::new())),
         (Box::new(CubeModelScene::new())),
         (Box::new(FoxModelScene::new())),
         (Box::new(CubeScene::new())),
