@@ -27,7 +27,6 @@ pub struct GameState {
 static mut DATA_PTR: *const u8 = std::ptr::null();
 static mut DATA_LEN: usize = 0;
 
-
 #[no_mangle]
 pub unsafe extern "C" fn datapack(len: i32) -> i32 {
     let leak: Vec<u8> = Vec::with_capacity(len as usize);
@@ -47,13 +46,16 @@ pub unsafe extern "C" fn init() {
     let screen_width = gc::width();
     let screen_height = gc::height();
 
-    let text = std::ffi::CStr::from_ptr(DATA_PTR as *const i8).to_str().unwrap();
+    let text = std::ffi::CStr::from_ptr(DATA_PTR as *const i8)
+        .to_str()
+        .unwrap();
     gc::console_log(&format!("{text}"));
 
     let scenes: Vec<Box<dyn Scene>> = vec![
         (Box::new(VsScene::new())),
         (Box::new(MultimeshScene::new())),
         (Box::new(MechScene::new())),
+        (Box::new(HelmetModelScene::new())),
         (Box::new(CubeModelScene::new())),
         (Box::new(FoxModelScene::new())),
         (Box::new(CubeScene::new())),

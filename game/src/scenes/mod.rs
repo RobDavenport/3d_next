@@ -27,6 +27,9 @@ pub use vs_scene::VsScene;
 mod multimesh;
 pub use multimesh::MultimeshScene;
 
+mod helmet_model;
+pub use helmet_model::HelmetModelScene;
+
 pub trait Scene {
     fn update(&mut self);
     fn draw(&self, gpu: &mut Gpu);

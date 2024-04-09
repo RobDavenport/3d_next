@@ -21,6 +21,7 @@ images:
 meshes:
 - BoxVertexColors
 - Fox
+- DamagedHelmet
 - charTest
 - vsBackground
 - mech

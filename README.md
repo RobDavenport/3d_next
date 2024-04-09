@@ -37,3 +37,6 @@ Build game with:
 
 # Perf/Analysis
 ./gccl console bundle -c ./../../../3d_next/target/wasm32-unknown-unknown/perf/game.wasm -a ./../../../3d_next/5r5g4b_color.gce
+
+# Fast Bundle
+./gccl bundle -c ./../../../3d_next/target/wasm32-unknown-unknown/release/game.wasm -a ./../../../3d_next/5r5g4b_color.gce --output ./../../../3d_next.gcrom
