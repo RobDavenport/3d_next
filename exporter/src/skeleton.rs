@@ -35,7 +35,7 @@ impl SkeletonOutput {
     fn resize(bones: Vec<Bone>) -> AlignedVec {
         let bone_count = bones.len();
 
-        seq!(BC in 0..128 {
+        seq!(BC in 0..256 {
             match bone_count {
                 #(BC => rkyv::to_bytes::<_, 256>(&Skeleton::<BC>(array::from_fn(|i| bones[i].clone()))).unwrap(),)*
                 too_many_bones => panic!("Too many bones: {too_many_bones}, max is {SKELETON_MAX_BONES}"),
