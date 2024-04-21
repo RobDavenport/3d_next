@@ -1,5 +1,8 @@
 {
-  "resolution": "medium",
+  "resolution": {
+    "size": "medium",
+    "ratio": "standard"
+  },
   "frame_rate": "normal",
   "player_count": [
     1,
@@ -17813,7 +17816,7 @@
         "name": "Instrument 0",
         "data": {
           "Wavetable": {
-            "data": "AAAMixj4JScw+zxWRxxRM1qBYvFqbHDhdkB6fH2Jf2F//39hfYl6fHZAcOFqbGLxWoFRM0ccPFYw+yUnGPgMiwAA83XnCNrZzwXDqrjkrs2lf50PlZSPH4nAhYSCd4CfgAGAn4J3hYSJwI8flZSdD6V/rs245MOqzwXa2ecI83U=",
+            "data": "AACLDPgYJyX7MFY8HEczUYFa8WJsauFwQHZ8eol9YX//f2F/iX18ekB24XBsavFigVozURxHVjz7MCcl+BiLDAAAdfMI59naBc+qw+S4za5/pQ+dlJUfj8CJhIV3gp+AAYCfgHeChIXAiR+PlJUPnX+lza7kuKrDBc/Z2gjndfM=",
             "envelope": {
               "total_level": 255,
               "sustain_level": 255,
@@ -17822,7 +17825,7 @@
               "decay_sustain_time": 64,
               "release_time": 64
             },
-            "interpolator": "Linear"
+            "interpolator": "Truncate"
           }
         }
       }
@@ -17836,5 +17839,6 @@
         }
       }
     ]
-  }
+  },
+  "data_pack": null
 }
