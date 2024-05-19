@@ -5,46 +5,58 @@ use shared::bytes::*;
 
 pub mod textures {
     use super::*;
-pub const GAMERCADE_TEX: &TextureBytes = &TextureBytes(include_bytes!("gamercade_TEX"));
-pub const BRICKWALL_TEX: &TextureBytes = &TextureBytes(include_bytes!("brickwall_TEX"));
-pub const BRICKWALL_NORMAL_TEX: &TextureBytes = &TextureBytes(include_bytes!("brickwall_normal_TEX"));
-pub const TESTCHARTEXTURE_TEX: &TextureBytes = &TextureBytes(include_bytes!("testCharTexture_TEX"));
-pub const ENDESGA32_TEX: &TextureBytes = &TextureBytes(include_bytes!("endesga32_TEX"));
+    pub const GAMERCADE_TEX: &TextureBytes = &TextureBytes(include_bytes!("gamercade_TEX"));
+    pub const BRICKWALL_TEX: &TextureBytes = &TextureBytes(include_bytes!("brickwall_TEX"));
+    pub const BRICKWALL_NORMAL_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("brickwall_normal_TEX"));
+    pub const TESTCHARTEXTURE_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("testCharTexture_TEX"));
+    pub const ENDESGA32_TEX: &TextureBytes = &TextureBytes(include_bytes!("endesga32_TEX"));
 }
 pub mod meshes {
     use super::*;
-pub const TRIANGLE: &MeshBytes<2> = &MeshBytes(include_bytes!("Triangle_MESH"));
-pub const PLANE: &MeshBytes<2> = &MeshBytes(include_bytes!("Plane_MESH"));
-pub const CUBE: &MeshBytes<8> = &MeshBytes(include_bytes!("Cube_MESH"));
-pub const BOXVERTEXCOLORS: &MeshBytes<6> = &MeshBytes(include_bytes!("BoxVertexColors_MESH"));
-pub const FOX: &MeshBytes<5> = &MeshBytes(include_bytes!("Fox_MESH"));
-pub const FOX_SKL: &SkeletonBytes<24> = &SkeletonBytes(include_bytes!("Fox_SKL"));
-pub const FOX_SURVEY_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Survey_ANM"));
-pub const FOX_WALK_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Walk_ANM"));
-pub const FOX_RUN_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Run_ANM"));
-pub const FOX_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("Fox_SKN"));
-pub const FOX_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("Fox_0_TEX"));
-pub const DAMAGEDHELMET: &MeshBytes<5> = &MeshBytes(include_bytes!("DamagedHelmet_MESH"));
-pub const DAMAGEDHELMET_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("DamagedHelmet_0_TEX"));
-pub const DAMAGEDHELMET_1_TEX: &TextureBytes = &TextureBytes(include_bytes!("DamagedHelmet_1_TEX"));
-pub const DAMAGEDHELMET_2_TEX: &TextureBytes = &TextureBytes(include_bytes!("DamagedHelmet_2_TEX"));
-pub const DAMAGEDHELMET_3_TEX: &TextureBytes = &TextureBytes(include_bytes!("DamagedHelmet_3_TEX"));
-pub const DAMAGEDHELMET_4_TEX: &TextureBytes = &TextureBytes(include_bytes!("DamagedHelmet_4_TEX"));
-pub const CHARTEST: &MeshBytes<5> = &MeshBytes(include_bytes!("charTest_MESH"));
-pub const CHARTEST_SKL: &SkeletonBytes<33> = &SkeletonBytes(include_bytes!("charTest_SKL"));
-pub const CHARTEST_IDLE_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("charTest_idle_ANM"));
-pub const CHARTEST_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("charTest_SKN"));
-pub const VSBACKGROUND: &MeshBytes<5> = &MeshBytes(include_bytes!("vsBackground_MESH"));
-pub const VSBACKGROUND_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("vsBackground_0_TEX"));
-pub const MECH: &MeshBytes<5> = &MeshBytes(include_bytes!("mech_MESH"));
-pub const MECH_SKL: &SkeletonBytes<19> = &SkeletonBytes(include_bytes!("mech_SKL"));
-pub const MECH__DEFAULTPOSE_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech__DefaultPose_ANM"));
-pub const MECH_IDLE_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech_idle_ANM"));
-pub const MECH_IDLEPOSE_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech_idlePose_ANM"));
-pub const MECH_SQUAT_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech_Squat_ANM"));
-pub const MECH_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("mech_SKN"));
-pub const MULTIMESH: &MeshBytes<5> = &MeshBytes(include_bytes!("multimesh_MESH"));
-pub const MULTIMESH_SKL: &SkeletonBytes<2> = &SkeletonBytes(include_bytes!("multimesh_SKL"));
-pub const MULTIMESH_ARMATUREACTION_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("multimesh_ArmatureAction_ANM"));
-pub const MULTIMESH_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("multimesh_SKN"));
+    pub const TRIANGLE: &MeshBytes<2> = &MeshBytes(include_bytes!("Triangle_MESH"));
+    pub const PLANE: &MeshBytes<2> = &MeshBytes(include_bytes!("Plane_MESH"));
+    pub const CUBE: &MeshBytes<8> = &MeshBytes(include_bytes!("Cube_MESH"));
+    pub const BOXVERTEXCOLORS: &MeshBytes<6> = &MeshBytes(include_bytes!("BoxVertexColors_MESH"));
+    pub const FOX: &MeshBytes<5> = &MeshBytes(include_bytes!("Fox_MESH"));
+    pub const FOX_SKL: &SkeletonBytes<24> = &SkeletonBytes(include_bytes!("Fox_SKL"));
+    pub const FOX_SURVEY_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Survey_ANM"));
+    pub const FOX_WALK_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Walk_ANM"));
+    pub const FOX_RUN_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("Fox_Run_ANM"));
+    pub const FOX_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("Fox_SKN"));
+    pub const FOX_0_TEX: &TextureBytes = &TextureBytes(include_bytes!("Fox_0_TEX"));
+    pub const DAMAGEDHELMET: &MeshBytes<5> = &MeshBytes(include_bytes!("DamagedHelmet_MESH"));
+    pub const DAMAGEDHELMET_0_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("DamagedHelmet_0_TEX"));
+    pub const DAMAGEDHELMET_1_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("DamagedHelmet_1_TEX"));
+    pub const DAMAGEDHELMET_2_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("DamagedHelmet_2_TEX"));
+    pub const DAMAGEDHELMET_3_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("DamagedHelmet_3_TEX"));
+    pub const DAMAGEDHELMET_4_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("DamagedHelmet_4_TEX"));
+    pub const CHARTEST: &MeshBytes<5> = &MeshBytes(include_bytes!("charTest_MESH"));
+    pub const CHARTEST_SKL: &SkeletonBytes<33> = &SkeletonBytes(include_bytes!("charTest_SKL"));
+    pub const CHARTEST_IDLE_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("charTest_idle_ANM"));
+    pub const CHARTEST_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("charTest_SKN"));
+    pub const VSBACKGROUND: &MeshBytes<5> = &MeshBytes(include_bytes!("vsBackground_MESH"));
+    pub const VSBACKGROUND_0_TEX: &TextureBytes =
+        &TextureBytes(include_bytes!("vsBackground_0_TEX"));
+    pub const MECH: &MeshBytes<5> = &MeshBytes(include_bytes!("mech_MESH"));
+    pub const MECH_SKL: &SkeletonBytes<19> = &SkeletonBytes(include_bytes!("mech_SKL"));
+    pub const MECH__DEFAULTPOSE_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("mech__DefaultPose_ANM"));
+    pub const MECH_IDLE_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech_idle_ANM"));
+    pub const MECH_IDLEPOSE_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("mech_idlePose_ANM"));
+    pub const MECH_SQUAT_ANM: &AnimationBytes = &AnimationBytes(include_bytes!("mech_Squat_ANM"));
+    pub const MECH_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("mech_SKN"));
+    pub const MULTIMESH: &MeshBytes<5> = &MeshBytes(include_bytes!("multimesh_MESH"));
+    pub const MULTIMESH_SKL: &SkeletonBytes<2> = &SkeletonBytes(include_bytes!("multimesh_SKL"));
+    pub const MULTIMESH_ARMATUREACTION_ANM: &AnimationBytes =
+        &AnimationBytes(include_bytes!("multimesh_ArmatureAction_ANM"));
+    pub const MULTIMESH_SKN: &SkinBytes<4> = &SkinBytes(include_bytes!("multimesh_SKN"));
 }

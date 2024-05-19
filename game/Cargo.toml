@@ -15,4 +15,4 @@ wide = "0.7.15"
 rkyv = { version = "0.7.44", default-features = false, features = ["size_32"]}
 
 [lib]
-crate-type = ['cdylib']
+crate-type = ['cdylib', 'lib']

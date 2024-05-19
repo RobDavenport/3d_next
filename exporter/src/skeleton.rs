@@ -1,4 +1,3 @@
-use std::array;
 use std::collections::HashMap;
 
 use bytemuck::cast_slice;
@@ -37,7 +36,7 @@ impl SkeletonOutput {
 
         seq!(BC in 0..64 {
             match bone_count {
-                #(BC => rkyv::to_bytes::<_, 256>(&Skeleton::<BC>(array::from_fn(|i| bones[i].clone()))).unwrap(),)*
+                #(BC => rkyv::to_bytes::<_, 256>(&Skeleton::<BC>(bones.into_boxed_slice())).unwrap(),)*
                 too_many_bones => panic!("Too many bones: {too_many_bones}, max is {SKELETON_MAX_BONES}"),
             }
         })

@@ -10,7 +10,7 @@ use scenes::*;
 mod actor;
 mod animation;
 mod camera;
-mod generated;
+pub mod generated;
 mod graphics;
 mod math;
 mod scenes;

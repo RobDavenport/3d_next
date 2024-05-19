@@ -211,7 +211,7 @@ pub fn generate_meshes(config: &AssetList) -> String {
                                 e => panic!("unhandled bone size: {e}"),
                             }
                         }
-                    }
+                    },
                 }
             }
 

@@ -4,7 +4,7 @@ resolver = "2"
 members = [
     "exporter",
     "game",
-    "shared",
+    "shared"
 ]
 
 # Codegen Units:
